@@ -12,7 +12,7 @@
 
     <!-- Stats Dashboard -->
     <div class="row g-3 mb-5">
-        <div class="col-6 col-lg-3 fade-in">
+        <div class="col-12 col-sm-6 col-lg-3 fade-in mb-3 mb-lg-0">
             <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(20, 184, 166, 0.1); position:relative; overflow:hidden;">
                 <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--primary-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
                 <div style="width:44px; height:44px; background:var(--primary-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(20, 184, 166, 0.25);">
@@ -22,7 +22,7 @@
                 <div style="font-size:0.75rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; margin-top:6px; letter-spacing:0.06em;">This Month</div>
             </div>
         </div>
-        <div class="col-6 col-lg-3 fade-in stagger-1">
+        <div class="col-12 col-sm-6 col-lg-3 fade-in stagger-1 mb-3 mb-lg-0">
             <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(59, 130, 246, 0.1); position:relative; overflow:hidden;">
                 <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--blue-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
                 <div style="width:44px; height:44px; background:var(--blue-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(59, 130, 246, 0.25);">
@@ -32,7 +32,7 @@
                 <div style="font-size:0.75rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; margin-top:6px; letter-spacing:0.06em;">My Bookings</div>
             </div>
         </div>
-        <div class="col-6 col-lg-3 fade-in stagger-2">
+        <div class="col-12 col-sm-6 col-lg-3 fade-in stagger-2 mb-3 mb-lg-0">
             <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(249, 115, 22, 0.1); position:relative; overflow:hidden;">
                 <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--orange-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
                 <div style="width:44px; height:44px; background:var(--orange-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(249, 115, 22, 0.25);">
@@ -42,7 +42,7 @@
                 <div style="font-size:0.75rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; margin-top:6px; letter-spacing:0.06em;">Total Admins</div>
             </div>
         </div>
-        <div class="col-6 col-lg-3 fade-in stagger-3">
+        <div class="col-12 col-sm-6 col-lg-3 fade-in stagger-3 mb-3 mb-lg-0">
             <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(139, 92, 246, 0.1); position:relative; overflow:hidden;">
                 <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--purple-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
                 <div style="width:44px; height:44px; background:var(--purple-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(139, 92, 246, 0.25);">
@@ -58,7 +58,7 @@
     <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:16px; color:var(--ink);">Recent Bookings</h3>
     
     <!-- Desktop Table -->
-    <div class="d-none d-lg-block">
+    <div class="d-none d-lg-block w-100">
         <div class="glass-card" style="overflow:hidden; border:1px solid rgba(255,255,255,0.4);">
             <table class="table mb-0">
                 <thead>
@@ -99,7 +99,7 @@
     </div>
 
     <!-- Mobile Cards -->
-    <div class="d-lg-none">
+    <div class="d-block d-lg-none w-100">
         {% for booking in recent_bookings %}
         <div class="app-card d-flex align-items-center justify-content-between gap-3">
             <div style="flex:1; min-width:0;">

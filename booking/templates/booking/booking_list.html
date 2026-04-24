@@ -26,8 +26,8 @@
     </form>
 
     <!-- Desktop Table -->
-    <div class="d-none d-lg-block">
-        <div class="glass-card" style="overflow:hidden; border:1px solid rgba(255,255,255,0.4);">
+    <div class="d-none d-lg-block w-100">
+        <div class="glass-card table-responsive" style="overflow:hidden; border:1px solid rgba(255,255,255,0.4);">
             <table class="table mb-0">
                 <thead>
                     <tr style="background:rgba(241, 245, 249, 0.5); border-bottom:1px solid rgba(0,0,0,0.05);">
@@ -80,7 +80,7 @@
     </div>
 
     <!-- Mobile Cards -->
-    <div class="d-lg-none">
+    <div class="d-block d-lg-none w-100">
         {% for booking in bookings %}
         <div class="app-card d-flex align-items-center justify-content-between gap-3">
             <div style="flex:1; min-width:0;">
