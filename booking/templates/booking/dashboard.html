@@ -1,61 +1,221 @@
 {% extends 'booking/base.html' %}
 {% block title %}Dashboard — Auditorium{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ── MOBILE-FIRST DASHBOARD ── */
+    .dash-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 28px;
+    }
+
+    .stat-card {
+        background: rgba(255,255,255,0.75);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1.5px solid rgba(255,255,255,0.5);
+        border-radius: 22px;
+        padding: 18px;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+    }
+
+    .stat-card:active {
+        transform: scale(0.97);
+    }
+
+    .stat-card .corner-glow {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        opacity: 0.12;
+        filter: blur(8px);
+    }
+
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-bottom: 14px;
+        font-size: 1rem;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+    }
+
+    .stat-number {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: var(--ink);
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 0.68rem;
+        font-weight: 800;
+        color: var(--ink-3);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    /* Recent section */
+    .section-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--ink);
+        margin-bottom: 14px;
+    }
+
+    .recent-card {
+        background: rgba(255,255,255,0.7);
+        backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(255,255,255,0.4);
+        border-radius: 18px;
+        padding: 16px;
+        margin-bottom: 10px;
+        transition: 0.3s;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+    }
+
+    .recent-card .event-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .recent-card .event-time {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-top: 3px;
+    }
+
+    .recent-card .event-phone {
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--ink-3);
+        margin-top: 2px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 48px 20px;
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        color: var(--ink-3);
+        opacity: 0.3;
+    }
+
+    .empty-state p {
+        color: var(--ink-3);
+        font-size: 0.85rem;
+        margin-top: 12px;
+        font-weight: 600;
+    }
+
+    /* Desktop overrides */
+    @media (min-width: 768px) {
+        .dash-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            padding: 24px;
+            border-radius: 28px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            font-size: 1.15rem;
+            margin-bottom: 16px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h1 style="font-size:1.5rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Dashboard</h1>
-            <p style="font-size:0.8rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">Event overview & management</p>
-        </div>
+    <!-- Header -->
+    <div style="margin-bottom: 20px;">
+        <h1 style="font-size:1.4rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Dashboard</h1>
+        <p style="font-size:0.78rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">Event overview & management</p>
     </div>
 
-    <!-- Stats Dashboard -->
-    <div class="row g-3 mb-5">
-        <div class="col-12 col-sm-6 col-lg-3 fade-in mb-3 mb-lg-0">
-            <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(20, 184, 166, 0.1); position:relative; overflow:hidden;">
-                <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--primary-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
-                <div style="width:44px; height:44px; background:var(--primary-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(20, 184, 166, 0.25);">
-                    <i class="bi bi-calendar-check-fill" style="font-size: 1.1rem;"></i>
-                </div>
-                <div style="font-size:1.6rem; font-weight:900; color:var(--ink); line-height:1;">{{ stats.month_total }}</div>
-                <div style="font-size:0.75rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; margin-top:6px; letter-spacing:0.06em;">This Month</div>
+    <!-- Stats Grid (2×2 on mobile, 4-col on desktop) -->
+    <div class="dash-grid">
+        <div class="stat-card fade-in">
+            <div class="corner-glow" style="background: var(--primary-gradient);"></div>
+            <div class="stat-icon" style="background: var(--primary-gradient); box-shadow: 0 6px 16px rgba(20,184,166,0.3);">
+                <i class="bi bi-calendar-check-fill"></i>
             </div>
+            <div class="stat-number">{{ stats.month_total }}</div>
+            <div class="stat-label">This Month</div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3 fade-in stagger-1 mb-3 mb-lg-0">
-            <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(59, 130, 246, 0.1); position:relative; overflow:hidden;">
-                <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--blue-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
-                <div style="width:44px; height:44px; background:var(--blue-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(59, 130, 246, 0.25);">
-                    <i class="bi bi-person-badge-fill" style="font-size: 1.1rem;"></i>
-                </div>
-                <div style="font-size:1.6rem; font-weight:900; color:var(--ink); line-height:1;">{{ stats.my_total }}</div>
-                <div style="font-size:0.75rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; margin-top:6px; letter-spacing:0.06em;">My Bookings</div>
+
+        <div class="stat-card fade-in stagger-1">
+            <div class="corner-glow" style="background: var(--blue-gradient);"></div>
+            <div class="stat-icon" style="background: var(--blue-gradient); box-shadow: 0 6px 16px rgba(59,130,246,0.3);">
+                <i class="bi bi-person-badge-fill"></i>
             </div>
+            <div class="stat-number">{{ stats.my_total }}</div>
+            <div class="stat-label">My Bookings</div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3 fade-in stagger-2 mb-3 mb-lg-0">
-            <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(249, 115, 22, 0.1); position:relative; overflow:hidden;">
-                <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--orange-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
-                <div style="width:44px; height:44px; background:var(--orange-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(249, 115, 22, 0.25);">
-                    <i class="bi bi-shield-lock-fill" style="font-size: 1.1rem;"></i>
-                </div>
-                <div style="font-size:1.6rem; font-weight:900; color:var(--ink); line-height:1;">{{ stats.admin_total }}</div>
-                <div style="font-size:0.75rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; margin-top:6px; letter-spacing:0.06em;">Total Admins</div>
+
+        <div class="stat-card fade-in stagger-2">
+            <div class="corner-glow" style="background: var(--orange-gradient);"></div>
+            <div class="stat-icon" style="background: var(--orange-gradient); box-shadow: 0 6px 16px rgba(249,115,22,0.3);">
+                <i class="bi bi-shield-lock-fill"></i>
             </div>
+            <div class="stat-number">{{ stats.admin_total }}</div>
+            <div class="stat-label">Total Admins</div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3 fade-in stagger-3 mb-3 mb-lg-0">
-            <div class="glass-card premium-hover" style="padding:20px; border:1.5px solid rgba(139, 92, 246, 0.1); position:relative; overflow:hidden;">
-                <div style="position:absolute; top:0; right:0; width:60px; height:60px; background:var(--purple-gradient); opacity:0.1; border-radius:0 0 0 100%;"></div>
-                <div style="width:44px; height:44px; background:var(--purple-gradient); color:white; border-radius:14px; display:flex; align-items:center; justify-content:center; margin-bottom:12px; box-shadow:0 8px 20px rgba(139, 92, 246, 0.25);">
-                    <i class="bi bi-graph-up-arrow" style="font-size: 1.1rem;"></i>
-                </div>
-                <div style="font-size:1.6rem; font-weight:900; color:var(--ink); line-height:1;">{{ stats.total_life }}</div>
-                <div style="font-size:0.75rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; margin-top:6px; letter-spacing:0.06em;">Total Bookings</div>
+
+        <div class="stat-card fade-in stagger-3">
+            <div class="corner-glow" style="background: var(--purple-gradient);"></div>
+            <div class="stat-icon" style="background: var(--purple-gradient); box-shadow: 0 6px 16px rgba(139,92,246,0.3);">
+                <i class="bi bi-graph-up-arrow"></i>
             </div>
+            <div class="stat-number">{{ stats.total_life }}</div>
+            <div class="stat-label">Total Bookings</div>
         </div>
     </div>
 
     <!-- Recent Bookings -->
-    <h3 style="font-size:1.1rem; font-weight:800; margin-bottom:16px; color:var(--ink);">Recent Bookings</h3>
+    <h3 class="section-title">Recent Bookings</h3>
     
     <!-- Desktop Table -->
     <div class="d-none d-lg-block w-100">
@@ -101,17 +261,25 @@
     <!-- Mobile Cards -->
     <div class="d-block d-lg-none w-100">
         {% for booking in recent_bookings %}
-        <div class="app-card d-flex align-items-center justify-content-between gap-3">
-            <div style="flex:1; min-width:0;">
-                <div style="font-size:0.92rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ booking.title }}</div>
-                <div style="font-size:0.75rem; color:var(--primary); font-weight:600; margin-top:3px;">{{ booking.start_time|date:"D, M j" }} · {{ booking.start_time|date:"g:i A" }} – {{ booking.end_time|date:"g:i A" }}</div>
-                <div style="font-size:0.72rem; color:var(--ink-3); font-weight:500; margin-top:2px;">📞 {{ booking.mobile_number }}</div>
+        <div class="recent-card">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:36px; height:36px; background:var(--primary-gradient); color:white; border-radius:11px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.7rem; flex-shrink:0;">
+                    {{ booking.created_by.username|slice:":1"|upper }}
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div class="event-title">{{ booking.title }}</div>
+                    <div class="event-time">
+                        <i class="bi bi-clock" style="font-size:0.65rem;"></i>
+                        {{ booking.start_time|date:"D, M j" }} · {{ booking.start_time|date:"g:i A" }} – {{ booking.end_time|date:"g:i A" }}
+                    </div>
+                    <div class="event-phone">📞 {{ booking.mobile_number }}</div>
+                </div>
             </div>
         </div>
         {% empty %}
-        <div style="text-align:center; padding:64px 0;">
-            <i class="bi bi-calendar-x" style="font-size:2.5rem; color:var(--ink-3); opacity:0.4;"></i>
-            <p style="color:var(--ink-3); font-size:0.85rem; margin-top:12px; font-weight:600;">No bookings yet</p>
+        <div class="empty-state">
+            <i class="bi bi-calendar-x"></i>
+            <p>No bookings yet</p>
         </div>
         {% endfor %}
     </div>

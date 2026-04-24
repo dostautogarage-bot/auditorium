@@ -1,27 +1,62 @@
 {% extends 'booking/base.html' %}
 {% block title %}Bookings — Auditorium{% endblock %}
 
+{% block extra_css %}
+<style>
+    .search-bar {
+        display: flex; gap: 10px; margin-bottom: 20px; align-items: center;
+    }
+    .search-input {
+        flex: 1; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
+        border: 1.5px solid rgba(255,255,255,0.5); border-radius: 16px;
+        padding: 12px 16px 12px 42px; font-family: inherit; font-size: 0.85rem;
+        font-weight: 600; color: var(--ink); outline: none; transition: 0.3s;
+    }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(20,184,166,0.1); }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: 0.85rem; }
+    .per-page-select {
+        background: rgba(255,255,255,0.8); border: 1.5px solid rgba(255,255,255,0.5);
+        border-radius: 14px; padding: 12px 14px; font-family: inherit;
+        font-size: 0.82rem; font-weight: 700; color: var(--ink); outline: none; cursor: pointer;
+    }
+    .booking-mobile-card {
+        background: rgba(255,255,255,0.72); backdrop-filter: blur(18px);
+        border: 1.5px solid rgba(255,255,255,0.45); border-radius: 20px;
+        padding: 16px; margin-bottom: 10px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+    .booking-mobile-card:active { transform: scale(0.98); }
+    .action-btn {
+        width: 34px; height: 34px; background: rgba(241,245,249,0.8);
+        border: 1.5px solid rgba(0,0,0,0.04); border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 0.8rem; transition: 0.2s;
+    }
+    .action-btn:active { transform: scale(0.9); }
+    .action-btn-edit { color: var(--primary); }
+    .action-btn-del { color: #EF4444; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h1 style="font-size:1.5rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Bookings</h1>
-            <p style="font-size:0.8rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">All event bookings</p>
-        </div>
+    <div style="margin-bottom: 20px;">
+        <h1 style="font-size:1.4rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Bookings</h1>
+        <p style="font-size:0.78rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">All event bookings</p>
     </div>
 
     <!-- Search + Filter -->
-    <form method="GET" class="d-flex gap-2 mb-4 align-items-center">
+    <form method="GET" class="search-bar">
         <div class="position-relative flex-grow-1">
-            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3" style="color:var(--ink-3); font-size:0.85rem;"></i>
-            <input type="text" name="q" value="{{ query }}" placeholder="Search events..."
-                   style="width:100%; background:var(--card); border:1.5px solid #E8E8EE; border-radius:var(--r-md); padding:12px 16px 12px 40px; font-family:inherit; font-size:0.875rem; font-weight:600; color:var(--ink); outline:none;">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search events..." class="search-input">
         </div>
-        <select name="per_page" onchange="this.form.submit()" style="background:var(--card); border:1.5px solid #E8E8EE; border-radius:var(--r-md); padding:12px 14px; font-family:inherit; font-size:0.85rem; font-weight:700; color:var(--ink); outline:none; cursor:pointer; flex-shrink:0;">
-            <option value="100" {% if per_page == 100 %}selected{% endif %}>100 / page</option>
-            <option value="200" {% if per_page == 200 %}selected{% endif %}>200 / page</option>
-            <option value="300" {% if per_page == 300 %}selected{% endif %}>300 / page</option>
-            <option value="500" {% if per_page == 500 %}selected{% endif %}>500 / page</option>
+        <select name="per_page" onchange="this.form.submit()" class="per-page-select">
+            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+            <option value="200" {% if per_page == 200 %}selected{% endif %}>200</option>
+            <option value="300" {% if per_page == 300 %}selected{% endif %}>300</option>
+            <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
         </select>
     </form>
 
@@ -61,13 +96,9 @@
                         <td style="border:none; padding:16px 20px; text-align:right;">
                             <div class="d-flex justify-content-end gap-2">
                                 <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
-                                        style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--primary); font-size:0.8rem;">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
+                                        class="action-btn action-btn-edit"><i class="bi bi-pencil"></i></button>
                                 <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
-                                        style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--primary-dark); font-size:0.8rem;">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                        class="action-btn action-btn-del"><i class="bi bi-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -82,52 +113,59 @@
     <!-- Mobile Cards -->
     <div class="d-block d-lg-none w-100">
         {% for booking in bookings %}
-        <div class="app-card d-flex align-items-center justify-content-between gap-3">
-            <div style="flex:1; min-width:0;">
-                <div style="font-size:0.92rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ booking.title }}</div>
-                <div style="font-size:0.75rem; color:var(--primary); font-weight:600; margin-top:3px;">{{ booking.start_time|date:"D, M j" }} · {{ booking.start_time|date:"g:i A" }} – {{ booking.end_time|date:"g:i A" }}</div>
-                <div style="font-size:0.72rem; color:var(--ink-3); font-weight:500; margin-top:2px;">📞 {{ booking.mobile_number }}</div>
-            </div>
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
-                <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
-                        style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--primary); font-size:0.8rem;">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
-                        style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--primary-dark); font-size:0.8rem;">
-                    <i class="bi bi-trash"></i>
-                </button>
+        <div class="booking-mobile-card fade-in stagger-{{ forloop.counter0 }}">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:38px; height:38px; background:var(--primary-gradient); color:white; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.75rem; flex-shrink:0;">
+                    {{ booking.created_by.username|slice:":1"|upper }}
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:0.88rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ booking.title }}</div>
+                    <div style="font-size:0.72rem; color:var(--primary); font-weight:600; margin-top:2px;">
+                        <i class="bi bi-clock" style="font-size:0.6rem;"></i>
+                        {{ booking.start_time|date:"D, M j" }} · {{ booking.start_time|date:"g:i A" }} – {{ booking.end_time|date:"g:i A" }}
+                    </div>
+                    <div style="font-size:0.68rem; color:var(--ink-3); font-weight:500; margin-top:1px;">📞 {{ booking.mobile_number }}</div>
+                </div>
+                <div style="display:flex; gap:6px; flex-shrink:0;">
+                    <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
+                            class="action-btn action-btn-edit"><i class="bi bi-pencil"></i></button>
+                    <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
+                            class="action-btn action-btn-del"><i class="bi bi-trash"></i></button>
+                </div>
             </div>
         </div>
         {% empty %}
-        <div style="text-align:center; padding:64px 0;">
-            <i class="bi bi-calendar-x" style="font-size:2.5rem; color:var(--ink-3); opacity:0.4;"></i>
-            <p style="color:var(--ink-3); font-size:0.85rem; margin-top:12px; font-weight:600;">No bookings yet</p>
+        <div style="text-align:center; padding:64px 20px;">
+            <div style="width:70px; height:70px; background:rgba(20,184,166,0.08); border-radius:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <i class="bi bi-calendar-x" style="font-size:1.8rem; color:var(--primary); opacity:0.5;"></i>
+            </div>
+            <p style="color:var(--ink-3); font-size:0.85rem; font-weight:600;">No bookings yet</p>
         </div>
         {% endfor %}
     </div>
+
     <!-- PAGINATION -->
     {% if bookings.has_other_pages %}
-    <div class="d-flex align-items-center justify-content-between mt-5" style="flex-wrap:wrap; gap:12px;">
-        <span style="font-size:0.78rem; font-weight:600; color:var(--ink-3);">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}</span>
+    <div class="d-flex align-items-center justify-content-between mt-4" style="flex-wrap:wrap; gap:12px;">
+        <span style="font-size:0.75rem; font-weight:600; color:var(--ink-3);">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}</span>
         <div class="d-flex gap-2">
             {% if bookings.has_previous %}
             <a href="?q={{ query }}&per_page={{ per_page }}&page={{ bookings.previous_page_number }}"
-               style="width:36px; height:36px; background:var(--card); border:1.5px solid #E8E8EE; border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.9rem;">
+               style="width:34px; height:34px; background:rgba(255,255,255,0.8); border:1.5px solid rgba(0,0,0,0.06); border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.85rem;">
                <i class="bi bi-chevron-left"></i>
             </a>
             {% endif %}
             {% for num in bookings.paginator.page_range %}
                 {% if bookings.number == num %}
-                <span style="width:36px; height:36px; background:var(--primary-gradient); color:white; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:800; box-shadow:0 4px 12px rgba(20, 184, 166, 0.2);">{{ num }}</span>
+                <span style="width:34px; height:34px; background:var(--primary-gradient); color:white; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; box-shadow:0 4px 12px rgba(20,184,166,0.2);">{{ num }}</span>
                 {% elif num > bookings.number|add:'-3' and num < bookings.number|add:'3' %}
                 <a href="?q={{ query }}&per_page={{ per_page }}&page={{ num }}"
-                   style="width:36px; height:36px; background:var(--card); border:1.5px solid #E8E8EE; border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.82rem; font-weight:700;">{{ num }}</a>
+                   style="width:34px; height:34px; background:rgba(255,255,255,0.8); border:1.5px solid rgba(0,0,0,0.06); border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.8rem; font-weight:700;">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if bookings.has_next %}
             <a href="?q={{ query }}&per_page={{ per_page }}&page={{ bookings.next_page_number }}"
-               style="width:36px; height:36px; background:var(--card); border:1.5px solid #E8E8EE; border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.9rem;">
+               style="width:34px; height:34px; background:rgba(255,255,255,0.8); border:1.5px solid rgba(0,0,0,0.06); border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.85rem;">
                <i class="bi bi-chevron-right"></i>
             </a>
             {% endif %}

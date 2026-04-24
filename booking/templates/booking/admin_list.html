@@ -3,30 +3,30 @@
 
 {% block content %}
 <div class="fade-in">
-    <div class="d-flex justify-content-between align-items-center mb-5 px-1">
+    <div class="d-flex justify-content-between align-items-center" style="margin-bottom:20px;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; margin: 0; letter-spacing: -0.04em;">Admins</h1>
-            <p style="font-size: 0.8rem; color: var(--ink-3); font-weight: 600; margin: 4px 0 0;">Access management & security</p>
+            <h1 style="font-size:1.4rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Admins</h1>
+            <p style="font-size:0.78rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">Access management & security</p>
         </div>
         {% if request.user.is_superuser %}
-            <button class="btn-app btn-app-primary" data-bs-toggle="modal" data-bs-target="#createAdminModal" style="box-shadow: 0 8px 20px rgba(20, 184, 166, 0.25);">
+            <button class="btn-app btn-app-primary pop-in" data-bs-toggle="modal" data-bs-target="#createAdminModal" style="padding:12px 18px; font-size:0.82rem;">
                 <i class="bi bi-plus"></i> <span class="d-none d-sm-inline">New Admin</span>
             </button>
         {% endif %}
     </div>
 
-    <!-- Search + Filter -->
-    <form method="GET" class="d-flex gap-2 mb-4 align-items-center">
+    <!-- Search -->
+    <form method="GET" style="display:flex; gap:10px; margin-bottom:20px; align-items:center;">
         <div class="position-relative flex-grow-1">
             <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3" style="color:var(--ink-3); font-size:0.85rem;"></i>
             <input type="text" name="q" value="{{ query }}" placeholder="Search admins..."
-                   style="width:100%; background:var(--card); border:1.5px solid #E8E8EE; border-radius:var(--r-md); padding:12px 16px 12px 40px; font-family:inherit; font-size:0.875rem; font-weight:600; color:var(--ink); outline:none;">
+                   style="width:100%; background:rgba(255,255,255,0.8); backdrop-filter:blur(12px); border:1.5px solid rgba(255,255,255,0.5); border-radius:16px; padding:12px 16px 12px 42px; font-family:inherit; font-size:0.85rem; font-weight:600; color:var(--ink); outline:none; transition:0.3s;">
         </div>
-        <select name="per_page" onchange="this.form.submit()" style="background:var(--card); border:1.5px solid #E8E8EE; border-radius:var(--r-md); padding:12px 14px; font-family:inherit; font-size:0.85rem; font-weight:700; color:var(--ink); outline:none; cursor:pointer; flex-shrink:0;">
-            <option value="100" {% if per_page == 100 %}selected{% endif %}>100 / page</option>
-            <option value="200" {% if per_page == 200 %}selected{% endif %}>200 / page</option>
-            <option value="300" {% if per_page == 300 %}selected{% endif %}>300 / page</option>
-            <option value="500" {% if per_page == 500 %}selected{% endif %}>500 / page</option>
+        <select name="per_page" onchange="this.form.submit()" style="background:rgba(255,255,255,0.8); border:1.5px solid rgba(255,255,255,0.5); border-radius:14px; padding:12px 14px; font-family:inherit; font-size:0.82rem; font-weight:700; color:var(--ink); outline:none; cursor:pointer;">
+            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+            <option value="200" {% if per_page == 200 %}selected{% endif %}>200</option>
+            <option value="300" {% if per_page == 300 %}selected{% endif %}>300</option>
+            <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
         </select>
     </form>
 
@@ -97,36 +97,34 @@
     <!-- Mobile -->
     <div class="d-lg-none">
         {% for admin in admins %}
-        <div class="glass-card" style="padding:20px; border:1px solid rgba(255,255,255,0.4); margin-bottom:12px; display:flex; align-items:center; justify-content:between; gap:12px;">
-            <div class="d-flex align-items-center gap-3 flex-grow-1" style="min-width:0;">
-                <div style="width:40px; height:40px; background:var(--primary); color:white; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.9rem; flex-shrink:0;">
-                    {{ admin.username|slice:":1"|upper }}
-                </div>
-                <div style="min-width:0;">
-                    <div style="font-size:0.92rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        {{ admin.username }}
-                        {% if admin == request.user %}
-                            <span class="badge bg-primary-soft text-primary-dark ms-1" style="font-size: 0.55rem; border: 1px solid rgba(20, 184, 166, 0.1);">YOU</span>
-                        {% endif %}
-                    </div>
-                    <div style="font-size:0.75rem; color:var(--ink-3); font-weight:600; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ admin.email }}</div>
-                </div>
+        <div class="fade-in stagger-{{ forloop.counter0 }}" style="background:rgba(255,255,255,0.72); backdrop-filter:blur(18px); border:1.5px solid rgba(255,255,255,0.45); border-radius:20px; padding:16px; margin-bottom:10px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 20px rgba(0,0,0,0.04); transition:0.3s;">
+            <div style="width:40px; height:40px; background:var(--primary-gradient); color:white; border-radius:13px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; box-shadow:0 4px 12px rgba(20,184,166,0.25);">
+                {{ admin.username|slice:":1"|upper }}
             </div>
-            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <div style="flex:1; min-width:0;">
+                <div style="font-size:0.88rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    {{ admin.username }}
+                    {% if admin == request.user %}
+                        <span style="font-size:0.55rem; font-weight:800; background:rgba(20,184,166,0.1); color:var(--primary-dark); padding:2px 6px; border-radius:6px; margin-left:4px;">YOU</span>
+                    {% endif %}
+                </div>
+                <div style="font-size:0.72rem; color:var(--ink-3); font-weight:600; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ admin.email }}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
                 {% if request.user.is_superuser %}
                     {% if admin != request.user %}
-                        <a href="{% url 'admin_edit' admin.pk %}" style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; color:var(--primary); font-size:0.8rem; text-decoration:none;">
+                        <a href="{% url 'admin_edit' admin.pk %}" style="width:34px; height:34px; background:rgba(241,245,249,0.8); border:1.5px solid rgba(0,0,0,0.04); border-radius:10px; display:inline-flex; align-items:center; justify-content:center; color:var(--primary); font-size:0.8rem; text-decoration:none;">
                             <i class="bi bi-pencil"></i>
                         </a>
                         <button type="button" onclick="triggerDeleteModal('{{ admin.pk }}', '{{ admin.username|escapejs }}', '{% url 'admin_delete' admin.pk %}', 'Remove administrator account?')"
-                                style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--primary-dark); font-size:0.8rem;">
+                                style="width:34px; height:34px; background:rgba(241,245,249,0.8); border:1.5px solid rgba(0,0,0,0.04); border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:#EF4444; font-size:0.8rem;">
                             <i class="bi bi-trash"></i>
                         </button>
                     {% else %}
-                        <span style="font-size:0.6rem; font-weight:800; background:var(--primary-soft); color:var(--primary-dark); padding:4px 8px; border-radius:8px; text-transform:uppercase;">Self</span>
+                        <span style="font-size:0.58rem; font-weight:800; background:rgba(20,184,166,0.08); color:var(--primary-dark); padding:4px 8px; border-radius:8px; text-transform:uppercase;">Self</span>
                     {% endif %}
                 {% else %}
-                    <i class="bi bi-lock-fill text-muted"></i>
+                    <i class="bi bi-lock-fill" style="color:var(--ink-3); opacity:0.4;"></i>
                 {% endif %}
             </div>
         </div>
