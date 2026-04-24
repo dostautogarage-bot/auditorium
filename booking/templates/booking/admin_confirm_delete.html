@@ -1,0 +1,37 @@
+{% extends 'booking/base.html' %}
+{% block title %}Delete Admin - Auditorium{% endblock %}
+
+{% block content %}
+<div class="fade-in-up d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="card p-4 text-center shadow-lg border-0" style="max-width: 450px; border-radius: 32px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);">
+        <div class="mb-4">
+            <div class="user-avatar-btn mx-auto mb-3" style="width: 70px; height: 70px; background: rgba(255,59,48,0.1); color: #FF3B30; border: none;">
+                <i class="bi bi-person-x-fill fs-1"></i>
+            </div>
+            <h3 class="fw-bold mb-2">Delete Admin?</h3>
+            <p class="text-muted">You are about to permanently delete the administrator account for <strong>{{ admin.username }}</strong>.</p>
+        </div>
+
+        <div class="list-group-ios text-start mb-4" style="background: rgba(0,0,0,0.03);">
+            <div class="list-group-ios-item py-2">
+                <span class="text-muted small fw-bold">USERNAME</span>
+                <span class="fw-bold">{{ admin.username|upper }}</span>
+            </div>
+            <div class="list-group-ios-item py-2">
+                <span class="text-muted small fw-bold">EMAIL</span>
+                <span class="small">{{ admin.email }}</span>
+            </div>
+        </div>
+        
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger w-100 py-3 rounded-4 fw-bold mb-3" style="background: #FF3B30;">
+                Permanently Delete
+            </button>
+            <a href="{% url 'admin_list' %}" class="btn btn-light w-100 py-3 rounded-4 fw-bold">
+                Cancel
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'booking/base.html' %}
+{% block title %}{{ title }} - Auditorium{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    .flatpickr-day.selected { background: var(--primary) !important; border-color: var(--primary) !important; color: white !important; }
+    .flatpickr-calendar { border-radius: 20px !important; box-shadow: 0 15px 45px rgba(0,0,0,0.1) !important; border: 1px solid rgba(0,0,0,0.05) !important; }
+    
+    .status-card {
+        background: var(--primary-soft); padding: 18px 22px; border-radius: 24px;
+        display: flex; align-items: center; gap: 14px; margin-bottom: 32px;
+        border: 1px solid rgba(144, 238, 144, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-in" style="max-width: 500px; margin: 0 auto; padding-bottom: 40px;">
+    <div class="d-flex align-items-center mb-5">
+        <a href="{% url 'calendar' %}" class="btn-app btn-app-ghost p-0 me-3 shadow-none" style="width: 42px; height: 42px; border-radius: 14px;">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        <h1 style="font-size: 1.6rem; font-weight: 800; margin: 0; letter-spacing: -0.04em;">{{ title }}</h1>
+    </div>
+
+    {% if request.GET.start_time or form.instance.pk %}
+    <div class="status-card shadow-sm">
+        <div class="d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background: var(--primary); color: white; border-radius: 14px;">
+            <i class="bi bi-calendar-check-fill"></i>
+        </div>
+        <div>
+            <div class="fw-800" style="font-size: 0.65rem; color: var(--primary-dark); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;">Booking Date</div>
+            <div class="fw-bold" style="font-size: 0.95rem; color: var(--ink);" id="lockedDateDisplay">
+                {% if form.instance.pk %}{{ form.instance.start_time|date:"Y-m-d" }}{% else %}{{ request.GET.start_time|slice:":10" }}{% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div style="background: var(--card); border-radius: 32px; padding: 32px; border: 1px solid rgba(0,0,0,0.03); box-shadow: var(--shadow);">
+        <form method="POST" id="bookingForm">
+            {% csrf_token %}
+            
+            <div class="mb-4">
+                <label class="form-label">Event Title</label>
+                <input type="text" name="title" class="form-control-premium" 
+                       placeholder="e.g. Wedding Ceremony" 
+                       value="{{ form.title.value|default:'' }}" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Contact Person</label>
+                <input type="text" name="contact_person" class="form-control-premium" 
+                       placeholder="Full name" 
+                       value="{{ form.contact_person.value|default:'' }}" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Mobile Number</label>
+                <input type="tel" name="mobile_number" class="form-control-premium" 
+                       placeholder="+91 9876543210" 
+                       value="{{ form.mobile_number.value|default:'' }}" required>
+            </div>
+
+            <div class="row g-2 mb-5">
+                <div class="col-6">
+                    <label class="form-label">Start Time</label>
+                    <input type="text" name="start_time" id="id_start_time" 
+                           class="form-control-premium text-center" 
+                           value="{{ form.start_time.value|date:'Y-m-d H:i' }}" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">End Time</label>
+                    <input type="text" name="end_time" id="id_end_time" 
+                           class="form-control-premium text-center" 
+                           value="{{ form.end_time.value|date:'Y-m-d H:i' }}" required>
+                </div>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+                <button type="submit" class="btn-app btn-app-primary w-100 py-3">
+                    Save Changes
+                </button>
+                <a href="{% url 'calendar' %}" class="btn-app btn-app-ghost w-100 text-center" style="text-decoration: none;">
+                    Discard Changes
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const lockedDateEl = document.getElementById('lockedDateDisplay');
+    const hasPredefinedDate = lockedDateEl !== null;
+    
+    if (lockedDateEl) {
+        const dateObj = new Date(lockedDateEl.textContent.trim());
+        if (!isNaN(dateObj)) {
+            lockedDateEl.textContent = dateObj.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+        }
+    }
+
+    const config = {
+        enableTime: true,
+        noCalendar: hasPredefinedDate,
+        dateFormat: "Y-m-d H:i",
+        altInput: true,
+        altFormat: hasPredefinedDate ? "h:i K" : "M j, Y - h:i K",
+        minuteIncrement: 15,
+        disableMobile: "true",
+        minDate: "today",
+        static: true
+    };
+
+    flatpickr("#id_start_time", config);
+    flatpickr("#id_end_time", config);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#90EE90">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <title>{% block title %}Auditorium{% endblock %}</title>
+
+    <!-- Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Bootstrap & Icons -->
+    <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.css' %}">
+
+    <style>
+        :root {
+            --primary: #14B8A6;
+            --primary-dark: #0D9488;
+            --primary-soft: #F0FDFA;
+            --primary-gradient: linear-gradient(135deg, #2DD4BF 0%, #14B8A6 100%);
+            --blue-gradient: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            --orange-gradient: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
+            --purple-gradient: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+            --rose-gradient: linear-gradient(135deg, #FB7185 0%, #F43F5E 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --bg: #F8FAFC;
+            --ink: #0F172A;
+            --ink-2: #334155;
+            --ink-3: #64748B;
+            --card: #FFFFFF;
+            --r-xl: 32px;
+            --r-lg: 22px;
+            --r-md: 16px;
+            --radius-xl: 32px;
+            --shadow: 0 10px 40px rgba(15, 23, 42, 0.05);
+            --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.08);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Urbanist', sans-serif;
+            background-color: #F8FAFC;
+            background-image: linear-gradient(135deg, #78e6aa 0%, #E2E8F0 100%);
+            background-attachment: fixed;
+            color: var(--ink);
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.025em;
+            font-size: 15px;
+            overflow-x: hidden;
+            padding-bottom: calc(75px + var(--safe-bottom));
+            min-height: 100vh;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: var(--r-xl);
+        }
+
+        .premium-hover {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .premium-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-premium);
+        }
+
+        @media (min-width: 992px) {
+            body {
+                padding-bottom: 0;
+                padding-left: 300px;
+            }
+        }
+
+        /* NATIVE APP-LIKE TRANSITION */
+        .fade-in {
+            animation: appSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes appSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-app:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+        .btn-app:active {
+            transform: scale(0.96);
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+
+        .page-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 24px 20px;
+            width: 100%;
+        }
+
+        @media (min-width: 992px) {
+            .page-wrapper {
+                padding: 60px 50px;
+            }
+        }
+
+        /* PREMIUM GLASS TOP BAR */
+        .app-header {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 75px;
+            background: var(--bg-glass);
+            backdrop-filter: blur(25px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+        }
+
+        @media (min-width: 992px) {
+            .app-header {
+                display: none;
+            }
+        }
+
+        /* NATIVE BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(75px + var(--safe-bottom));
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding-bottom: var(--safe-bottom);
+            z-index: 1100;
+        }
+
+        @media (min-width: 992px) {
+            .bottom-nav {
+                display: none;
+            }
+        }
+
+
+        .nav-link-app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--slate-400);
+            text-decoration: none;
+            font-size: 0.65rem;
+            font-weight: 700;
+            gap: 5px;
+            transition: 0.3s;
+        }
+
+        .nav-link-app i {
+            font-size: 1.5rem;
+            transition: 0.3s;
+        }
+
+        .nav-link-app.active {
+            color: var(--primary);
+        }
+
+        .nav-link-app.active i {
+            transform: scale(1.1);
+        }
+
+        /* SIDEBAR (DESKTOP APP STYLE) */
+        .app-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 300px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.5);
+            z-index: 1060;
+            display: none;
+            flex-direction: column;
+            padding: 60px 40px;
+        }
+
+        @media (min-width: 992px) {
+            .app-sidebar {
+                display: flex;
+            }
+        }
+
+        .sidebar-brand {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 60px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            text-decoration: none;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 24px;
+            color: var(--slate-600);
+            border-radius: 22px;
+            font-weight: 700;
+            font-size: 1.05rem;
+            transition: 0.3s;
+            margin-bottom: 8px;
+            text-decoration: none;
+        }
+
+        .sidebar-link:hover {
+            background: #F1F5F9;
+            color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .sidebar-link.active {
+            background: var(--primary-soft);
+            color: var(--primary);
+            box-shadow: inset 4px 0 0 var(--primary);
+        }
+
+        /* FLOATING ACTION BUTTON (FAB) */
+        .fab {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 28px rgba(20, 184, 166, 0.35);
+            z-index: 1050;
+            border: none;
+            cursor: pointer;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .fab:active {
+            transform: scale(0.9);
+        }
+
+        @media (min-width: 992px) {
+            .fab {
+                display: none;
+            }
+        }
+
+        /* MODALS */
+        .modal-dialog {
+            max-width: 420px;
+            margin: 1.5rem auto;
+        }
+
+        .modal-content-premium {
+            border-radius: 32px;
+            border: none;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.14);
+            background: #FFFFFF;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header-premium {
+            padding: 28px 28px 10px;
+            border: none;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header-premium h4,
+        .modal-header-premium h5 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .modal-body-premium {
+            padding: 8px 28px 4px;
+            flex-grow: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .modal-body-premium::-webkit-scrollbar {
+            display: none;
+        }
+
+        .modal-footer-premium {
+            padding: 16px 28px 28px;
+            border: none;
+            flex-shrink: 0;
+        }
+
+        .btn-app {
+            border-radius: var(--r-md);
+            padding: 14px 24px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: none;
+            transition: .2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-app-primary {
+            background: var(--primary-gradient);
+            color: white !important;
+            box-shadow: 0 8px 20px rgba(20, 184, 166, 0.25);
+        }
+
+        .btn-app-primary:hover {
+            background: var(--primary-dark);
+            color: white !important;
+            box-shadow: 0 10px 25px rgba(20, 184, 166, 0.35);
+        }
+
+        .btn-app-primary:active {
+            transform: scale(0.97);
+        }
+
+        .btn-app-ghost {
+            background: #F1F5F9;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .user-avatar-app {
+            width: 42px;
+            height: 42px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2);
+        }
+
+        /* FORM UTILITIES */
+        .form-label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--ink-3);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .btn-logout-sidebar {
+            background: #FFF1F1;
+            color: #EF4444;
+            border-radius: 18px;
+            padding: 14px;
+            margin-top: auto;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .btn-logout-sidebar:hover {
+            background: #EF4444;
+            color: white !important;
+        }
+
+        .form-control-premium {
+            width: 100%;
+            background: #F1F5F9;
+            border: 2px solid transparent;
+            border-radius: var(--r-md);
+            padding: 14px 18px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--ink);
+            transition: 0.2s;
+        }
+
+        .form-control-premium:focus {
+            background: #FFFFFF;
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 4px var(--primary-soft);
+        }
+
+        .time-suggestion-list {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 4px 0 12px;
+            scrollbar-width: none;
+        }
+
+        .time-suggestion-list::-webkit-scrollbar {
+            display: none;
+        }
+
+        .time-chip {
+            padding: 10px 18px;
+            background: #F1F5F9;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--ink-2);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1.5px solid transparent;
+        }
+
+        .time-chip:hover {
+            background: #E2E8F0;
+        }
+
+        .time-chip.selected {
+            background: var(--primary-soft);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .selected-box {
+            background: var(--primary-soft);
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            border: 1px solid rgba(144, 238, 144, 0.3);
+        }
+
+        .summary-card {
+            background: #F8FAFC;
+            border-radius: 28px;
+            padding: 28px;
+            border: 1px solid rgba(0, 0, 0, 0.02);
+        }
+
+        .conflict-banner {
+            background: #FFF1F1;
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 24px;
+            border: 1px solid rgba(239, 68, 68, 0.1);
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 10;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 32px;
+        }
+
+        .error-msg-app {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #EF4444;
+            margin-top: 6px;
+            margin-left: 4px;
+            display: none;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- MOBILE APP HEADER -->
+    <header class="app-header">
+        <div class="d-flex align-items-center gap-3">
+            <div class="user-avatar-app" data-bs-toggle="offcanvas" data-bs-target="#menu">{{
+                user.username|slice:":1"|upper }}</div>
+            <div class="fw-800" style="font-size: 1.1rem; letter-spacing: -0.04em;">Auditorium</div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-bell text-muted" style="font-size: 1.2rem;"></i>
+        </div>
+    </header>
+
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="app-sidebar">
+        <a href="{% url 'calendar' %}" class="sidebar-brand">
+            <i class="bi bi-calendar-check-fill"
+                style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            <span class="gradient-text" style="letter-spacing: -0.05em;">Auditorium</span>
+        </a>
+        <nav class="flex-column mb-auto">
+            <a href="{% url 'dashboard' %}"
+                class="sidebar-link {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="{% url 'calendar' %}"
+                class="sidebar-link {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Calendar</span>
+            </a>
+            <a href="{% url 'booking_list' %}"
+                class="sidebar-link {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-journal-text"></i>
+                <span>Bookings</span>
+            </a>
+            {% if user.is_staff %}
+            <a href="{% url 'admin_list' %}"
+                class="sidebar-link {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-shield-lock-fill"></i>
+                <span>Admins</span>
+            </a>
+            {% endif %}
+        </nav>
+        <div class="mt-auto" style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 24px;">
+            <div class="d-flex align-items-center gap-3 mb-4 p-1">
+                <div class="user-avatar-app"
+                    style="width: 44px; height: 44px; font-size: 1.1rem; border-radius: 14px; flex-shrink: 0;">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <div style="min-width: 0;">
+                    <div
+                        style="font-size: 0.95rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ user.username }}</div>
+                    <div
+                        style="font-size: 0.72rem; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em;">
+                        Administrator</div>
+                </div>
+            </div>
+            <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                <button type="submit" class="btn-app btn-app-ghost w-100" style="color: var(--ink-2);">
+                    <i class="bi bi-box-arrow-right"></i> Sign Out
+                </button>
+            </form>
+        </div>
+    </aside>
+
+
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="bottom-nav">
+        <a href="{% url 'dashboard' %}"
+            class="nav-link-app {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'calendar' %}"
+            class="nav-link-app {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Calendar</span>
+        </a>
+        <a href="{% url 'booking_list' %}"
+            class="nav-link-app {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-journal-text"></i>
+            <span>Bookings</span>
+        </a>
+        {% if user.is_staff %}
+        <a href="{% url 'admin_list' %}"
+            class="nav-link-app {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-shield-lock-fill"></i>
+            <span>Admins</span>
+        </a>
+        {% endif %}
+        <a href="#" data-bs-toggle="offcanvas" data-bs-target="#menu" class="nav-link-app">
+            <i class="bi bi-person-fill"></i>
+            <span>Profile</span>
+        </a>
+    </nav>
+
+    <main class="page-wrapper fade-in">
+        {% if messages %}
+        {% for message in messages %}
+        <div
+            class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} rounded-4 border-0 shadow-sm mb-4">
+            {{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+
+        <!-- SITE FOOTER -->
+        <div class="site-footer d-flex flex-wrap justify-content-center align-items-center"
+            style="margin-top: 5rem; padding-bottom: 2.5rem; gap: 12px; font-size: 0.85rem; font-weight: 600; color: #64748b;">
+            <span>Developed by <span style="color: #1e293b; font-weight: 700;">Fanish</span></span>
+            <span style="color: #cbd5e1;" class="mx-1 d-none d-sm-inline">|</span>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="https://www.instagram.com/its_me_fanu_/?igsh=MWJncnJ4NGxuYjRpdA%3D%3D&utm_source=qr"
+                    target="_blank" rel="noopener noreferrer"
+                    style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; background: rgba(225, 48, 108, 0.08); border-radius: 20px; color: #e1306c; transition: 0.3s;"
+                    onmouseover="this.style.background='rgba(225, 48, 108, 0.15)'; this.style.transform='translateY(-2px)';"
+                    onmouseout="this.style.background='rgba(225, 48, 108, 0.08)'; this.style.transform='none';">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.054 1.973.24 2.43.415a4.92 4.92 0 011.675 1.09 4.928 4.928 0 011.09 1.675c.175.457.36 1.26.415 2.43.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.054 1.17-.24 1.973-.415 2.43a4.903 4.903 0 01-1.09 1.675 4.91 4.91 0 01-1.675 1.09c-.457.175-1.26.36-2.43.415-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.054-1.973-.24-2.43-.415a4.92 4.92 0 01-1.675-1.09 4.928 4.928 0 01-1.09-1.675c-.175-.457-.36-1.26-.415-2.43C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.054-1.17.24-1.973.415-2.43a4.904 4.904 0 011.09-1.675 4.903 4.903 0 011.675-1.09c.457-.175 1.26-.36 2.43-.415C8.416 2.175 8.796 2.163 12 2.163zm0 1.838c-3.17 0-3.545.012-4.795.069-1.018.045-1.57.21-1.935.35a3.096 3.096 0 00-1.125.733 3.096 3.096 0 00-.733 1.125c-.14.365-.305.917-.35 1.935-.057 1.25-.069 1.625-.069 4.795s.012 3.545.069 4.795c.045 1.018.21 1.57.35 1.935.18.466.44.878.733 1.125.248.248.659.553 1.125.733.365.14.917.305 1.935.35 1.25.057 1.625.069 4.795.069s3.545-.012 4.795-.069c1.018-.045 1.57-.21 1.935-.35a3.096 3.096 0 001.125-.733 3.096 3.096 0 00.733-1.125c.14-.365.305-.917.35-1.935.057-1.25.069-1.625.069-4.795s-.012-3.545-.069-4.795c-.045-1.018-.21-1.57-.35-1.935a3.097 3.097 0 00-.733-1.125 3.097 3.097 0 00-1.125-.733c-.365-.14-.917-.305-1.935-.35-1.25-.057-1.625-.069-4.795-.069zm0 4.838a5.001 5.001 0 110 10.002 5.001 5.001 0 010-10.002zm0 1.838a3.163 3.163 0 100 6.326 3.163 3.163 0 000-6.326zm4.946-1.839a1.162 1.162 0 11-2.324 0 1.162 1.162 0 012.324 0z" />
+                    </svg>
+                    <span style="font-weight: 700;">@its_me_fanu_</span>
+                </a>
+
+                <a href="tel:+918848112104"
+                    style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; background: var(--primary-soft); border-radius: 20px; color: var(--primary); transition: 0.3s;"
+                    onmouseover="this.style.background='var(--bg-body)'; this.style.transform='translateY(-2px)';"
+                    onmouseout="this.style.background='var(--primary-soft)'; this.style.transform='none';">
+                    <i class="bi bi-telephone-fill" style="font-size: 0.8rem;"></i>
+                    <span style="font-weight: 700;">8848112104</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- UNIFIED MODALS -->
+    <div class="modal fade" id="createBookingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-premium">
+                <div class="modal-header modal-header-premium">
+                    <h4 class="fw-800 mb-0">New Booking</h4><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-body-premium">
+                    <form id="mainBookingForm">
+                        <div class="mb-3"><label class="form-label">Event Title</label><input type="text" id="id_title"
+                                name="title" class="form-control-premium" placeholder="e.g. Wedding Ceremony" required>
+                            <div id="err_title" class="error-msg-app">Title is required</div>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Contact Person</label><input type="text"
+                                id="id_contact" name="contact_person" class="form-control-premium"
+                                placeholder="Full name" required>
+                            <div id="err_contact" class="error-msg-app">Contact name is required</div>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Mobile Number</label><input type="tel"
+                                id="id_mobile" name="mobile_number" class="form-control-premium"
+                                placeholder="+91 9876543210" required>
+                            <div id="err_mobile" class="error-msg-app">Valid mobile number is required</div>
+                        </div>
+                        <div id="startTimeSection" class="mb-3"><label class="form-label">Start Time</label>
+                            <div id="startTimeSuggestions" class="time-suggestion-list"></div>
+                            <div id="err_start" class="error-msg-app">Please pick a start time</div>
+                        </div>
+                        <div id="selectedStartBox" class="selected-box d-none">
+                            <div>
+                                <div
+                                    style="font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing:0.06em;">
+                                    Selected Start</div>
+                                <div id="displaySelectedStart" style="font-size: 1rem; font-weight: 700;"></div>
+                            </div><button type="button" onclick="resetStartTime()" class="btn-app btn-app-ghost"
+                                style="border-radius:12px; font-size:0.75rem; padding:6px 12px;">Change</button>
+                        </div>
+                        <div class="mb-2"><label class="form-label">Duration</label>
+                            <div id="endTimeSuggestions" class="time-suggestion-list"></div>
+                            <div id="err_end" class="error-msg-app">Please pick a duration</div>
+                        </div>
+                        <input type="hidden" id="modal_date_base">
+                        <input type="hidden" id="modal_booking_id" value="">
+                    </form>
+                </div>
+                <div class="modal-footer modal-footer-premium"><button type="button" onclick="showConfirmation()"
+                        class="btn btn-app btn-app-primary w-100">Review & Confirm</button></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Summary Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-premium" id="confContainer">
+                <div class="loading-overlay" id="confLoading">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+                <div class="modal-header modal-header-premium pb-0">
+                    <h5 class="fw-800 mb-0">Review Summary</h5>
+                </div>
+                <div class="modal-body modal-body-premium pt-4">
+                    <div id="conflictBanner" class="conflict-banner d-none">
+                        <div class="conflict-icon text-danger"><i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        </div>
+                        <div>
+                            <div class="fw-800 text-danger">Conflict Found</div>
+                            <div class="small opacity-75">Slot is partially booked.</div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="mb-4">
+                            <div
+                                style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+                                Event Name</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--ink);" id="confDisplayTitle">
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <div
+                                style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+                                Time Period</div>
+                            <div style="font-size: 1rem; font-weight: 700; color: var(--ink);" id="confDisplayTime">
+                            </div>
+                        </div>
+                    </div>
+                    <form id="finalSubmitForm" action="{% url 'booking_create' %}" method="POST">{% csrf_token %}
+                        <input type="hidden" name="title" id="finalTitle">
+                        <input type="hidden" name="contact_person" id="finalContact">
+                        <input type="hidden" name="mobile_number" id="finalMobile">
+                        <input type="hidden" name="start_time" id="finalStart">
+                        <input type="hidden" name="end_time" id="finalEnd">
+                    </form>
+                </div>
+                <div class="modal-footer modal-footer-premium flex-column gap-2">
+                    <button type="button" id="btnConfirmFinal"
+                        onclick="document.getElementById('finalSubmitForm').submit()"
+                        class="btn btn-app btn-app-primary w-100">Confirm & Save</button>
+                    <button type="button" class="btn btn-light w-100 py-3 rounded-4 fw-bold"
+                        data-bs-target="#createBookingModal" data-bs-toggle="modal">Change Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GENERIC DELETE MODAL -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-premium">
+                <div class="modal-header modal-header-premium">
+                    <h4 class="fw-800 mb-0">Delete Confirmation</h4><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div
+                    class="modal-body modal-body-premium d-flex flex-column align-items-center justify-content-center text-center py-4">
+                    <div class="mb-4 d-flex align-items-center justify-content-center"
+                        style="width: 80px; height: 80px; background: var(--primary-soft); color: var(--primary-dark); border-radius: 28px;">
+                        <i class="bi bi-trash3-fill fs-1"></i>
+                    </div>
+                    <p class="text-muted fw-medium mb-1" id="deleteModalSubtitle">Remove this entry?</p>
+                    <h5 class="fw-800 text-dark mb-2" id="deleteModalTitle"
+                        style="font-size: 1.1rem; color: var(--ink) !important;"></h5>
+                    <p class="small fw-bold opacity-75" style="color: var(--primary-dark);">This action is permanent and
+                        cannot be undone.</p>
+                </div>
+                <div class="modal-footer modal-footer-premium flex-column gap-2">
+                    <form id="deleteModalForm" method="POST" class="w-100">{% csrf_token %}
+                        <button type="submit" class="btn-app btn-app-primary w-100">Confirm Deletion</button>
+                    </form>
+                    <button type="button" class="btn-app btn-app-ghost w-100" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW ADMIN MODAL -->
+    <div class="modal fade" id="createAdminModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-premium">
+                <div class="modal-header modal-header-premium">
+                    <h4 class="fw-800 mb-0">New Admin</h4><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-body-premium">
+                    <form id="adminCreateForm" method="POST" action="{% url 'admin_create' %}">
+                        {% csrf_token %}
+                        <div class="mb-3"><label class="form-label">Username</label><input type="text" name="username"
+                                class="form-control-premium" placeholder="admin_id" required></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" name="email"
+                                class="form-control-premium" placeholder="email@example.com" required></div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6"><label class="form-label">First Name</label><input type="text"
+                                    name="first_name" class="form-control-premium"></div>
+                            <div class="col-6"><label class="form-label">Last Name</label><input type="text"
+                                    name="last_name" class="form-control-premium"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Security</label>
+                            <input type="password" name="password" class="form-control-premium mb-2"
+                                placeholder="Password" required>
+                            <input type="password" name="confirm_password" class="form-control-premium"
+                                placeholder="Confirm" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer modal-footer-premium">
+                    <button type="submit" form="adminCreateForm" class="btn-app btn-app-primary w-100">Create
+                        Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Event Detail Quick View -->
+    <div class="modal fade" id="eventDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-premium">
+                <div class="modal-header modal-header-premium">
+                    <h4 class="fw-800 mb-0">Event Details</h4><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-body-premium">
+                    <div id="detailView">
+                        <div class="mb-4">
+                            <h2 id="dvTitle"
+                                style="font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 4px;">
+                            </h2>
+                            <div id="dvTime" style="font-size: 0.85rem; font-weight: 700; color: var(--primary);"></div>
+                        </div>
+
+                        <div class="d-grid gap-3 mb-4">
+                            <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
+                                <div class="form-label">Contact Person</div>
+                                <div id="dvContact" style="font-weight: 700; color: var(--ink);"></div>
+                            </div>
+                            <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
+                                <div class="form-label">Mobile Number</div>
+                                <div id="dvMobile" style="font-weight: 700; color: var(--ink);"></div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 20px; margin-top: 10px;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div id="dvAvatar"
+                                    style="width: 36px; height: 36px; background: var(--primary); color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem;">
+                                </div>
+                                <div>
+                                    <div id="dvCreatedBy"
+                                        style="font-size: 0.82rem; font-weight: 700; color: var(--ink);"></div>
+                                    <div id="dvCreatedAt"
+                                        style="font-size: 0.7rem; font-weight: 600; color: var(--ink-3);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-premium">
+                    <button id="dvEditBtn" class="btn-app btn-app-primary w-100">Edit This Event</button>
+                    <button type="button" class="btn-app btn-app-ghost w-100 mt-2"
+                        data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="offcanvas offcanvas-bottom" tabindex="-1" id="menu"
+        style="border-radius: 38px 38px 0 0; height: auto; border: none; box-shadow: 0 -10px 40px rgba(0,0,0,0.1);">
+        <div class="offcanvas-body p-4 pb-5">
+            <div class="d-flex align-items-center gap-4 mb-5 p-2">
+                <div class="user-avatar-app" style="width: 70px; height: 70px; font-size: 1.8rem; border-radius: 24px;">
+                    {{ user.username|slice:":1"|upper }}</div>
+                <div>
+                    <h4 class="fw-800 mb-1">{{ user.username }}</h4>
+                    <p class="text-muted mb-0">Administrator</p>
+                </div>
+            </div>
+            <div class="d-grid gap-3">
+                <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                    <button type="submit" class="btn btn-danger w-100 py-3 rounded-4 fw-800"
+                        style="background: #EF4444; border: none;">Sign Out Safely</button>
+                </form>
+                <button type="button" class="btn btn-light w-100 py-3 rounded-4 fw-bold"
+                    data-bs-dismiss="offcanvas">Close Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        let selectedStartTime = null; let selectedEndTime = null;
+        function generateTimeOptions() {
+            const startList = document.getElementById('startTimeSuggestions'); if (!startList) return;
+            startList.innerHTML = '';
+            for (let h = 6; h <= 22; h++) {
+                for (let m of ['00', '15', '30', '45']) {
+                    const ampm = h >= 12 ? 'PM' : 'AM'; const displayH = h % 12 || 12;
+                    const timeStr = `${displayH}:${m} ${ampm}`; const rawValue = `${h.toString().padStart(2, '0')}:${m}`;
+                    const chip = document.createElement('div'); chip.className = 'time-chip'; chip.innerText = timeStr;
+                    chip.onclick = () => selectStartTime(rawValue, timeStr, chip); startList.appendChild(chip);
+                }
+            }
+        }
+        function selectStartTime(val, display, el) {
+            selectedStartTime = val; document.getElementById('startTimeSection').classList.add('d-none');
+            const box = document.getElementById('selectedStartBox'); box.classList.remove('d-none');
+            document.getElementById('displaySelectedStart').innerText = display; updateEndTimeSuggestions(val);
+        }
+        function resetStartTime() {
+            selectedStartTime = null; document.getElementById('startTimeSection').classList.remove('d-none');
+            document.getElementById('selectedStartBox').classList.add('d-none');
+            document.getElementById('endTimeSuggestions').innerHTML = '<div class="text-muted small p-4 text-center w-100">Pick start time</div>';
+        }
+        function updateEndTimeSuggestions(startVal) {
+            const endList = document.getElementById('endTimeSuggestions'); if (!endList) return;
+            endList.innerHTML = '';
+            const [sh, sm] = startVal.split(':').map(Number); const startMinutes = sh * 60 + sm;
+            const durations = [{ label: '30m', mins: 30 }, { label: '1h', mins: 60 }, { label: '1.5h', mins: 90 }, { label: '2h', mins: 120 }, { label: '4h', mins: 240 }, { label: 'Full Day', mins: 480 }];
+            durations.forEach(d => {
+                const totalMins = startMinutes + d.mins; const eh = Math.floor(totalMins / 60); const em = totalMins % 60;
+                const ampm = eh >= 12 ? 'PM' : 'AM'; const displayH = eh % 12 || 12;
+                const timeStr = `${displayH}:${em.toString().padStart(2, '0')} ${ampm}`; const rawValue = `${eh.toString().padStart(2, '0')}:${em.toString().padStart(2, '0')}`;
+                const chip = document.createElement('div'); chip.className = 'time-chip';
+                chip.innerHTML = `${timeStr} <span style="font-size: 0.65rem; display: block; opacity: 0.8; font-weight: 600;">${d.label}</span>`;
+                chip.onclick = () => { selectedEndTime = rawValue; document.querySelectorAll('#endTimeSuggestions .time-chip').forEach(c => c.classList.remove('selected')); chip.classList.add('selected'); };
+                endList.appendChild(chip);
+            });
+        }
+        async function showConfirmation() {
+            const title = document.getElementById('id_title').value;
+            const contact = document.getElementById('id_contact').value;
+            const mobile = document.getElementById('id_mobile').value;
+            const dateBase = document.getElementById('modal_date_base').value || new Date().toISOString().split('T')[0];
+
+            // RESET ERRORS
+            document.querySelectorAll('.error-msg-app').forEach(el => el.style.display = 'none');
+            let hasError = false;
+
+            // VALIDATION
+            if (!title.trim()) { document.getElementById('err_title').style.display = 'block'; hasError = true; }
+            if (!contact.trim()) { document.getElementById('err_contact').style.display = 'block'; hasError = true; }
+            if (!mobile.trim() || !/^\+?[0-9\s-]{10,15}$/.test(mobile.trim())) { document.getElementById('err_mobile').style.display = 'block'; hasError = true; }
+            if (!selectedStartTime) { document.getElementById('err_start').style.display = 'block'; hasError = true; }
+            if (!selectedEndTime) { document.getElementById('err_end').style.display = 'block'; hasError = true; }
+
+            if (hasError) return;
+
+            const startFull = `${dateBase} ${selectedStartTime}`; const endFull = `${dateBase} ${selectedEndTime}`;
+            document.getElementById('confDisplayTitle').innerText = title;
+            document.getElementById('confDisplayTime').innerText = `${dateBase} | ${selectedStartTime} – ${selectedEndTime}`;
+            document.getElementById('finalTitle').value = title;
+            document.getElementById('finalContact').value = contact;
+            document.getElementById('finalMobile').value = mobile;
+            document.getElementById('finalStart').value = startFull; document.getElementById('finalEnd').value = endFull;
+            document.getElementById('conflictBanner').classList.add('d-none');
+            const btn = document.getElementById('btnConfirmFinal'); btn.innerText = 'Confirm & Save'; btn.classList.replace('btn-danger', 'btn-app-primary');
+            new bootstrap.Modal(document.getElementById('confirmationModal')).show();
+            const createModal = bootstrap.Modal.getInstance(document.getElementById('createBookingModal')); if (createModal) createModal.hide();
+            document.getElementById('confLoading').style.display = 'flex';
+            const bookingId = document.getElementById('modal_booking_id').value;
+            try {
+                const response = await fetch(`/api/check-conflict/?start=${encodeURIComponent(startFull)}&end=${encodeURIComponent(endFull)}&exclude_id=${bookingId}`);
+                const data = await response.json();
+                if (data.conflict) {
+                    const banner = document.getElementById('conflictBanner');
+                    banner.classList.remove('d-none');
+                    if (data.is_past) {
+                        banner.querySelector('.fw-800').innerText = 'Invalid Time';
+                        banner.querySelector('.small').innerText = data.message || 'Cannot book in the past.';
+                    } else {
+                        banner.querySelector('.fw-800').innerText = 'Conflict Found';
+                        banner.querySelector('.small').innerText = 'Slot is partially booked.';
+                    }
+                    btn.innerText = 'OK, Go Back';
+                    btn.onclick = () => window.location.href = "{% url 'calendar' %}";
+                }
+            } catch (e) { console.error(e); } finally { document.getElementById('confLoading').style.display = 'none'; }
+        }
+        function triggerDeleteModal(pk, title, url, subtitle = "Remove this entry?") {
+            document.getElementById('deleteModalTitle').innerText = title;
+            document.getElementById('deleteModalSubtitle').innerText = subtitle;
+            document.getElementById('deleteModalForm').action = url;
+            new bootstrap.Modal(document.getElementById('confirmDeleteModal')).show();
+        }
+        function triggerDetailModal(eventObj) {
+            const pk = eventObj.id;
+            const title = eventObj.title;
+            const contact = eventObj.extendedProps.contact_person || '';
+            const mobile = eventObj.extendedProps.mobile_number || '';
+            const created_by = eventObj.extendedProps.created_by || 'Admin';
+            const created_at = eventObj.extendedProps.created_at || '';
+            const date = eventObj.startStr.split('T')[0];
+            const start = eventObj.startStr.split('T')[1].substring(0, 5);
+            const end = eventObj.endStr.split('T')[1].substring(0, 5);
+            const editUrl = eventObj.url;
+
+            document.getElementById('dvTitle').innerText = title;
+            document.getElementById('dvTime').innerText = `${date} | ${start} – ${end}`;
+            document.getElementById('dvContact').innerText = contact;
+            document.getElementById('dvMobile').innerText = mobile;
+            document.getElementById('dvCreatedBy').innerText = `Booked by ${created_by}`;
+            document.getElementById('dvCreatedAt').innerText = `Created on ${created_at}`;
+            document.getElementById('dvAvatar').innerText = created_by.charAt(0).toUpperCase();
+
+            document.getElementById('dvEditBtn').onclick = () => {
+                bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
+                triggerEditModal(pk, title, contact, mobile, date, start, end, editUrl);
+            };
+
+            new bootstrap.Modal(document.getElementById('eventDetailModal')).show();
+        }
+
+        function triggerEditModal(pk, title, contact, mobile, date, start, end, editUrl) {
+            // Reset modal first
+            resetStartTime();
+            document.getElementById('mainBookingForm').reset();
+
+            // Populate
+            document.getElementById('modal_booking_id').value = pk;
+            document.getElementById('id_title').value = title;
+            document.getElementById('id_contact').value = contact;
+            document.getElementById('id_mobile').value = mobile;
+            document.getElementById('modal_date_base').value = date;
+
+            // Handle Start/End selections
+            selectStartTime(start, formatTime12(start), null);
+            selectedEndTime = end; // Assuming end is raw value
+
+            // Change Action
+            document.getElementById('finalSubmitForm').action = editUrl;
+            document.getElementById('createBookingModal').querySelector('h4').innerText = 'Edit Booking';
+
+            new bootstrap.Modal(document.getElementById('createBookingModal')).show();
+        }
+        function formatTime12(h24) {
+            let [h, m] = h24.split(':').map(Number);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
+        }
+        document.getElementById('createBookingModal').addEventListener('show.bs.modal', function (event) {
+            document.querySelectorAll('.error-msg-app').forEach(el => el.style.display = 'none');
+            if (!event.relatedTarget) return; // Triggered by JS (Edit)
+            // Triggered by FAB (Create)
+            document.getElementById('modal_booking_id').value = '';
+            document.getElementById('mainBookingForm').reset();
+            resetStartTime();
+            document.getElementById('finalSubmitForm').action = "{% url 'booking_create' %}";
+            document.getElementById('createBookingModal').querySelector('h4').innerText = 'New Booking';
+        });
+        async function toggleAdminStatus(pk, btn) {
+            try {
+                const response = await fetch(`/api/toggle-admin/${pk}/`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const isActive = data.is_active;
+                    btn.style.background = isActive ? 'var(--primary)' : '#E2E8F0';
+                    btn.querySelector('span').style.left = isActive ? '27px' : '3px';
+                }
+            } catch (e) { console.error(e); }
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            generateTimeOptions();
+            document.getElementById('createBookingModal').addEventListener('show.bs.modal', () => {
+                document.getElementById('id_title').value = '';
+                document.getElementById('id_contact').value = '';
+                document.getElementById('id_mobile').value = '';
+                resetStartTime();
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

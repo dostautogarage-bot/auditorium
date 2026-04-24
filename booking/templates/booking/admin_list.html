@@ -1,0 +1,164 @@
+{% extends 'booking/base.html' %}
+{% block title %}Admins - Auditorium{% endblock %}
+
+{% block content %}
+<div class="fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-5 px-1">
+        <div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; margin: 0; letter-spacing: -0.04em;">Admins</h1>
+            <p style="font-size: 0.8rem; color: var(--ink-3); font-weight: 600; margin: 4px 0 0;">Access management & security</p>
+        </div>
+        {% if request.user.is_superuser %}
+            <button class="btn-app btn-app-primary" data-bs-toggle="modal" data-bs-target="#createAdminModal" style="box-shadow: 0 8px 20px rgba(20, 184, 166, 0.25);">
+                <i class="bi bi-plus"></i> <span class="d-none d-sm-inline">New Admin</span>
+            </button>
+        {% endif %}
+    </div>
+
+    <!-- Search + Filter -->
+    <form method="GET" class="d-flex gap-2 mb-4 align-items-center">
+        <div class="position-relative flex-grow-1">
+            <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3" style="color:var(--ink-3); font-size:0.85rem;"></i>
+            <input type="text" name="q" value="{{ query }}" placeholder="Search admins..."
+                   style="width:100%; background:var(--card); border:1.5px solid #E8E8EE; border-radius:var(--r-md); padding:12px 16px 12px 40px; font-family:inherit; font-size:0.875rem; font-weight:600; color:var(--ink); outline:none;">
+        </div>
+        <select name="per_page" onchange="this.form.submit()" style="background:var(--card); border:1.5px solid #E8E8EE; border-radius:var(--r-md); padding:12px 14px; font-family:inherit; font-size:0.85rem; font-weight:700; color:var(--ink); outline:none; cursor:pointer; flex-shrink:0;">
+            <option value="100" {% if per_page == 100 %}selected{% endif %}>100 / page</option>
+            <option value="200" {% if per_page == 200 %}selected{% endif %}>200 / page</option>
+            <option value="300" {% if per_page == 300 %}selected{% endif %}>300 / page</option>
+            <option value="500" {% if per_page == 500 %}selected{% endif %}>500 / page</option>
+        </select>
+    </form>
+
+    <!-- Desktop -->
+    <div class="d-none d-lg-block">
+        <div class="glass-card overflow-hidden" style="border: 1px solid rgba(255,255,255,0.4);">
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
+                        <tr style="background:#F7F7F8; border-bottom:1px solid #EFEFF2;">
+                            <th style="padding:14px 24px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Admin</th>
+                            <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Email</th>
+                            <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none; text-align:center;">Status</th>
+                            <th style="padding:14px 24px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none; text-align:right;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admin in admins %}
+                        <tr style="border-bottom:1px solid #F2F2F5;" class="align-middle">
+                            <td style="padding:16px 24px; border:none;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div style="width:32px; height:32px; background:var(--primary); color:white; border-radius:10px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.75rem; flex-shrink:0;">{{ admin.username|slice:":1"|upper }}</div>
+                                    <div style="font-size:0.9rem; font-weight:700; color:var(--ink);">{{ admin.username }}</div>
+                                    {% if admin == request.user %}
+                                        <span class="badge bg-primary-soft text-primary-dark ms-1" style="font-size: 0.6rem; border: 1px solid rgba(20, 184, 166, 0.1);">YOU</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td style="border:none; padding:16px 14px; font-size:0.82rem; font-weight:600; color:var(--ink-2);">{{ admin.email }}</td>
+                            <td class="text-center">
+                                {% if request.user.is_superuser and admin != request.user %}
+                                    <button class="toggle-btn {% if admin.is_active %}active{% endif %}" 
+                                           onclick="toggleAdminStatus('{{ admin.pk }}', this)"
+                                           style="width: 52px; height: 28px; border-radius: 14px; background: {% if admin.is_active %}var(--primary){% else %}#E2E8F0{% endif %}; border: none; position: relative; cursor: pointer; transition: 0.3s;">
+                                        <span style="position: absolute; top: 3px; left: {% if admin.is_active %}27px{% else %}3px{% endif %}; width: 22px; height: 22px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.15);"></span>
+                                    </button>
+                                {% elif admin == request.user %}
+                                    <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill fw-bold" style="font-size: 0.6rem;">SUPER ADMIN</span>
+                                {% else %}
+                                    <span style="font-size: 0.7rem; font-weight: 700; color: var(--ink-3);">Read Only</span>
+                                {% endif %}
+                            </td>
+                            <td style="border:none; padding:16px 24px; text-align:right;">
+                                <div class="d-flex justify-content-end gap-2">
+                                    {% if request.user.is_superuser %}
+                                        <a href="{% url 'admin_edit' admin.pk %}" style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; color:var(--primary); font-size:0.8rem;">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        {% if admin != request.user %}
+                                        <button type="button" onclick="triggerDeleteModal('{{ admin.pk }}', '{{ admin.username|escapejs }}', '{% url 'admin_delete' admin.pk %}', 'Remove administrator account?')" 
+                                                style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--primary-dark); font-size:0.8rem;">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    {% else %}
+                                        <i class="bi bi-lock-fill text-muted" style="font-size: 0.9rem;"></i>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile -->
+    <div class="d-lg-none">
+        {% for admin in admins %}
+        <div class="glass-card" style="padding:20px; border:1px solid rgba(255,255,255,0.4); margin-bottom:12px; display:flex; align-items:center; justify-content:between; gap:12px;">
+            <div class="d-flex align-items-center gap-3 flex-grow-1" style="min-width:0;">
+                <div style="width:40px; height:40px; background:var(--primary); color:white; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.9rem; flex-shrink:0;">
+                    {{ admin.username|slice:":1"|upper }}
+                </div>
+                <div style="min-width:0;">
+                    <div style="font-size:0.92rem; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        {{ admin.username }}
+                        {% if admin == request.user %}
+                            <span class="badge bg-primary-soft text-primary-dark ms-1" style="font-size: 0.55rem; border: 1px solid rgba(20, 184, 166, 0.1);">YOU</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--ink-3); font-weight:600; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ admin.email }}</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                {% if request.user.is_superuser %}
+                    {% if admin != request.user %}
+                        <a href="{% url 'admin_edit' admin.pk %}" style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; color:var(--primary); font-size:0.8rem; text-decoration:none;">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button type="button" onclick="triggerDeleteModal('{{ admin.pk }}', '{{ admin.username|escapejs }}', '{% url 'admin_delete' admin.pk %}', 'Remove administrator account?')"
+                                style="width:34px; height:34px; background:var(--bg); border:1.5px solid #E8E8EE; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; color:var(--primary-dark); font-size:0.8rem;">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    {% else %}
+                        <span style="font-size:0.6rem; font-weight:800; background:var(--primary-soft); color:var(--primary-dark); padding:4px 8px; border-radius:8px; text-transform:uppercase;">Self</span>
+                    {% endif %}
+                {% else %}
+                    <i class="bi bi-lock-fill text-muted"></i>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <!-- PAGINATION -->
+    {% if admins.has_other_pages %}
+    <div class="d-flex align-items-center justify-content-between mt-5" style="flex-wrap:wrap; gap:12px;">
+        <span style="font-size:0.78rem; font-weight:600; color:var(--ink-3);">Page {{ admins.number }} of {{ admins.paginator.num_pages }}</span>
+        <div class="d-flex gap-2">
+            {% if admins.has_previous %}
+            <a href="?q={{ query }}&per_page={{ per_page }}&page={{ admins.previous_page_number }}"
+               style="width:36px; height:36px; background:var(--card); border:1.5px solid #E8E8EE; border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.9rem;">
+               <i class="bi bi-chevron-left"></i>
+            </a>
+            {% endif %}
+            {% for num in admins.paginator.page_range %}
+                {% if admins.number == num %}
+                <span style="width:36px; height:36px; background:var(--primary); color:white; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.82rem; font-weight:800;">{{ num }}</span>
+                {% elif num > admins.number|add:'-3' and num < admins.number|add:'3' %}
+                <a href="?q={{ query }}&per_page={{ per_page }}&page={{ num }}"
+                   style="width:36px; height:36px; background:var(--card); border:1.5px solid #E8E8EE; border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.82rem; font-weight:700;">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if admins.has_next %}
+            <a href="?q={{ query }}&per_page={{ per_page }}&page={{ admins.next_page_number }}"
+               style="width:36px; height:36px; background:var(--card); border:1.5px solid #E8E8EE; border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.9rem;">
+               <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
