@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#90EE90">
+    <meta name="theme-color" content="#0D9488">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -195,22 +195,33 @@
             }
         }
 
-        /* PREMIUM GLASS TOP BAR */
+        /* PREMIUM GRADIENT TOP BAR */
         .app-header {
             position: sticky;
             top: 0;
             left: 0;
             right: 0;
-            height: 64px;
-            background: rgba(255,255,255,0.88);
-            backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+            height: 60px;
+            background: linear-gradient(135deg, #0D9488 0%, #14B8A6 40%, #2DD4BF 100%);
             z-index: 1000;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             padding: 0 20px;
-            border-bottom: 1px solid rgba(20, 184, 166, 0.06);
-            box-shadow: 0 1px 12px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 20px rgba(13,148,136,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 200%; height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
+            animation: headerShimmer 4s ease-in-out infinite;
+        }
+        @keyframes headerShimmer {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(50%); }
         }
 
         @media (min-width: 992px) {
@@ -610,8 +621,11 @@
 <body>
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
-        <div class="w-100 d-flex justify-content-center align-items-center" style="height: 56px;">
-            <span class="fw-900 gradient-text" style="font-size: 1.1rem; letter-spacing: -0.04em;">Auditorium</span>
+        <div class="d-flex align-items-center gap-2" style="position:relative; z-index:2;">
+            <div style="width:32px; height:32px; background:rgba(255,255,255,0.2); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                <i class="bi bi-calendar-check-fill" style="color:white; font-size:0.95rem;"></i>
+            </div>
+            <span style="font-family:'Outfit',sans-serif; font-size:1.25rem; font-weight:900; color:white; letter-spacing:-0.03em; text-shadow:0 1px 3px rgba(0,0,0,0.1);">Auditorium</span>
         </div>
     </header>
 
