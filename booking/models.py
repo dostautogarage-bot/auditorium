@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 class Booking(models.Model):
     title = models.CharField(max_length=200)
@@ -9,6 +11,7 @@ class Booking(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    advance_received = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Advance payment received")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,3 +36,29 @@ class Booking(models.Model):
     def save(self, *args, **kwargs):
         self.clean()
         super().save(*args, **kwargs)
+
+
+class UserProfile(models.Model):
+    """Extended user profile for additional permissions"""
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    is_bookable = models.BooleanField(default=True, help_text="Whether this admin can create bookings. If disabled, they can only view calendar in read-only mode.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - Bookable: {self.is_bookable}"
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Create a UserProfile when a new User is created"""
+    if created and instance.is_staff:
+        UserProfile.objects.get_or_create(user=instance, defaults={'is_bookable': True})
+
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def save_user_profile(sender, instance, **kwargs):
+    """Save the UserProfile when the User is saved"""
+    if instance.is_staff:
+        if not hasattr(instance, 'profile'):
+            UserProfile.objects.create(user=instance, is_bookable=True)

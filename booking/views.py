@@ -2,11 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum, Count
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
-from .models import Booking
+from .models import Booking, UserProfile
 from .forms import AdminCreationForm, AdminEditForm, BookingForm
 
 User = get_user_model()
@@ -174,6 +174,17 @@ def booking_list(request):
 
 @login_required
 def booking_create(request):
+    # Check if user is allowed to create bookings
+    if request.user.is_staff:
+        try:
+            profile = request.user.profile
+            if not profile.is_bookable:
+                messages.error(request, 'You do not have permission to create bookings. Please contact the super admin.')
+                return redirect(request.META.get('HTTP_REFERER', 'calendar'))
+        except UserProfile.DoesNotExist:
+            # Create profile if it doesn't exist
+            UserProfile.objects.create(user=request.user, is_bookable=True)
+    
     if request.method == 'POST':
         form = BookingForm(request.POST)
         if form.is_valid():
@@ -247,6 +258,54 @@ def booking_delete(request, pk):
     return render(request, 'booking/booking_confirm_delete.html', {'booking': booking})
 
 
+# -------------------- PAYMENT REPORT (SUPER ADMIN ONLY) --------------------
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def payment_report(request):
+    """Payment report showing which admins received advance payments"""
+    # Get all admins with their bookings and total advance received
+    admins = User.objects.filter(is_staff=True).prefetch_related('bookings')
+    
+    admin_payment_data = []
+    total_advance = 0
+    
+    for admin in admins:
+        bookings_with_advance = admin.bookings.filter(advance_received__gt=0)
+        advance_sum = bookings_with_advance.aggregate(total=Sum('advance_received'))['total'] or 0
+        
+        admin_payment_data.append({
+            'admin': admin,
+            'booking_count': admin.bookings.count(),
+            'bookings_with_advance': bookings_with_advance.count(),
+            'total_advance': advance_sum,
+            'bookable': getattr(admin.profile, 'is_bookable', True) if hasattr(admin, 'profile') else True
+        })
+        total_advance += advance_sum
+    
+    # Sort by total advance
+    admin_payment_data.sort(key=lambda x: x['total_advance'], reverse=True)
+    
+    # Pagination
+    per_page = int(request.GET.get('per_page', 50))
+    if per_page not in [25, 50, 100]:
+        per_page = 50
+    
+    paginator = Paginator(admin_payment_data, per_page)
+    page_number = request.GET.get('page')
+    admin_data_page = paginator.get_page(page_number)
+    
+    admin_count = len(admin_payment_data)
+    avg_per_admin = total_advance / admin_count if admin_count > 0 else 0
+    
+    return render(request, 'booking/payment_report.html', {
+        'admin_data': admin_data_page,
+        'total_advance': total_advance,
+        'avg_per_admin': avg_per_admin,
+        'per_page': per_page,
+    })
+
+
 # -------------------- PWA --------------------
 
 def manifest_json(request):
@@ -309,6 +368,7 @@ def booking_api(request):
             'end': end_time.isoformat(),
             'contact_person': booking.contact_person,
             'mobile_number': booking.mobile_number,
+            'advance_received': str(booking.advance_received),
             'created_by': booking.created_by.username,
             'created_at': booking.created_at.strftime('%b %d, %Y %I:%M %p'),
             'url': f'/bookings/{booking.pk}/edit/'
@@ -370,3 +430,12 @@ def toggle_admin_status(request, pk):
         user.is_active = not user.is_active
         user.save()
     return JsonResponse({'status': 'success', 'is_active': user.is_active})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def toggle_booking_status(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    profile, created = UserProfile.objects.get_or_create(user=user)
+    profile.is_bookable = not profile.is_bookable
+    profile.save()
+    return JsonResponse({'status': 'success', 'is_bookable': profile.is_bookable})

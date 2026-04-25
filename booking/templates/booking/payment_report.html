@@ -1,0 +1,338 @@
+{% extends 'booking/base.html' %}
+{% block title %}Payment Report — Auditorium{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .report-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 28px;
+        border-radius: 20px;
+        margin-bottom: 28px;
+        box-shadow: 0 8px 32px rgba(20, 184, 166, 0.2);
+    }
+
+    .report-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 2rem;
+        font-weight: 900;
+    }
+
+    .report-header p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+    }
+
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .summary-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(20, 184, 166, 0.15);
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .summary-card .label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--ink-3);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 6px;
+    }
+
+    .summary-card .value {
+        font-size: 2rem;
+        font-weight: 900;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .table-container {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(16px);
+        border: 1.5px solid rgba(255, 255, 255, 0.5);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .payment-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+    .payment-table thead {
+        background: linear-gradient(135deg, #0D9488 0%, #14B8A6 100%);
+        color: white;
+    }
+
+    .payment-table th {
+        padding: 16px;
+        text-align: left;
+        font-weight: 800;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border: none;
+    }
+
+    .payment-table tbody tr {
+        border-bottom: 1px solid rgba(20, 184, 166, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .payment-table tbody tr:hover {
+        background: rgba(20, 184, 166, 0.04);
+    }
+
+    .payment-table td {
+        padding: 16px;
+        color: var(--ink-2);
+        font-weight: 500;
+    }
+
+    .admin-name {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+    }
+
+    .admin-avatar {
+        width: 36px;
+        height: 36px;
+        background: var(--primary-gradient);
+        color: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .badge-bookable {
+        background: rgba(16, 185, 129, 0.15);
+        color: #059669;
+    }
+
+    .badge-readonly {
+        background: rgba(244, 63, 94, 0.15);
+        color: #F43F5E;
+    }
+
+    .advance-amount {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    .no-data {
+        padding: 48px 20px;
+        text-align: center;
+        color: var(--ink-3);
+    }
+
+    .no-data i {
+        font-size: 3rem;
+        opacity: 0.2;
+        margin-bottom: 12px;
+    }
+
+    .pagination {
+        margin-top: 24px;
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .pagination a, .pagination span {
+        padding: 8px 12px;
+        border: 1.5px solid rgba(20, 184, 166, 0.15);
+        border-radius: 8px;
+        text-decoration: none;
+        color: var(--ink-2);
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .pagination a:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .pagination .current {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 12px;
+        }
+
+        .report-header {
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .report-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .summary-cards {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .payment-table th, .payment-table td {
+            padding: 12px 8px;
+            font-size: 0.85rem;
+        }
+
+        .admin-avatar {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container fade-in">
+    <!-- Header -->
+    <div class="report-header">
+        <h1>💰 Payment Report</h1>
+        <p>Track advance payments received from all bookings across admins</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card">
+            <div class="label">Total Advance Received</div>
+            <div class="value">₹{{ total_advance|floatformat:2 }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Total Admins</div>
+            <div class="value">{{ admin_data.paginator.count }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Avg per Admin</div>
+            <div class="value">₹{{ avg_per_admin|floatformat:0 }}</div>
+        </div>
+    </div>
+
+    <!-- Payment Table -->
+    <div class="table-container">
+        {% if admin_data %}
+        <div class="table-wrapper">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>Admin Name</th>
+                        <th>Status</th>
+                        <th>Total Bookings</th>
+                        <th>With Advance</th>
+                        <th>Total Advance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in admin_data %}
+                    <tr>
+                        <td>
+                            <div class="admin-name">
+                                <div class="admin-avatar">{{ data.admin.username|slice:":1"|upper }}</div>
+                                <div>
+                                    <div style="font-weight: 800; color: var(--ink);">{{ data.admin.get_full_name|default:data.admin.username }}</div>
+                                    <div style="font-size: 0.75rem; color: var(--ink-3); margin-top: 2px;">{{ data.admin.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if data.bookable %}
+                            <span class="badge badge-bookable">✓ Bookable</span>
+                            {% else %}
+                            <span class="badge badge-readonly">🔒 Read-Only</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ data.booking_count }}</strong>
+                        </td>
+                        <td>
+                            <strong>{{ data.bookings_with_advance }}</strong>
+                        </td>
+                        <td>
+                            <div class="advance-amount">₹{{ data.total_advance|floatformat:2 }}</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if admin_data.paginator.num_pages > 1 %}
+        <div class="pagination">
+            {% if admin_data.has_previous %}
+            <a href="?page=1">First</a>
+            <a href="?page={{ admin_data.previous_page_number }}">← Previous</a>
+            {% endif %}
+
+            {% for num in admin_data.paginator.page_range %}
+                {% if admin_data.number == num %}
+                <span class="current">{{ num }}</span>
+                {% else %}
+                <a href="?page={{ num }}">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if admin_data.has_next %}
+            <a href="?page={{ admin_data.next_page_number }}">Next →</a>
+            <a href="?page={{ admin_data.paginator.num_pages }}">Last</a>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="no-data">
+            <div><i class="bi bi-inbox"></i></div>
+            <p>No admin data available</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

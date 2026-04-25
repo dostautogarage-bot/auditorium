@@ -1,20 +1,47 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.utils import timezone
-from .models import Booking
+from .models import Booking, UserProfile
 
 class AdminCreationForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control-premium', 'placeholder': 'Enter strong password'}))
-    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control-premium', 'placeholder': 'Repeat password'}))
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter strong password'
+        })
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Repeat password'
+        })
+    )
+    is_bookable = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Allow to Create Bookings (uncheck to make read-only)"
+    )
 
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control-premium', 'placeholder': 'e.g. admin_john'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control-premium', 'placeholder': 'e.g. john@example.com'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control-premium', 'placeholder': 'First Name'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control-premium', 'placeholder': 'Last Name'})
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. admin_john'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. john@example.com'
+            }),
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'First Name'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Last Name'
+            })
         }
 
     def clean(self):
@@ -29,48 +56,141 @@ class AdminCreationForm(forms.ModelForm):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password"])
         user.is_staff = True
-        user.is_superuser = False # Explicitly not a super admin
+        user.is_superuser = False
         if commit:
             user.save()
+            # Create or update UserProfile
+            is_bookable = self.cleaned_data.get('is_bookable', True)
+            UserProfile.objects.update_or_create(
+                user=user,
+                defaults={'is_bookable': is_bookable}
+            )
         return user
 
 
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate
+
+class CustomAuthenticationForm(AuthenticationForm):
+    def clean(self):
+        username = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
+
+        if username is not None and password:
+            self.user_cache = authenticate(
+                self.request, username=username, password=password
+            )
+            
+            # If standard authentication failed, check if it's because the user is inactive
+            if self.user_cache is None:
+                # Check if user exists but is inactive
+                try:
+                    user_obj = User.objects.get(username=username)
+                    if not user_obj.is_active:
+                        raise forms.ValidationError(
+                            "Your permission to login has been suspended. Please contact Super Admin (admin).",
+                            code="inactive",
+                        )
+                except User.DoesNotExist:
+                    pass
+
+                raise self.get_invalid_login_error()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
+
 class AdminEditForm(forms.ModelForm):
-    is_active = forms.BooleanField(required=False, label="Active Status (Enable Login Access)")
+    is_active = forms.BooleanField(
+        required=False,
+        label="Active Status (Enable Login Access)"
+    )
+    is_bookable = forms.BooleanField(
+        required=False,
+        label="Allow to Create Bookings (uncheck to make read-only)"
+    )
 
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'is_active']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control-premium'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control-premium'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control-premium'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control-premium'})
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'})
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Pre-fill is_bookable from UserProfile
+        if self.instance.pk:
+            try:
+                profile = self.instance.profile
+                self.fields['is_bookable'].initial = profile.is_bookable
+            except UserProfile.DoesNotExist:
+                self.fields['is_bookable'].initial = True
+
+    def save(self, commit=True):
+        user = super().save(commit=commit)
+        if commit:
+            is_bookable = self.cleaned_data.get('is_bookable', True)
+            UserProfile.objects.update_or_create(
+                user=user,
+                defaults={'is_bookable': is_bookable}
+            )
+        return user
 
 class BookingForm(forms.ModelForm):
     start_time = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={
-            'type': 'datetime-local',
-            'class': 'form-control',
-        }),
+        widget=forms.DateTimeInput(
+            format='%Y-%m-%dT%H:%M',
+            attrs={
+                'type': 'datetime-local',
+                'class': 'form-control',
+            }
+        ),
         label='Start Time'
     )
     end_time = forms.DateTimeField(
-        widget=forms.DateTimeInput(attrs={
-            'type': 'datetime-local',
-            'class': 'form-control',
-        }),
+        widget=forms.DateTimeInput(
+            format='%Y-%m-%dT%H:%M',
+            attrs={
+                'type': 'datetime-local',
+                'class': 'form-control',
+            }
+        ),
         label='End Time'
+    )
+    advance_received = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        initial=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '0.00',
+            'min': '0',
+            'step': '0.01'
+        }),
+        label='💰 Advance Payment Received'
     )
 
     class Meta:
         model = Booking
-        fields = ['title', 'contact_person', 'mobile_number', 'start_time', 'end_time']
+        fields = ['title', 'contact_person', 'mobile_number', 'start_time', 'end_time', 'advance_received']
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter event title'}),
-            'contact_person': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full name'}),
-            'mobile_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+91 9876543210'}),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Enter event title'
+            }),
+            'contact_person': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Full name'
+            }),
+            'mobile_number': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': '+91 9876543210'
+            }),
         }
 
     def clean(self):

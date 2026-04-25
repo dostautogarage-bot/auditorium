@@ -3,165 +3,244 @@
 
 {% block extra_css %}
 <style>
-    /* ── MOBILE-FIRST DASHBOARD ── */
+    /* ── ENHANCED MOBILE-FIRST DASHBOARD ── */
+    @keyframes cardSlide {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes iconBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+    }
+
     .dash-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
-        margin-bottom: 28px;
+        gap: 14px;
+        margin-bottom: 32px;
     }
 
     .stat-card {
-        background: rgba(255,255,255,0.75);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1.5px solid rgba(255,255,255,0.5);
-        border-radius: 22px;
-        padding: 18px;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1.5px solid rgba(255, 255, 255, 0.6);
+        border-radius: 24px;
+        padding: 20px;
         position: relative;
         overflow: hidden;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        animation: cardSlide 0.6s ease-out both;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(255, 255, 255, 0.8);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
     }
 
     .stat-card:active {
-        transform: scale(0.97);
+        transform: scale(0.96);
     }
 
     .stat-card .corner-glow {
         position: absolute;
-        top: -20px;
-        right: -20px;
-        width: 80px;
-        height: 80px;
+        top: -30px;
+        right: -30px;
+        width: 100px;
+        height: 100px;
         border-radius: 50%;
-        opacity: 0.12;
-        filter: blur(8px);
+        opacity: 0.1;
+        filter: blur(12px);
+        transition: all 0.4s ease;
+    }
+
+    .stat-card:hover .corner-glow {
+        opacity: 0.15;
+        transform: scale(1.2);
     }
 
     .stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 13px;
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        margin-bottom: 14px;
-        font-size: 1rem;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        margin-bottom: 12px;
+        font-size: 1.4rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover .stat-icon {
+        transform: scale(1.1);
     }
 
     .stat-number {
         font-family: 'Outfit', sans-serif;
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 900;
         color: var(--ink);
         line-height: 1;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
+        background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
     .stat-label {
-        font-size: 0.68rem;
+        font-size: 0.72rem;
         font-weight: 800;
         color: var(--ink-3);
         text-transform: uppercase;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.1em;
     }
 
     /* Recent section */
     .section-title {
         font-family: 'Outfit', sans-serif;
-        font-size: 1.05rem;
+        font-size: 1.15rem;
         font-weight: 800;
         color: var(--ink);
-        margin-bottom: 14px;
+        margin-bottom: 18px;
+        margin-top: 24px;
+        letter-spacing: -0.02em;
+    }
+
+    .section-title::before {
+        content: '';
+        display: inline-block;
+        width: 4px;
+        height: 20px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+        margin-right: 8px;
+        vertical-align: middle;
     }
 
     .recent-card {
-        background: rgba(255,255,255,0.7);
-        backdrop-filter: blur(16px);
-        border: 1.5px solid rgba(255,255,255,0.4);
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1.5px solid rgba(255, 255, 255, 0.5);
         border-radius: 18px;
         padding: 16px;
-        margin-bottom: 10px;
-        transition: 0.3s;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+        margin-bottom: 12px;
+        transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+        animation: cardSlide 0.5s ease-out both;
+    }
+
+    .recent-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(20, 184, 166, 0.2);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
     }
 
     .recent-card .event-title {
-        font-size: 0.9rem;
-        font-weight: 700;
+        font-size: 0.95rem;
+        font-weight: 800;
         color: var(--ink);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin-bottom: 4px;
     }
 
     .recent-card .event-time {
-        font-size: 0.75rem;
-        font-weight: 600;
+        font-size: 0.78rem;
+        font-weight: 700;
         color: var(--primary);
-        margin-top: 3px;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 3px;
     }
 
     .recent-card .event-phone {
-        font-size: 0.72rem;
-        font-weight: 500;
+        font-size: 0.75rem;
+        font-weight: 600;
         color: var(--ink-3);
-        margin-top: 2px;
+        margin-top: 3px;
     }
 
     .empty-state {
         text-align: center;
-        padding: 48px 20px;
+        padding: 60px 20px;
     }
 
     .empty-state i {
-        font-size: 2.5rem;
+        font-size: 3.2rem;
         color: var(--ink-3);
-        opacity: 0.3;
+        opacity: 0.2;
+        margin-bottom: 12px;
     }
 
     .empty-state p {
         color: var(--ink-3);
-        font-size: 0.85rem;
-        margin-top: 12px;
-        font-weight: 600;
+        font-size: 0.9rem;
+        margin: 0;
+        font-weight: 700;
     }
+
+    /* Stagger animations */
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
 
     /* Desktop overrides */
     @media (min-width: 768px) {
         .dash-grid {
             grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 40px;
+            gap: 18px;
+            margin-bottom: 48px;
         }
 
         .stat-card {
-            padding: 24px;
+            padding: 28px 24px;
             border-radius: 28px;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+            transform: translateY(-6px);
+            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.1);
+            border-color: rgba(20, 184, 166, 0.2);
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             border-radius: 16px;
-            font-size: 1.15rem;
-            margin-bottom: 16px;
+            font-size: 1.6rem;
+            margin-bottom: 18px;
         }
 
         .stat-number {
-            font-size: 2rem;
+            font-size: 2.2rem;
         }
 
         .stat-label {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
+        }
+
+        .recent-card {
+            padding: 18px;
+            border-radius: 20px;
+        }
+
+        .recent-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin-top: 40px;
         }
     }
 </style>
@@ -169,10 +248,16 @@
 
 {% block content %}
 <div class="fade-in">
-    <!-- Header -->
-    <div style="margin-bottom: 20px; padding-top: 4px;">
-        <h1 style="font-size:1.4rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Dashboard</h1>
-        <p style="font-size:0.78rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">Event overview & management</p>
+    <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 20px; padding-top: 4px;">
+        <div>
+            <h1 style="font-size:1.4rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Dashboard</h1>
+            <p style="font-size:0.78rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">Event overview & management</p>
+        </div>
+        {% if request.user.is_superuser %}
+            <a href="{% url 'payment_report' %}" class="btn-app btn-app-secondary pop-in" style="padding:10px 16px; font-size:0.78rem; text-decoration: none;">
+                <i class="bi bi-graph-up"></i> <span class="d-none d-sm-inline">Payment Report</span>
+            </a>
+        {% endif %}
     </div>
 
     <!-- Stats Grid (2×2 on mobile, 4-col on desktop) -->

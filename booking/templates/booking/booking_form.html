@@ -44,39 +44,47 @@
             
             <div class="mb-4">
                 <label class="form-label">Event Title</label>
-                <input type="text" name="title" class="form-control-premium" 
-                       placeholder="e.g. Wedding Ceremony" 
-                       value="{{ form.title.value|default:'' }}" required>
+                {{ form.title }}
+                {% if form.title.errors %}<div class="text-danger small fw-bold mt-2">{{ form.title.errors.0 }}</div>{% endif %}
             </div>
 
             <div class="mb-4">
                 <label class="form-label">Contact Person</label>
-                <input type="text" name="contact_person" class="form-control-premium" 
-                       placeholder="Full name" 
-                       value="{{ form.contact_person.value|default:'' }}" required>
+                {{ form.contact_person }}
+                {% if form.contact_person.errors %}<div class="text-danger small fw-bold mt-2">{{ form.contact_person.errors.0 }}</div>{% endif %}
             </div>
 
             <div class="mb-4">
                 <label class="form-label">Mobile Number</label>
-                <input type="tel" name="mobile_number" class="form-control-premium" 
-                       placeholder="+91 9876543210" 
-                       value="{{ form.mobile_number.value|default:'' }}" required>
+                {{ form.mobile_number }}
+                {% if form.mobile_number.errors %}<div class="text-danger small fw-bold mt-2">{{ form.mobile_number.errors.0 }}</div>{% endif %}
             </div>
 
             <div class="row g-2 mb-5">
                 <div class="col-6">
                     <label class="form-label">Start Time</label>
-                    <input type="text" name="start_time" id="id_start_time" 
-                           class="form-control-premium text-center" 
-                           value="{{ form.start_time.value|date:'Y-m-d H:i' }}" required>
+                    {{ form.start_time }}
+                    {% if form.start_time.errors %}<div class="text-danger small fw-bold mt-2">{{ form.start_time.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-6">
                     <label class="form-label">End Time</label>
-                    <input type="text" name="end_time" id="id_end_time" 
-                           class="form-control-premium text-center" 
-                           value="{{ form.end_time.value|date:'Y-m-d H:i' }}" required>
+                    {{ form.end_time }}
+                    {% if form.end_time.errors %}<div class="text-danger small fw-bold mt-2">{{ form.end_time.errors.0 }}</div>{% endif %}
                 </div>
             </div>
+
+            <div class="mb-4">
+                <label class="form-label">💰 Advance Payment Received</label>
+                {{ form.advance_received }}
+                {% if form.advance_received.errors %}<div class="text-danger small fw-bold mt-2">{{ form.advance_received.errors.0 }}</div>{% endif %}
+                <small style="color: var(--ink-3); margin-top: 6px; display: block;">Optional: Enter advance payment amount if collected</small>
+            </div>
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger mb-4" style="background: rgba(244, 63, 94, 0.1); border: 1.5px solid rgba(244, 63, 94, 0.2); color: #F43F5E; border-radius: 14px; padding: 12px 16px;">
+                {{ form.non_field_errors.0 }}
+            </div>
+            {% endif %}
 
             <div class="d-flex flex-column gap-3">
                 <button type="submit" class="btn-app btn-app-primary w-100 py-3">
@@ -103,20 +111,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    const config = {
-        enableTime: true,
-        noCalendar: hasPredefinedDate,
-        dateFormat: "Y-m-d H:i",
-        altInput: true,
-        altFormat: hasPredefinedDate ? "h:i K" : "M j, Y - h:i K",
-        minuteIncrement: 15,
-        disableMobile: "true",
-        minDate: "today",
-        static: true
-    };
+    // Ensure the datetime inputs exist before initializing flatpickr
+    const startTimeInput = document.getElementById('id_start_time');
+    const endTimeInput = document.getElementById('id_end_time');
+    
+    if (startTimeInput && endTimeInput) {
+        const config = {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            altInput: true,
+            altFormat: "M j, Y - h:i K",
+            minuteIncrement: 15,
+            minDate: "today",
+            static: true
+        };
 
-    flatpickr("#id_start_time", config);
-    flatpickr("#id_end_time", config);
+        flatpickr(startTimeInput, config);
+        flatpickr(endTimeInput, config);
+    }
 });
 </script>
 {% endblock %}
