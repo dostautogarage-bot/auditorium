@@ -25,28 +25,30 @@
 
     <style>
         :root {
-            --primary: #6366F1;
-            --primary-dark: #4F46E5;
-            --primary-soft: rgba(99, 102, 241, 0.08);
-            --primary-gradient: linear-gradient(135deg, #818CF8 0%, #6366F1 100%);
-            --accent: #0EA5E9;
-            --accent-gradient: linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%);
-            --danger-gradient: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
-            --glass: rgba(255, 255, 255, 0.85);
-            --glass-thick: rgba(255, 255, 255, 0.95);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --bg: #F8FAFC;
-            --ink: #0F172A;
-            --ink-dim: #334155;
-            --ink-muted: #64748B;
+            --primary: #FF7A00;
+            --primary-dark: #E66E00;
+            --primary-soft: rgba(255, 122, 0, 0.08);
+            --primary-gradient: linear-gradient(135deg, #FF9533 0%, #FF7A00 100%);
+            --accent: #FF4D4D;
+            --accent-gradient: linear-gradient(135deg, #FF6B6B 0%, #FF4D4D 100%);
+            --blue-gradient: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+            --teal-gradient: linear-gradient(135deg, #2EC4B6 0%, #20A396 100%);
+            --danger-gradient: linear-gradient(135deg, #FF5E5E 0%, #FF4D4D 100%);
+            --glass: rgba(255, 255, 255, 0.9);
+            --glass-thick: rgba(255, 255, 255, 0.98);
+            --glass-border: rgba(0, 0, 0, 0.05);
+            --bg: #F8F9FA;
+            --ink: #1A1A1A;
+            --ink-dim: #4D4D4D;
+            --ink-muted: #808080;
             --card: #FFFFFF;
             --radius-3xl: 40px;
             --radius-2xl: 32px;
             --radius-xl: 24px;
             --radius-lg: 18px;
-            --shadow-subtle: 0 4px 20px rgba(15, 23, 42, 0.03);
-            --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.06);
-            --shadow-xl: 0 25px 60px rgba(15, 23, 42, 0.12);
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.06);
+            --shadow-xl: 0 25px 60px rgba(0, 0, 0, 0.1);
             --safe-bottom: env(safe-area-inset-bottom);
         }
 
@@ -57,36 +59,19 @@
         }
 
         body {
-            font-family: 'Urbanist', sans-serif;
+            font-family: 'Outfit', sans-serif;
             background-color: var(--bg);
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0px, transparent 50%);
-            background-attachment: fixed;
             color: var(--ink);
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
-            letter-spacing: -0.025em;
+            letter-spacing: -0.01em;
             font-size: 15px;
             overflow-x: hidden;
-            padding-bottom: calc(75px + var(--safe-bottom));
+            padding-bottom: calc(90px + var(--safe-bottom));
+            padding-top: 80px;
             min-height: 100vh;
             position: relative;
-        }
-
-        /* Animated floating blobs */
-        body::before, body::after {
-            content: ''; position: fixed; border-radius: 50%; z-index: 0;
-            filter: blur(100px); opacity: 0.25; pointer-events: none;
-            animation: blobFloat 18s ease-in-out infinite alternate;
-        }
-        body::before { width: 350px; height: 350px; background: #6366F1; top: -80px; left: -80px; }
-        body::after { width: 280px; height: 280px; background: #0EA5E9; bottom: 10%; right: -60px; animation-duration: 22s; animation-direction: alternate-reverse; }
-        @keyframes blobFloat {
-            0% { transform: translate(0,0) scale(1); }
-            50% { transform: translate(40px,30px) scale(1.08); }
-            100% { transform: translate(-20px,50px) scale(0.95); }
         }
 
         /* Mobile app card */
@@ -257,35 +242,47 @@
         .stagger-4 { animation-delay: 0.32s; }
         .stagger-5 { animation-delay: 0.40s; }
 
+        /* PAGE WRAPPER & LAYOUT SYSTEM */
         .page-wrapper {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 20px 20px;
+            transition: 0.3s ease;
             width: 100%;
-            min-width: 0;
+            padding: 16px;
             box-sizing: border-box;
+        }
+
+        h1 { font-size: 1.6rem; }
+        h2 { font-size: 1.3rem; }
+
+        @media (min-width: 768px) {
+            .page-wrapper {
+                padding: 32px;
+            }
+            h1 { font-size: 2rem; }
         }
 
         @media (min-width: 992px) {
             body {
-                padding-left: 300px;
-                padding-bottom: 0;
+                padding: 0;
+                margin: 0;
+                overflow-x: hidden;
             }
             .page-wrapper {
-                padding: 60px 50px;
+                margin-left: 300px;
+                width: calc(100% - 300px);
+                padding: 40px;
+                min-height: 100vh;
             }
+            h1 { font-size: 2.4rem; }
         }
 
         /* PREMIUM GRADIENT TOP BAR */
         .app-header {
-            position: sticky; top: 0; left: 0; right: 0;
-            height: calc(64px + var(--safe-bottom));
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            z-index: 1000; display: flex; align-items: flex-end; justify-content: center;
-            padding: 0 20px 12px; border-bottom: 1px solid rgba(0,0,0,0.05);
-            color: var(--ink); font-weight: 800; font-size: 1.15rem;
-            letter-spacing: -0.04em;
+            position: fixed; top: 0; left: 0; right: 0;
+            height: 70px;
+            background: #FFFFFF;
+            z-index: 1000; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
         }
 
         @media (min-width: 992px) {
@@ -295,41 +292,46 @@
         /* NATIVE BOTTOM NAVIGATION */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
-            height: calc(75px + var(--safe-bottom));
-            background: var(--glass-thick);
-            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
-            border-top: 1px solid rgba(0,0,0,0.05);
+            height: calc(85px + var(--safe-bottom));
+            background: #FFFFFF;
             display: flex; align-items: center; justify-content: space-around;
-            padding-bottom: var(--safe-bottom);
+            padding: 0 10px calc(10px + var(--safe-bottom));
             z-index: 1100;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.04);
+            box-shadow: 0 -5px 25px rgba(0,0,0,0.05);
+            border-top: 1px solid rgba(0,0,0,0.03);
         }
 
         .nav-link-app {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: var(--ink-muted); text-decoration: none;
-            font-size: 0.72rem; font-weight: 700; gap: 6px;
-            transition: all 0.3s ease; border-radius: 18px;
-            padding: 10px 18px; min-width: 70px;
+            color: #A1A1AA; text-decoration: none;
+            font-size: 0.65rem; font-weight: 700; gap: 4px;
+            transition: 0.3s; 
+            width: 70px;
         }
 
-        .nav-link-app i {
-            font-size: 1.4rem;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .nav-link-app i { font-size: 1.3rem; }
 
-        .nav-link-app.active {
-            color: var(--primary);
-        }
+        .nav-link-app.active { color: var(--primary) !important; }
 
-        .nav-link-app.active i {
-            transform: scale(1.1) translateY(-2px);
-            color: var(--primary);
+        .fab-center {
+            width: 60px; height: 60px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.8rem;
+            margin-top: -45px;
+            box-shadow: 0 10px 25px rgba(255, 122, 0, 0.4);
+            border: 5px solid #FFFFFF;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
         }
+        .fab-center:active { transform: scale(0.9); }
 
         @media (min-width: 992px) {
             .bottom-nav { display: none; }
         }
+
+
 
         /* SIDEBAR (DESKTOP APP STYLE) */
         .app-sidebar {
@@ -362,7 +364,7 @@
         }
 
         .sidebar-link.active {
-            background: var(--primary-soft);
+            background: #FFF7ED;
             color: var(--primary);
         }
 
@@ -660,30 +662,39 @@
 <body>
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
-        <div class="d-flex align-items-center gap-2" style="position:relative; z-index:2;">
-            <div style="width:32px; height:32px; background:rgba(255,255,255,0.2); border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                <i class="bi bi-calendar-check-fill" style="color:white; font-size:0.95rem;"></i>
+        <div class="d-flex align-items-center gap-2">
+            <div style="width:32px; height:32px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                <i class="bi bi-gear-fill" style="color: white; font-size: 1rem;"></i>
             </div>
-            <span style="font-family:'Outfit',sans-serif; font-size:1.25rem; font-weight:900; color:white; letter-spacing:-0.03em; text-shadow:0 1px 3px rgba(0,0,0,0.1);">Auditorium</span>
+            <span style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">Auditorium</span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <button type="button" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal" style="background:none; border:none; color:#94A3B8; font-size:1.2rem; padding:0; display:flex; align-items:center;">
+                <i class="bi bi-box-arrow-right"></i>
+            </button>
+            <div style="width:34px; height:34px; background:#F1F5F9; border:1.5px solid #E2E8F0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:800; font-size:0.85rem;">
+                {{ user.username|slice:":1"|upper }}
+            </div>
         </div>
     </header>
 
     <!-- DESKTOP SIDEBAR -->
     <aside class="app-sidebar">
-        <a href="{% url 'calendar' %}" class="sidebar-brand">
-            <i class="bi bi-calendar-check-fill"
-                style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
-            <span class="gradient-text" style="letter-spacing: -0.05em;">Auditorium</span>
-        </a>
+        <div class="sidebar-brand">
+            <div style="width:40px; height:40px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; transform: rotate(-10deg);">
+                <i class="bi bi-gear-fill" style="color:white; font-size:1.4rem;"></i>
+            </div>
+            <span style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">Auditorium</span>
+        </div>
         <nav class="flex-column mb-auto">
             <a href="{% url 'dashboard' %}"
                 class="sidebar-link {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i>
+                <i class="bi bi-grid-fill"></i>
                 <span>Dashboard</span>
             </a>
             <a href="{% url 'calendar' %}"
                 class="sidebar-link {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
-                <i class="bi bi-grid-1x2-fill"></i>
+                <i class="bi bi-calendar3-event-fill"></i>
                 <span>Calendar</span>
             </a>
             <a href="{% url 'booking_list' %}"
@@ -699,26 +710,19 @@
             </a>
             {% endif %}
         </nav>
-        <div class="mt-auto" style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 24px;">
-            <div class="d-flex align-items-center gap-3 mb-4 p-1">
-                <div class="user-avatar-app"
-                    style="width: 44px; height: 44px; font-size: 1.1rem; border-radius: 14px; flex-shrink: 0;">
+        <div class="mt-auto" style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 32px;">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div style="width: 48px; height: 48px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);">
                     {{ user.username|slice:":1"|upper }}
                 </div>
                 <div style="min-width: 0;">
-                    <div
-                        style="font-size: 0.95rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        {{ user.username }}</div>
-                    <div
-                        style="font-size: 0.72rem; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.04em;">
-                        Administrator</div>
+                    <div style="font-size: 1rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Administrator</div>
                 </div>
             </div>
-            <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-                <button type="submit" class="btn-app btn-app-ghost w-100" style="color: var(--ink-2);">
-                    <i class="bi bi-box-arrow-right"></i> Sign Out
-                </button>
-            </form>
+            <button type="button" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal" style="width: 100%; padding: 14px; border-radius: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; color: var(--ink); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;">
+                <i class="bi bi-box-arrow-right"></i> Sign Out
+            </button>
         </div>
     </aside>
 
@@ -726,31 +730,23 @@
 
     <!-- MOBILE BOTTOM NAV -->
     <nav class="bottom-nav">
-        <a href="{% url 'dashboard' %}"
-            class="nav-link-app {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
-            <i class="bi bi-speedometer2"></i>
-            <span>Dashboard</span>
+        <a href="{% url 'dashboard' %}" class="nav-link-app {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-house-door-fill"></i>
+            <span>Home</span>
         </a>
-        <a href="{% url 'calendar' %}"
-            class="nav-link-app {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
-            <i class="bi bi-grid-1x2-fill"></i>
-            <span>Calendar</span>
+        <a href="{% url 'calendar' %}" class="nav-link-app {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+            <i class="bi bi-calendar3-event"></i>
+            <span>Schedule</span>
         </a>
-        <a href="{% url 'booking_list' %}"
-            class="nav-link-app {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
-            <i class="bi bi-journal-text"></i>
-            <span>Bookings</span>
+        
+
+        <a href="{% url 'booking_list' %}" class="nav-link-app {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-card-list"></i>
+            <span>Records</span>
         </a>
-        {% if user.is_staff %}
-        <a href="{% url 'admin_list' %}"
-            class="nav-link-app {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
-            <i class="bi bi-shield-lock-fill"></i>
-            <span>Admins</span>
-        </a>
-        {% endif %}
-        <a href="#" data-bs-toggle="offcanvas" data-bs-target="#menu" class="nav-link-app">
-            <i class="bi bi-person-fill"></i>
-            <span>Profile</span>
+        <a href="{% url 'admin_list' %}" class="nav-link-app {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-people-fill"></i>
+            <span>Team</span>
         </a>
     </nav>
 
@@ -768,21 +764,23 @@
         
         {% block content %}{% endblock %}
 
-        <div class="site-footer text-center mt-5 mb-4">
-            <div style="font-size: 0.85rem; color: var(--ink-muted); font-weight: 700;">
-                Crafted by <span style="color: var(--ink); font-weight: 900;">Fanish</span>
+    <footer style="text-align: center; padding: 40px 20px 140px; width: 100%; opacity: 0.8;">
+        <div class="d-flex flex-column align-items-center gap-2">
+            <div style="font-size: 0.75rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">
+                Developed by <span style="font-weight: 800; color: #64748B;">Fanish</span>
             </div>
-            <div class="d-flex justify-content-center gap-3 mt-3">
-                <a href="tel:+918848112104" class="text-decoration-none" style="color: var(--primary); font-size: 0.8rem; font-weight: 800;">
-                    <i class="bi bi-telephone-fill me-1"></i> Support
+            
+            <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                <a href="https://instagram.com/its_me_fanu_" target="_blank" style="text-decoration: none; color: #BE185D; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #FCE7F3;">
+                    <i class="bi bi-instagram"></i> @its_me_fanu_
                 </a>
-                <a href="https://instagram.com/its_me_fanu_" target="_blank" class="text-decoration-none" style="color: #E1306C; font-size: 0.8rem; font-weight: 800;">
-                    <i class="bi bi-instagram me-1"></i> Instagram
+                <a href="tel:8848112104" style="text-decoration: none; color: #1D4ED8; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #EFF6FF;">
+                    <i class="bi bi-telephone-fill"></i> 8848112104
                 </a>
             </div>
         </div>
-    </main>
-    </main>
+    </footer>
+</main>
 
     <!-- UNIFIED MODALS -->
     <div class="modal fade" id="createBookingModal" tabindex="-1" aria-hidden="true">
@@ -1055,7 +1053,26 @@
             </div>
         </div>
     </div>
-
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-premium text-center" style="padding: 40px 32px;">
+                <div class="d-flex justify-content-center mb-4">
+                    <div style="width: 80px; height: 80px; background: #FFF1F1; color: #EF4444; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem;">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </div>
+                </div>
+                <h3 style="font-weight: 900; font-size: 1.4rem; color: #1E293B; margin-bottom: 8px;">Sign Out?</h3>
+                <p style="color: #64748B; font-weight: 600; font-size: 0.95rem; margin-bottom: 32px;">Are you sure you want to log out of the auditorium portal?</p>
+                <div class="d-flex flex-column gap-2">
+                    <form method="post" action="{% url 'logout' %}">{% csrf_token %}
+                        <button type="submit" class="btn-app btn-app-primary w-100 py-3" style="background: #EF4444; border-radius: 16px;">Yes, Sign Out</button>
+                    </form>
+                    <button type="button" class="btn-app btn-app-ghost w-100 py-3" data-bs-dismiss="modal" style="border-radius: 16px; font-weight: 700;">Stay Logged In</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
         const USER_CAN_BOOK = {% if request.user.is_superuser or request.user.profile.is_bookable %}true{% else %}false{% endif %};

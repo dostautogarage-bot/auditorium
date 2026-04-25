@@ -3,9 +3,9 @@ from . import views
 
 urlpatterns = [
     # Public
-    path('', views.home, name='home'),
+    path('', views.dashboard, name='dashboard'),
 
-    # Dashboard
+    # Dashboard (Home)
     path('dashboard/', views.dashboard, name='dashboard'),
     
     # Admin Management (Super Admin only typically, or as per views logic)

@@ -3,176 +3,228 @@
 
 {% block extra_css %}
 <style>
-    .stat-card {
-        background: var(--card);
-        border-radius: var(--radius-2xl);
-        padding: 24px;
-        border: 1px solid rgba(0,0,0,0.03);
-        box-shadow: var(--shadow-subtle);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        position: relative;
-        overflow: hidden;
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-md);
-        border-color: var(--primary-soft);
-    }
-    .stat-icon-wrapper {
-        width: 54px;
-        height: 54px;
-        border-radius: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
+    .dg-header-banner {
+        background: var(--primary-gradient);
+        border-radius: 20px;
+        padding: 24px 20px;
         color: white;
+        margin-bottom: 24px;
+        box-shadow: 0 15px 35px rgba(255, 122, 0, 0.2);
     }
-    .stat-value {
-        font-family: 'Outfit', sans-serif;
-        font-size: 2.2rem;
+
+    @media (min-width: 768px) {
+        .dg-header-banner {
+            padding: 32px;
+        }
+    }
+
+    .dg-header-banner h1 {
         font-weight: 900;
-        color: var(--ink);
-        letter-spacing: -0.04em;
-    }
-    .stat-info {
-        font-size: 0.72rem;
-        font-weight: 800;
-        color: var(--ink-muted);
+        font-size: 1.8rem;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
     }
-    
-    .dash-grid {
+
+    .dg-header-banner p {
+        font-weight: 600;
+        font-size: 0.85rem;
+        opacity: 0.9;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .dg-stat-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-        margin-bottom: 32px;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    @media (min-width: 576px) {
+        .dg-stat-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
     }
 
     @media (min-width: 992px) {
-        .dash-grid {
-            grid-template-columns: repeat(4, 1fr);
+        .dg-stat-grid {
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
         }
     }
 
-    .booking-row {
-        background: var(--card);
-        border-radius: var(--radius-xl);
-        padding: 16px 20px;
-        margin-bottom: 12px;
+    .dg-stat-box {
+        border-radius: 20px;
+        padding: 20px;
+        color: white;
         display: flex;
-        align-items: center;
-        gap: 16px;
-        border: 1px solid rgba(0,0,0,0.02);
-        transition: 0.3s;
-        text-decoration: none;
-    }
-    .booking-row:hover {
-        background: #F8FAFC;
-        transform: scale(1.01);
-    }
-    .avatar-circle {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
-        background: var(--primary-soft);
-        color: var(--primary);
-        display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
+        min-height: 140px;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+        position: relative;
+        overflow: hidden;
+    }
+
+    @media (min-width: 768px) {
+        .dg-stat-box {
+            padding: 24px;
+            min-height: 160px;
+        }
+    }
+
+    .dg-stat-box::after {
+        content: '';
+        position: absolute;
+        right: -20px;
+        bottom: -20px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+
+    .dg-stat-label {
+        font-size: 0.72rem;
         font-weight: 800;
-        flex-shrink: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 12px;
+        opacity: 0.95;
+        line-height: 1.2;
+    }
+
+    .dg-stat-value {
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+    }
+
+    .dg-box-blue {
+        background: #4F7BFF;
+    }
+
+    .dg-box-orange {
+        background: #F98D29;
+    }
+
+    .dg-box-green {
+        background: #00BA88;
+    }
+
+    .dg-box-purple {
+        background: #8E6BF5;
+    }
+
+    .dg-box-red {
+        background: #F65D6D;
+    }
+
+    .dg-box-deep-blue {
+        background: #6B79FF;
+    }
+
+    .dg-section-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-subtle);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="fade-in">
-    <!-- Header with Action -->
-    <div class="d-flex justify-content-between align-items-start mb-5">
-        <div>
-            <h1 style="font-weight: 900; letter-spacing: -0.05em; margin-bottom: 4px;">Auditorium Overview</h1>
-            <p style="color: var(--ink-muted); font-weight: 600; font-size: 0.9rem;">Welcome back, {{ request.user.username }}</p>
-        </div>
-        {% if request.user.is_superuser %}
-        <a href="{% url 'payment_report' %}" class="btn-app btn-app-ghost" style="padding: 10px 16px; font-size: 0.85rem; text-decoration: none;">
-            <i class="bi bi-graph-up-arrow"></i> Reports
-        </a>
-        {% endif %}
+    <!-- Large Header Banner -->
+    <div class="dg-header-banner mb-4">
+        <h1>Dashboard</h1>
+        <p>Real-time auditorium metrics, team activity, and financial oversight.</p>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="dash-grid mb-5">
-        <div class="stat-card">
-            <div class="stat-icon-wrapper" style="background: var(--primary-gradient);">
-                <i class="bi bi-calendar-event"></i>
-            </div>
-            <div>
-                <div class="stat-value">{{ stats.month_total }}</div>
-                <div class="stat-info">This Month</div>
-            </div>
+    <!-- Multi-Color Stat Boxes -->
+    <div class="dg-stat-grid">
+        <div class="dg-stat-box dg-box-blue">
+            <div class="dg-stat-label">This Month<br>Bookings</div>
+            <div class="dg-stat-value">{{ stats.month_total }}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon-wrapper" style="background: var(--accent-gradient);">
-                <i class="bi bi-person-check"></i>
-            </div>
-            <div>
-                <div class="stat-value">{{ stats.my_total }}</div>
-                <div class="stat-info">My Events</div>
-            </div>
+        <div class="dg-stat-box dg-box-orange">
+            <div class="dg-stat-label">Total Advance<br>Collected</div>
+            <div class="dg-stat-value">₹{{ stats.total_advance|default:"0" }}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
-                <i class="bi bi-people"></i>
-            </div>
-            <div>
-                <div class="stat-value">{{ stats.admin_total }}</div>
-                <div class="stat-info">Staff</div>
-            </div>
+        <div class="dg-stat-box dg-box-green">
+            <div class="dg-stat-label">My Events<br>Count</div>
+            <div class="dg-stat-value">{{ stats.my_total }}</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);">
-                <i class="bi bi-infinity"></i>
-            </div>
-            <div>
-                <div class="stat-value">{{ stats.total_life }}</div>
-                <div class="stat-info">Lifetime</div>
-            </div>
+        <div class="dg-stat-box dg-box-purple">
+            <div class="dg-stat-label">Staff<br>Members</div>
+            <div class="dg-stat-value">{{ stats.admin_total }}</div>
+        </div>
+        <div class="dg-stat-box dg-box-red">
+            <div class="dg-stat-label">Active<br>Users</div>
+            <div class="dg-stat-value">{{ stats.admin_total }}</div>
+        </div>
+        <div class="dg-stat-box dg-box-deep-blue">
+            <div class="dg-stat-label">Lifetime<br>Records</div>
+            <div class="dg-stat-value">{{ stats.total_life }}</div>
         </div>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.03em; margin: 0;">Recent Bookings</h2>
-        <a href="{% url 'booking_list' %}" style="font-size: 0.85rem; font-weight: 800; color: var(--primary); text-decoration: none;">View All <i class="bi bi-arrow-right"></i></a>
-    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="dg-section-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2
+                        style="font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">
+                        Recent Bookings</h2>
+                    <span class="badge"
+                        style="background: #FFF7ED; color: #EA580C; font-weight: 800; border: 1px solid #FFEDD5;">LATEST
+                        5</span>
+                </div>
 
-    <div class="mb-5">
-        {% for booking in recent_bookings %}
-        <div class="booking-row stagger-{{ forloop.counter }}">
-            <div class="avatar-circle">
-                {{ booking.created_by.username|slice:":1"|upper }}
-            </div>
-            <div style="flex: 1; min-width: 0;">
-                <div style="font-weight: 800; color: var(--ink); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ booking.title }}</div>
-                <div style="font-size: 0.78rem; color: var(--ink-muted); font-weight: 600;">{{ booking.start_time|date:"d M, Y" }}</div>
-            </div>
-            <div style="text-align: right;">
-                <div style="font-weight: 900; color: var(--primary); font-size: 0.95rem;">₹{{ booking.advance_received|default:"0" }}</div>
-                <div style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 800; text-transform: uppercase;">Advance</div>
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0">
+                        <thead>
+                            <tr style="border-bottom: 1.5px solid #F1F5F9;">
+                                <th
+                                    style="font-size:0.7rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">
+                                    Event</th>
+                                <th
+                                    style="font-size:0.7rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">
+                                    Date</th>
+                                <th
+                                    style="font-size:0.7rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">
+                                    Advance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in recent_bookings|slice:":5" %}
+                            <tr style="border-bottom: 1px solid #F8FAFC;">
+                                <td style="padding:16px 0;">
+                                    <div style="font-weight: 800; color: #1E293B; font-size: 0.95rem;">{{ booking.title }}</div>
+                                    <div style="font-size: 0.75rem; color: #94A3B8; font-weight: 600;">By {{ booking.created_by.username }}</div>
+                                </td>
+                                <td style="padding:16px 0; font-weight: 700; color: #64748B; font-size: 0.85rem;">
+                                    {{ booking.start_time|date:"d M" }}
+                                </td>
+                                <td style="padding:16px 0; text-align:right; font-weight:900; color: #1E293B; font-size: 0.95rem;">
+                                    ₹{{ booking.advance_received|default:0|floatformat:0 }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center py-5 text-muted fw-bold">No recent records</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-        {% empty %}
-        <div class="text-center py-5">
-            <i class="bi bi-calendar-x fs-1 opacity-20"></i>
-            <p class="mt-3 fw-bold text-muted">No recent bookings</p>
-        </div>
-        {% endfor %}
     </div>
 </div>
 {% endblock %}

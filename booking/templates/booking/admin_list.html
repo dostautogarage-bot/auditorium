@@ -1,127 +1,73 @@
 {% extends 'booking/base.html' %}
-{% block title %}Admins - Auditorium{% endblock %}
+{% block title %}Users — Auditorium{% endblock %}
 
 {% block content %}
-<div class="page-wrapper fade-in">
+<div class="fade-in">
+    <!-- Minimal Header -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 style="font-weight: 900; letter-spacing: -0.05em; margin-bottom: 4px;">User Directory</h1>
-            <p style="color: var(--ink-muted); font-weight: 600; font-size: 0.9rem;">Access management & security</p>
+            <h1 style="font-weight: 900; font-size: 2rem; letter-spacing: -0.06em; color: var(--ink); margin: 0;">Directory</h1>
+            <p style="color: var(--ink-muted); font-weight: 700; font-size: 0.9rem;">Team & Access control</p>
         </div>
         {% if request.user.is_superuser %}
-        <button class="btn-app btn-app-primary pop-in" data-bs-toggle="modal" data-bs-target="#createAdminModal">
-            <i class="bi bi-plus-lg"></i> New User
+        <button class="btn-app" data-bs-toggle="modal" data-bs-target="#createAdminModal" style="width: 50px; height: 50px; border-radius: 50%; background: #000; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <i class="bi bi-plus-lg"></i>
         </button>
         {% endif %}
     </div>
 
-    <!-- Search & Filters -->
-    <div class="glass-card mb-5 p-3 d-flex gap-2 align-items-center" style="border-radius: var(--radius-xl); border: 1px solid rgba(0,0,0,0.03);">
-        <form method="GET" class="d-flex gap-2 w-100">
+    <!-- Search Bento -->
+    <div style="background: white; border-radius: 24px; padding: 8px; box-shadow: var(--shadow-subtle); margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.03);">
+        <form method="GET" class="d-flex gap-2">
             <div class="position-relative flex-grow-1">
-                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 opacity-50"></i>
-                <input type="text" name="q" value="{{ query }}" placeholder="Search by name or email..." class="form-control-premium w-100" style="padding-left: 48px; height: 54px;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 opacity-30"></i>
+                <input type="text" name="q" value="{{ query }}" placeholder="Find someone..." style="width:100%; border:none; padding:16px 16px 16px 45px; background:transparent; font-weight:700; outline:none; color:var(--ink);">
             </div>
-            <select name="per_page" onchange="this.form.submit()" class="form-control-premium" style="width: auto; height: 54px;">
-                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
-                <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
+            <select name="per_page" onchange="this.form.submit()" style="border:none; background:#F4F4F5; border-radius:18px; padding:0 15px; font-weight:800; font-size:0.8rem; color:var(--ink);">
+                <option value="100">100</option>
+                <option value="500">500</option>
             </select>
         </form>
     </div>
 
-    <!-- Desktop -->
-    <div class="d-none d-lg-block">
-        <div class="glass-card overflow-hidden" style="border: 1px solid rgba(0,0,0,0.03); border-radius: var(--radius-2xl);">
-            <div class="table-responsive">
-                <table class="table mb-0 align-middle">
-                    <thead style="background: rgba(0,0,0,0.02);">
-                        <tr>
-                            <th style="padding:18px 24px; font-size:0.75rem; font-weight:800; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.06em; border:none;">User</th>
-                            <th style="padding:18px; font-size:0.75rem; font-weight:800; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.06em; border:none;">Permissions</th>
-                            <th style="padding:18px 24px; font-size:0.75rem; font-weight:800; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.06em; border:none; text-align:right;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for admin in admins %}
-                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.03);">
-                            <td style="padding:20px 24px; border:none;">
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="avatar-circle" style="width: 42px; height: 42px; font-size: 0.9rem;">
-                                        {{ admin.username|slice:":1"|upper }}
-                                    </div>
-                                    <div>
-                                        <div style="font-weight: 800; color: var(--ink);">{{ admin.username }}</div>
-                                        <div style="font-size: 0.8rem; color: var(--ink-muted); font-weight: 600;">{{ admin.email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td style="border:none;">
-                                <div class="d-flex gap-2">
-                                    {% if request.user.is_superuser and admin != request.user %}
-                                    <button onclick="toggleStatus('{{ admin.pk }}', 'active')" class="btn-app {% if admin.is_active %}btn-app-primary{% else %}btn-app-ghost{% endif %}" style="padding: 6px 14px; font-size: 0.72rem; border-radius: 12px;">
-                                        {{ admin.is_active|yesno:"Active,Suspended" }}
-                                    </button>
-                                    <button onclick="toggleStatus('{{ admin.pk }}', 'booking')" class="btn-app {% if admin.profile.is_bookable %}btn-app-secondary{% else %}btn-app-ghost{% endif %}" style="padding: 6px 14px; font-size: 0.72rem; border-radius: 12px;">
-                                        Booking: {{ admin.profile.is_bookable|yesno:"Enabled,Disabled" }}
-                                    </button>
-                                    {% else %}
-                                    <span class="badge {% if admin.is_active %}bg-primary-soft text-primary{% else %}bg-light text-muted{% endif %} rounded-pill px-3 py-1 fw-700" style="font-size: 0.65rem;">
-                                        {{ admin.is_active|yesno:"Active Account,Suspended" }}
-                                    </span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                            <td style="padding:20px 24px; border:none; text-align:right;">
-                                <div class="dropdown">
-                                    <button class="btn-app btn-app-ghost" style="padding: 8px 12px;" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-xl" style="border-radius: var(--radius-lg);">
-                                        <li><a class="dropdown-item fw-700 py-2" href="{% url 'admin_edit' admin.pk %}"><i class="bi bi-pencil me-2"></i> Edit Account</a></li>
-                                        {% if request.user.is_superuser and admin != request.user %}
-                                        <li><hr class="dropdown-divider opacity-50"></li>
-                                        <li><button class="dropdown-item fw-700 py-2 text-danger" onclick="confirmDeleteAdmin('{{ admin.pk }}', '{{ admin.username }}')"><i class="bi bi-trash3 me-2"></i> Delete User</button></li>
-                                        {% endif %}
-                                    </ul>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mobile Cards -->
-    <div class="d-lg-none">
+    <!-- User Rows (Modern Mobile Style) -->
+    <div class="user-list">
         {% for admin in admins %}
-        <div class="glass-card p-4 mb-3 stagger-{{ forloop.counter }}" style="border-radius: var(--radius-xl); border: 1px solid rgba(0,0,0,0.03);">
-            <div class="d-flex align-items-center gap-3 mb-4">
-                <div class="avatar-circle" style="width: 50px; height: 50px; font-size: 1.1rem;">
+        <div class="bento-item mb-3" style="background: white; border-radius: 28px; padding: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
+            <div class="d-flex align-items-center gap-3">
+                <div style="width: 50px; height: 50px; border-radius: 18px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); font-size: 1.1rem; border: 1px solid rgba(0,0,0,0.05);">
                     {{ admin.username|slice:":1"|upper }}
                 </div>
-                <div>
-                    <div style="font-weight: 800; color: var(--ink); font-size: 1.1rem;">{{ admin.username }}</div>
-                    <div style="font-size: 0.85rem; color: var(--ink-muted); font-weight: 600;">{{ admin.email }}</div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 900; color: var(--ink); font-size: 1.1rem; letter-spacing: -0.02em;">{{ admin.username }}</div>
+                    <div style="font-size: 0.8rem; color: var(--ink-muted); font-weight: 600;">{{ admin.email|default:"No email provided" }}</div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn p-0" data-bs-toggle="dropdown"><i class="bi bi-three-dots fs-4 opacity-40"></i></button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-xl" style="border-radius: 20px; padding: 8px;">
+                        <li><a class="dropdown-item fw-800 py-2" href="{% url 'admin_edit' admin.pk %}">Edit Account</a></li>
+                        {% if request.user.is_superuser and admin != request.user %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><button class="dropdown-item fw-800 py-2 text-danger" onclick="confirmDeleteAdmin('{{ admin.pk }}', '{{ admin.username }}')">Delete User</button></li>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
-            <div class="d-grid gap-2">
-                <div class="d-flex gap-2">
-                    <button onclick="toggleStatus('{{ admin.pk }}', 'active')" class="btn-app flex-grow-1 {% if admin.is_active %}btn-app-primary{% else %}btn-app-ghost{% endif %}" style="padding: 10px; font-size: 0.8rem;">
-                        {{ admin.is_active|yesno:"Active,Suspended" }}
-                    </button>
-                    <button onclick="toggleStatus('{{ admin.pk }}', 'booking')" class="btn-app flex-grow-1 {% if admin.profile.is_bookable %}btn-app-secondary{% else %}btn-app-ghost{% endif %}" style="padding: 10px; font-size: 0.8rem;">
-                        Booking: {{ admin.profile.is_bookable|yesno:"Enabled,Disabled" }}
-                    </button>
-                </div>
-                <div class="d-flex gap-2 mt-2">
-                    <a href="{% url 'admin_edit' admin.pk %}" class="btn-app btn-app-ghost flex-grow-1" style="padding: 10px; font-size: 0.8rem; text-decoration: none; text-align: center;">Edit</a>
-                    {% if request.user.is_superuser and admin != request.user %}
-                    <button onclick="confirmDeleteAdmin('{{ admin.pk }}', '{{ admin.username }}')" class="btn-app btn-app-ghost text-danger flex-grow-1" style="padding: 10px; font-size: 0.8rem;">Delete</button>
-                    {% endif %}
-                </div>
+
+            {% if request.user.is_superuser %}
+            <div class="d-flex gap-2">
+                <button onclick="toggleStatus('{{ admin.pk }}', 'active')" class="btn-app flex-grow-1" style="background: {% if admin.is_active %}#F0FDF4{% else %}#F1F5F9{% endif %}; color: {% if admin.is_active %}#166534{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.75rem;">
+                    {{ admin.is_active|yesno:"Login Enabled,Suspended" }}
+                </button>
+                <button onclick="toggleStatus('{{ admin.pk }}', 'booking')" class="btn-app flex-grow-1" style="background: {% if admin.profile.is_bookable %}#EEF2FF{% else %}#F1F5F9{% endif %}; color: {% if admin.profile.is_bookable %}#3730A3{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.75rem;">
+                    Bookings: {{ admin.profile.is_bookable|yesno:"On,Off" }}
+                </button>
             </div>
+            {% else %}
+            <div class="d-flex gap-2">
+                <span style="background: #F8FAFC; padding: 8px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; color: #94A3B8;">Verified Staff</span>
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>
