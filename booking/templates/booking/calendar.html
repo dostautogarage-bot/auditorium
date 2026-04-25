@@ -24,11 +24,11 @@
         background: var(--primary-gradient) !important; border: none !important;
         border-radius: 6px !important; padding: 2px 6px !important;
         font-weight: 700 !important; font-size: 0.7rem !important;
-        box-shadow: 0 4px 10px rgba(20, 184, 166, 0.2);
+        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
         cursor: pointer;
     }
 
-    .fc-day-today { background: linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, rgba(20, 184, 166, 0.1) 100%) !important; }
+    .fc-day-today { background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.1) 100%) !important; }
     .fc-day-past { background-color: #F8FAFC !important; opacity: 0.5; cursor: not-allowed !important; }
     .fc-day-past .fc-daygrid-day-number { color: var(--slate-400) !important; }
     
@@ -69,22 +69,22 @@
 {% endblock %}
 
 {% block content %}
-<div class="fade-in">
-    <div class="d-flex justify-content-between align-items-center" style="margin-bottom:20px;">
+<div class="page-wrapper fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 style="font-size:1.4rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Calendar</h1>
-            <p style="font-size:0.78rem; color:var(--ink-3); font-weight:600; margin:3px 0 0;">Auditorium Schedule</p>
+            <h1 style="font-weight: 900; letter-spacing: -0.05em; margin-bottom: 4px;">Auditorium Schedule</h1>
+            <p style="color: var(--ink-muted); font-weight: 600; font-size: 0.9rem;">Real-time booking availability</p>
         </div>
-        <div class="d-flex align-items-center gap-2 gap-sm-3" style="background:rgba(255,255,255,0.6); backdrop-filter:blur(10px); padding:4px 12px; padding-sm:6px 14px; border-radius:50px; border:1px solid rgba(255,255,255,0.8); box-shadow:0 4px 15px rgba(0,0,0,0.03);">
-            <span class="d-none d-sm-inline" style="font-size:0.6rem; font-weight:900; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap;">Year</span>
-            <div class="position-relative" style="min-width:60px;">
-                <select id="yearSelector" class="form-select border-0 p-0 pe-4 shadow-none" style="font-size:0.95rem; font-weight:800; color:var(--primary); background:transparent; cursor:pointer; -webkit-appearance:none; -moz-appearance:none; appearance:none;"></select>
-                <i class="bi bi-chevron-down position-absolute top-50 end-0 translate-middle-y" style="font-size:0.7rem; color:var(--primary); pointer-events:none;"></i>
+        <div class="d-flex align-items-center gap-3 px-4 py-2" style="background: var(--card); border-radius: 50px; border: 1px solid rgba(0,0,0,0.03); box-shadow: var(--shadow-subtle);">
+            <span style="font-size: 0.65rem; font-weight: 900; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em;">Jump to Year</span>
+            <div class="position-relative">
+                <select id="yearSelector" class="form-select border-0 p-0 pe-4 shadow-none" style="font-size: 1rem; font-weight: 800; color: var(--primary); background: transparent; cursor: pointer; -webkit-appearance: none; appearance: none;"></select>
+                <i class="bi bi-chevron-down position-absolute top-50 end-0 translate-middle-y" style="font-size: 0.75rem; color: var(--primary); pointer-events: none;"></i>
             </div>
         </div>
     </div>
 
-    <div id="calendar" class="pop-in" style="box-shadow:var(--shadow);"></div>
+    <div id="calendar" class="pop-in" style="box-shadow: var(--shadow-md); border: 1px solid rgba(0,0,0,0.02); border-radius: var(--radius-2xl); overflow: hidden; padding: 20px; background: var(--card);"></div>
 </div>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">

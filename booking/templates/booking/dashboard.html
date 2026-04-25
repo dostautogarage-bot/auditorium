@@ -3,17 +3,49 @@
 
 {% block extra_css %}
 <style>
-    /* ── ENHANCED MOBILE-FIRST DASHBOARD ── */
-    @keyframes cardSlide {
-        from { opacity: 0; transform: translateY(12px); }
-        to { opacity: 1; transform: translateY(0); }
+    .stat-card {
+        background: var(--card);
+        border-radius: var(--radius-2xl);
+        padding: 24px;
+        border: 1px solid rgba(0,0,0,0.03);
+        box-shadow: var(--shadow-subtle);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        position: relative;
+        overflow: hidden;
     }
-
-    @keyframes iconBounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-3px); }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--primary-soft);
     }
-
+    .stat-icon-wrapper {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+    }
+    .stat-value {
+        font-family: 'Outfit', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: var(--ink);
+        letter-spacing: -0.04em;
+    }
+    .stat-info {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
     .dash-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -21,350 +53,124 @@
         margin-bottom: 32px;
     }
 
-    .stat-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border: 1.5px solid rgba(255, 255, 255, 0.6);
-        border-radius: 24px;
-        padding: 20px;
-        position: relative;
-        overflow: hidden;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-        animation: cardSlide 0.6s ease-out both;
+    @media (min-width: 992px) {
+        .dash-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
     }
 
-    .stat-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(255, 255, 255, 0.8);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    .booking-row {
+        background: var(--card);
+        border-radius: var(--radius-xl);
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        border: 1px solid rgba(0,0,0,0.02);
+        transition: 0.3s;
+        text-decoration: none;
     }
-
-    .stat-card:active {
-        transform: scale(0.96);
+    .booking-row:hover {
+        background: #F8FAFC;
+        transform: scale(1.01);
     }
-
-    .stat-card .corner-glow {
-        position: absolute;
-        top: -30px;
-        right: -30px;
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        opacity: 0.1;
-        filter: blur(12px);
-        transition: all 0.4s ease;
-    }
-
-    .stat-card:hover .corner-glow {
-        opacity: 0.15;
-        transform: scale(1.2);
-    }
-
-    .stat-icon {
-        width: 48px;
-        height: 48px;
+    .avatar-circle {
+        width: 44px;
+        height: 44px;
         border-radius: 14px;
+        background: var(--primary-soft);
+        color: var(--primary);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        margin-bottom: 12px;
-        font-size: 1.4rem;
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover .stat-icon {
-        transform: scale(1.1);
-    }
-
-    .stat-number {
-        font-family: 'Outfit', sans-serif;
-        font-size: 2rem;
-        font-weight: 900;
-        color: var(--ink);
-        line-height: 1;
-        margin-bottom: 6px;
-        background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .stat-label {
-        font-size: 0.72rem;
         font-weight: 800;
-        color: var(--ink-3);
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-    }
-
-    /* Recent section */
-    .section-title {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--ink);
-        margin-bottom: 18px;
-        margin-top: 24px;
-        letter-spacing: -0.02em;
-    }
-
-    .section-title::before {
-        content: '';
-        display: inline-block;
-        width: 4px;
-        height: 20px;
-        background: var(--primary-gradient);
-        border-radius: 2px;
-        margin-right: 8px;
-        vertical-align: middle;
-    }
-
-    .recent-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1.5px solid rgba(255, 255, 255, 0.5);
-        border-radius: 18px;
-        padding: 16px;
-        margin-bottom: 12px;
-        transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-        animation: cardSlide 0.5s ease-out both;
-    }
-
-    .recent-card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(20, 184, 166, 0.2);
-        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
-    }
-
-    .recent-card .event-title {
-        font-size: 0.95rem;
-        font-weight: 800;
-        color: var(--ink);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        margin-bottom: 4px;
-    }
-
-    .recent-card .event-time {
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: var(--primary);
-        margin-top: 4px;
-        display: flex;
-        align-items: center;
-        gap: 3px;
-    }
-
-    .recent-card .event-phone {
-        font-size: 0.75rem;
-        font-weight: 600;
-        color: var(--ink-3);
-        margin-top: 3px;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    .empty-state i {
-        font-size: 3.2rem;
-        color: var(--ink-3);
-        opacity: 0.2;
-        margin-bottom: 12px;
-    }
-
-    .empty-state p {
-        color: var(--ink-3);
-        font-size: 0.9rem;
-        margin: 0;
-        font-weight: 700;
-    }
-
-    /* Stagger animations */
-    .stagger-1 { animation-delay: 0.1s; }
-    .stagger-2 { animation-delay: 0.2s; }
-    .stagger-3 { animation-delay: 0.3s; }
-
-    /* Desktop overrides */
-    @media (min-width: 768px) {
-        .dash-grid {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-bottom: 48px;
-        }
-
-        .stat-card {
-            padding: 28px 24px;
-            border-radius: 28px;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 24px 56px rgba(0, 0, 0, 0.1);
-            border-color: rgba(20, 184, 166, 0.2);
-        }
-
-        .stat-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 16px;
-            font-size: 1.6rem;
-            margin-bottom: 18px;
-        }
-
-        .stat-number {
-            font-size: 2.2rem;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-        }
-
-        .recent-card {
-            padding: 18px;
-            border-radius: 20px;
-        }
-
-        .recent-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            margin-top: 40px;
-        }
+        flex-shrink: 0;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="fade-in">
-    <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 20px; padding-top: 4px;">
+    <!-- Header with Action -->
+    <div class="d-flex justify-content-between align-items-start mb-5">
         <div>
-            <h1 style="font-size:1.4rem; font-weight:800; margin:0; letter-spacing:-0.04em;">Dashboard</h1>
-            <p style="font-size:0.78rem; color:var(--ink-3); font-weight:600; margin:4px 0 0;">Event overview & management</p>
+            <h1 style="font-weight: 900; letter-spacing: -0.05em; margin-bottom: 4px;">Auditorium Overview</h1>
+            <p style="color: var(--ink-muted); font-weight: 600; font-size: 0.9rem;">Welcome back, {{ request.user.username }}</p>
         </div>
         {% if request.user.is_superuser %}
-            <a href="{% url 'payment_report' %}" class="btn-app btn-app-secondary pop-in" style="padding:10px 16px; font-size:0.78rem; text-decoration: none;">
-                <i class="bi bi-graph-up"></i> <span class="d-none d-sm-inline">Payment Report</span>
-            </a>
+        <a href="{% url 'payment_report' %}" class="btn-app btn-app-ghost" style="padding: 10px 16px; font-size: 0.85rem; text-decoration: none;">
+            <i class="bi bi-graph-up-arrow"></i> Reports
+        </a>
         {% endif %}
     </div>
 
-    <!-- Stats Grid (2×2 on mobile, 4-col on desktop) -->
-    <div class="dash-grid">
-        <div class="stat-card fade-in">
-            <div class="corner-glow" style="background: var(--primary-gradient);"></div>
-            <div class="stat-icon" style="background: var(--primary-gradient); box-shadow: 0 6px 16px rgba(20,184,166,0.3);">
-                <i class="bi bi-calendar-check-fill"></i>
+    <!-- Stats Grid -->
+    <div class="dash-grid mb-5">
+        <div class="stat-card">
+            <div class="stat-icon-wrapper" style="background: var(--primary-gradient);">
+                <i class="bi bi-calendar-event"></i>
             </div>
-            <div class="stat-number">{{ stats.month_total }}</div>
-            <div class="stat-label">This Month</div>
+            <div>
+                <div class="stat-value">{{ stats.month_total }}</div>
+                <div class="stat-info">This Month</div>
+            </div>
         </div>
-
-        <div class="stat-card fade-in stagger-1">
-            <div class="corner-glow" style="background: var(--blue-gradient);"></div>
-            <div class="stat-icon" style="background: var(--blue-gradient); box-shadow: 0 6px 16px rgba(59,130,246,0.3);">
-                <i class="bi bi-person-badge-fill"></i>
+        <div class="stat-card">
+            <div class="stat-icon-wrapper" style="background: var(--accent-gradient);">
+                <i class="bi bi-person-check"></i>
             </div>
-            <div class="stat-number">{{ stats.my_total }}</div>
-            <div class="stat-label">My Bookings</div>
+            <div>
+                <div class="stat-value">{{ stats.my_total }}</div>
+                <div class="stat-info">My Events</div>
+            </div>
         </div>
-
-        <div class="stat-card fade-in stagger-2">
-            <div class="corner-glow" style="background: var(--orange-gradient);"></div>
-            <div class="stat-icon" style="background: var(--orange-gradient); box-shadow: 0 6px 16px rgba(249,115,22,0.3);">
-                <i class="bi bi-shield-lock-fill"></i>
+        <div class="stat-card">
+            <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
+                <i class="bi bi-people"></i>
             </div>
-            <div class="stat-number">{{ stats.admin_total }}</div>
-            <div class="stat-label">Total Admins</div>
+            <div>
+                <div class="stat-value">{{ stats.admin_total }}</div>
+                <div class="stat-info">Staff</div>
+            </div>
         </div>
-
-        <div class="stat-card fade-in stagger-3">
-            <div class="corner-glow" style="background: var(--purple-gradient);"></div>
-            <div class="stat-icon" style="background: var(--purple-gradient); box-shadow: 0 6px 16px rgba(139,92,246,0.3);">
-                <i class="bi bi-graph-up-arrow"></i>
+        <div class="stat-card">
+            <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);">
+                <i class="bi bi-infinity"></i>
             </div>
-            <div class="stat-number">{{ stats.total_life }}</div>
-            <div class="stat-label">Total Bookings</div>
+            <div>
+                <div class="stat-value">{{ stats.total_life }}</div>
+                <div class="stat-info">Lifetime</div>
+            </div>
         </div>
     </div>
 
-    <!-- Recent Bookings -->
-    <h3 class="section-title">Recent Bookings</h3>
-    
-    <!-- Desktop Table -->
-    <div class="d-none d-lg-block w-100">
-        <div class="glass-card" style="overflow:hidden; border:1px solid rgba(255,255,255,0.4);">
-            <table class="table mb-0">
-                <thead>
-                    <tr style="background:rgba(241, 245, 249, 0.5); border-bottom:1px solid rgba(0,0,0,0.05);">
-                        <th style="padding:14px 20px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Event</th>
-                        <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Schedule</th>
-                        <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">By</th>
-                        <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Phone</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for booking in recent_bookings %}
-                    <tr style="border-bottom:1px solid #F2F2F5;" class="align-middle">
-                        <td style="padding:16px 20px; border:none;">
-                            <div style="font-size:0.9rem; font-weight:700; color:var(--ink);">{{ booking.title }}</div>
-                            <div style="font-size:0.72rem; color:var(--ink-3); font-weight:500; margin-top:2px;">{{ booking.created_at|date:"M j, Y" }}</div>
-                        </td>
-                        <td style="border:none; padding:16px 14px;">
-                            <div style="font-size:0.85rem; font-weight:700; color:var(--ink);">{{ booking.start_time|date:"g:i A" }} – {{ booking.end_time|date:"g:i A" }}</div>
-                            <div style="font-size:0.72rem; color:var(--ink-3); font-weight:500;">{{ booking.start_time|date:"D, M j" }}</div>
-                        </td>
-                        <td style="border:none; padding:16px 14px;">
-                            <div class="d-flex align-items-center gap-2">
-                                <div style="width:26px; height:26px; background:var(--primary-gradient); color:white; border-radius:8px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.65rem; flex-shrink:0;">{{ booking.created_by.username|slice:":1"|upper }}</div>
-                                <span style="font-size:0.82rem; font-weight:600; color:var(--ink-2);">{{ booking.created_by.username }}</span>
-                            </div>
-                        </td>
-                        <td style="border:none; padding:16px 14px;">
-                            <span style="font-size:0.82rem; font-weight:600; color:var(--ink-2);">{{ booking.mobile_number }}</span>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4" style="padding:48px; text-align:center; color:var(--ink-3); font-size:0.85rem; border:none;">No bookings yet</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <!-- Recent Activity -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 style="font-size: 1.25rem; font-weight: 900; letter-spacing: -0.03em; margin: 0;">Recent Bookings</h2>
+        <a href="{% url 'booking_list' %}" style="font-size: 0.85rem; font-weight: 800; color: var(--primary); text-decoration: none;">View All <i class="bi bi-arrow-right"></i></a>
     </div>
 
-    <!-- Mobile Cards -->
-    <div class="d-block d-lg-none w-100">
+    <div class="mb-5">
         {% for booking in recent_bookings %}
-        <div class="recent-card">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:36px; height:36px; background:var(--primary-gradient); color:white; border-radius:11px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.7rem; flex-shrink:0;">
-                    {{ booking.created_by.username|slice:":1"|upper }}
-                </div>
-                <div style="flex:1; min-width:0;">
-                    <div class="event-title">{{ booking.title }}</div>
-                    <div class="event-time">
-                        <i class="bi bi-clock" style="font-size:0.65rem;"></i>
-                        {{ booking.start_time|date:"D, M j" }} · {{ booking.start_time|date:"g:i A" }} – {{ booking.end_time|date:"g:i A" }}
-                    </div>
-                    <div class="event-phone">📞 {{ booking.mobile_number }}</div>
-                </div>
+        <div class="booking-row stagger-{{ forloop.counter }}">
+            <div class="avatar-circle">
+                {{ booking.created_by.username|slice:":1"|upper }}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 800; color: var(--ink); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ booking.title }}</div>
+                <div style="font-size: 0.78rem; color: var(--ink-muted); font-weight: 600;">{{ booking.start_time|date:"d M, Y" }}</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: 900; color: var(--primary); font-size: 0.95rem;">₹{{ booking.advance_received|default:"0" }}</div>
+                <div style="font-size: 0.7rem; color: var(--ink-muted); font-weight: 800; text-transform: uppercase;">Advance</div>
             </div>
         </div>
         {% empty %}
-        <div class="empty-state">
-            <i class="bi bi-calendar-x"></i>
-            <p>No bookings yet</p>
+        <div class="text-center py-5">
+            <i class="bi bi-calendar-x fs-1 opacity-20"></i>
+            <p class="mt-3 fw-bold text-muted">No recent bookings</p>
         </div>
         {% endfor %}
     </div>

@@ -25,27 +25,29 @@
 
     <style>
         :root {
-            --primary: #14B8A6;
-            --primary-dark: #0D9488;
-            --primary-soft: #F0FDFA;
-            --primary-gradient: linear-gradient(135deg, #2DD4BF 0%, #14B8A6 100%);
-            --blue-gradient: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
-            --orange-gradient: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
-            --purple-gradient: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
-            --rose-gradient: linear-gradient(135deg, #FB7185 0%, #F43F5E 100%);
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.5);
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --primary-soft: rgba(99, 102, 241, 0.08);
+            --primary-gradient: linear-gradient(135deg, #818CF8 0%, #6366F1 100%);
+            --accent: #0EA5E9;
+            --accent-gradient: linear-gradient(135deg, #38BDF8 0%, #0EA5E9 100%);
+            --danger-gradient: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-thick: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.6);
             --bg: #F8FAFC;
             --ink: #0F172A;
-            --ink-2: #334155;
-            --ink-3: #64748B;
+            --ink-dim: #334155;
+            --ink-muted: #64748B;
             --card: #FFFFFF;
-            --r-xl: 32px;
-            --r-lg: 22px;
-            --r-md: 16px;
-            --radius-xl: 32px;
-            --shadow: 0 10px 40px rgba(15, 23, 42, 0.05);
-            --shadow-premium: 0 20px 50px rgba(0, 0, 0, 0.08);
+            --radius-3xl: 40px;
+            --radius-2xl: 32px;
+            --radius-xl: 24px;
+            --radius-lg: 18px;
+            --shadow-subtle: 0 4px 20px rgba(15, 23, 42, 0.03);
+            --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.06);
+            --shadow-xl: 0 25px 60px rgba(15, 23, 42, 0.12);
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         *,
@@ -56,8 +58,10 @@
 
         body {
             font-family: 'Urbanist', sans-serif;
-            background-color: #F8FAFC;
-            background-image: linear-gradient(135deg, #78e6aa 0%, #E2E8F0 100%);
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.05) 0px, transparent 50%);
             background-attachment: fixed;
             color: var(--ink);
             margin: 0;
@@ -77,8 +81,8 @@
             filter: blur(100px); opacity: 0.25; pointer-events: none;
             animation: blobFloat 18s ease-in-out infinite alternate;
         }
-        body::before { width: 350px; height: 350px; background: #2DD4BF; top: -80px; left: -80px; }
-        body::after { width: 280px; height: 280px; background: #8B5CF6; bottom: 10%; right: -60px; animation-duration: 22s; animation-direction: alternate-reverse; }
+        body::before { width: 350px; height: 350px; background: #6366F1; top: -80px; left: -80px; }
+        body::after { width: 280px; height: 280px; background: #0EA5E9; bottom: 10%; right: -60px; animation-duration: 22s; animation-direction: alternate-reverse; }
         @keyframes blobFloat {
             0% { transform: translate(0,0) scale(1); }
             50% { transform: translate(40px,30px) scale(1.08); }
@@ -117,30 +121,103 @@
             display: inline-block;
         }
 
-        .glass-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1.5px solid var(--glass-border);
-            box-shadow: 0 12px 40px rgba(20, 184, 166, 0.10), 0 2px 8px rgba(0,0,0,0.04);
-            border-radius: 28px;
-            transition: box-shadow 0.3s, transform 0.3s;
-        }
-
-        .premium-hover {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .premium-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-premium);
-        }
-
-        @media (min-width: 992px) {
-            body {
-                padding-bottom: 0;
-                padding-left: 300px;
+        /* MODAL WRAPPER FIX - MOBILE CARD STYLE */
+        @media (max-width: 576px) {
+            .modal-dialog {
+                margin: 16px;
+                display: flex;
+                align-items: center;
+                min-height: calc(100% - 32px);
             }
+            .modal-content {
+                width: 100% !important;
+                border-radius: var(--radius-2xl) !important;
+            }
+        }
+
+        .modal-content-premium {
+            background: var(--glass-thick);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .modal-header-premium {
+            border: none;
+            padding: 24px 28px 12px;
+        }
+
+        .modal-body-premium {
+            padding: 12px 28px 28px;
+        }
+
+        .modal-footer-premium {
+            border: none;
+            padding: 0 28px 28px;
+        }
+
+        /* PREMIUM BUTTONS */
+        .btn-app {
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 800;
+            padding: 14px 24px;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-app-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-app-secondary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-app-ghost {
+            background: rgba(0,0,0,0.03);
+            color: var(--ink-dim);
+        }
+
+        /* PREMIUM INPUTS */
+        .form-control-premium {
+            background: #F1F5F9;
+            border: 1.5px solid transparent;
+            border-radius: var(--radius-lg);
+            padding: 16px 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--ink);
+            transition: all 0.3s ease;
+        }
+
+        .form-control-premium:focus {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            outline: none;
+        }
+
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: var(--ink-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+            margin-left: 4px;
         }
 
         /* NATIVE APP-LIKE TRANSITION */
@@ -190,6 +267,10 @@
         }
 
         @media (min-width: 992px) {
+            body {
+                padding-left: 300px;
+                padding-bottom: 0;
+            }
             .page-wrapper {
                 padding: 60px 50px;
             }
@@ -197,165 +278,96 @@
 
         /* PREMIUM GRADIENT TOP BAR */
         .app-header {
-            position: sticky;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 64px;
-            background: linear-gradient(135deg, #0D9488 0%, #14B8A6 40%, #2DD4BF 100%);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 20px;
-            box-shadow: 0 6px 24px rgba(13, 148, 136, 0.25);
-            position: relative;
-            overflow: hidden;
-            font-weight: 800;
-            font-size: 1.3rem;
-            letter-spacing: 0.5px;
-            color: #FFFFFF;
-        }
-        .app-header::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%; width: 200%; height: 100%;
-            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%);
-            animation: headerShimmer 4s ease-in-out infinite;
-        }
-        @keyframes headerShimmer {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(50%); }
+            position: sticky; top: 0; left: 0; right: 0;
+            height: calc(64px + var(--safe-bottom));
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            z-index: 1000; display: flex; align-items: flex-end; justify-content: center;
+            padding: 0 20px 12px; border-bottom: 1px solid rgba(0,0,0,0.05);
+            color: var(--ink); font-weight: 800; font-size: 1.15rem;
+            letter-spacing: -0.04em;
         }
 
         @media (min-width: 992px) {
-            .app-header {
-                display: none;
-            }
+            .app-header { display: none; }
         }
 
         /* NATIVE BOTTOM NAVIGATION */
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: calc(72px + var(--safe-bottom));
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(48px);
-            -webkit-backdrop-filter: blur(48px);
-            border-top: 1.5px solid rgba(20, 184, 166, 0.12);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            padding-bottom: max(var(--safe-bottom), 8px);
+            position: fixed; bottom: 0; left: 0; right: 0;
+            height: calc(75px + var(--safe-bottom));
+            background: var(--glass-thick);
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: space-around;
+            padding-bottom: var(--safe-bottom);
             z-index: 1100;
-            border-radius: 24px 24px 0 0;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
-        }
-
-        @media (min-width: 992px) {
-            .bottom-nav {
-                display: none;
-            }
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.04);
         }
 
         .nav-link-app {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #A1B0C8;
-            text-decoration: none;
-            font-size: 0.68rem;
-            font-weight: 800;
-            gap: 4px;
-            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border-radius: 16px;
-            padding: 8px 14px 6px;
-            position: relative;
-            min-width: 60px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--ink-muted); text-decoration: none;
+            font-size: 0.72rem; font-weight: 700; gap: 6px;
+            transition: all 0.3s ease; border-radius: 18px;
+            padding: 10px 18px; min-width: 70px;
         }
 
         .nav-link-app i {
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link-app:hover {
-            color: var(--primary);
-            background: rgba(20, 184, 166, 0.06);
+            font-size: 1.4rem;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .nav-link-app.active {
             color: var(--primary);
-            background: rgba(20, 184, 166, 0.14);
-            font-weight: 900;
         }
 
         .nav-link-app.active i {
-            transform: scale(1.15) translateY(-1px);
-            filter: drop-shadow(0 4px 10px rgba(20, 184, 166, 0.25));
+            transform: scale(1.1) translateY(-2px);
+            color: var(--primary);
+        }
+
+        @media (min-width: 992px) {
+            .bottom-nav { display: none; }
         }
 
         /* SIDEBAR (DESKTOP APP STYLE) */
         .app-sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 300px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.5);
-            z-index: 1060;
-            display: none;
-            flex-direction: column;
-            padding: 60px 40px;
-        }
-
-        @media (min-width: 992px) {
-            .app-sidebar {
-                display: flex;
-            }
+            position: fixed; top: 0; left: 0; bottom: 0; width: 300px;
+            background: var(--card);
+            border-right: 1px solid rgba(0,0,0,0.04);
+            z-index: 1060; display: none; flex-direction: column;
+            padding: 48px 32px;
         }
 
         .sidebar-brand {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 60px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            text-decoration: none;
+            font-size: 1.6rem; font-weight: 900; color: var(--ink);
+            margin-bottom: 48px; display: flex; align-items: center;
+            gap: 12px; text-decoration: none; letter-spacing: -0.05em;
         }
 
         .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 16px 24px;
-            color: var(--slate-600);
-            border-radius: 22px;
-            font-weight: 700;
-            font-size: 1.05rem;
-            transition: 0.3s;
-            margin-bottom: 8px;
-            text-decoration: none;
+            display: flex; align-items: center; gap: 14px;
+            padding: 14px 20px; color: var(--ink-dim);
+            border-radius: 20px; font-weight: 700;
+            font-size: 1rem; transition: all 0.3s ease;
+            margin-bottom: 4px; text-decoration: none;
         }
 
+        .sidebar-link i { font-size: 1.3rem; opacity: 0.8; }
+
         .sidebar-link:hover {
-            background: #F1F5F9;
+            background: var(--bg);
             color: var(--primary);
-            transform: translateX(4px);
         }
 
         .sidebar-link.active {
             background: var(--primary-soft);
             color: var(--primary);
-            box-shadow: inset 4px 0 0 var(--primary);
+        }
+
+        @media (min-width: 992px) {
+            .app-sidebar { display: flex; }
         }
 
         /* FLOATING ACTION BUTTON (FAB) */
@@ -744,43 +756,32 @@
 
     <main class="page-wrapper">
         {% if messages %}
-        {% for message in messages %}
-        <div
-            class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} rounded-4 border-0 shadow-sm mb-4">
-            {{ message }}</div>
-        {% endfor %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-sm px-4 py-3" style="border-radius: var(--radius-lg); font-weight: 700; font-size: 0.9rem;">
+                <i class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check2-circle{% endif %} me-2"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
         {% endif %}
+        
         {% block content %}{% endblock %}
 
-        <!-- SITE FOOTER -->
-        <div class="site-footer d-flex flex-wrap justify-content-center align-items-center"
-            style="margin-top: 5rem; padding-bottom: 2.5rem; gap: 12px; font-size: 0.85rem; font-weight: 600; color: #64748b;">
-            <span>Developed by <span style="color: #1e293b; font-weight: 700;">Fanish</span></span>
-            <span style="color: #cbd5e1;" class="mx-1 d-none d-sm-inline">|</span>
-
-            <div class="d-flex align-items-center gap-2">
-                <a href="https://www.instagram.com/its_me_fanu_/?igsh=MWJncnJ4NGxuYjRpdA%3D%3D&utm_source=qr"
-                    target="_blank" rel="noopener noreferrer"
-                    style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; background: rgba(225, 48, 108, 0.08); border-radius: 20px; color: #e1306c; transition: 0.3s;"
-                    onmouseover="this.style.background='rgba(225, 48, 108, 0.15)'; this.style.transform='translateY(-2px)';"
-                    onmouseout="this.style.background='rgba(225, 48, 108, 0.08)'; this.style.transform='none';">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"
-                        xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.054 1.973.24 2.43.415a4.92 4.92 0 011.675 1.09 4.928 4.928 0 011.09 1.675c.175.457.36 1.26.415 2.43.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.054 1.17-.24 1.973-.415 2.43a4.903 4.903 0 01-1.09 1.675 4.91 4.91 0 01-1.675 1.09c-.457.175-1.26.36-2.43.415-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.054-1.973-.24-2.43-.415a4.92 4.92 0 01-1.675-1.09 4.928 4.928 0 01-1.09-1.675c-.175-.457-.36-1.26-.415-2.43C2.175 15.747 2.163 15.367 2.163 12s.012-3.584.07-4.85c.054-1.17.24-1.973.415-2.43a4.904 4.904 0 011.09-1.675 4.903 4.903 0 011.675-1.09c.457-.175 1.26-.36 2.43-.415C8.416 2.175 8.796 2.163 12 2.163zm0 1.838c-3.17 0-3.545.012-4.795.069-1.018.045-1.57.21-1.935.35a3.096 3.096 0 00-1.125.733 3.096 3.096 0 00-.733 1.125c-.14.365-.305.917-.35 1.935-.057 1.25-.069 1.625-.069 4.795s.012 3.545.069 4.795c.045 1.018.21 1.57.35 1.935.18.466.44.878.733 1.125.248.248.659.553 1.125.733.365.14.917.305 1.935.35 1.25.057 1.625.069 4.795.069s3.545-.012 4.795-.069c1.018-.045 1.57-.21 1.935-.35a3.096 3.096 0 001.125-.733 3.096 3.096 0 00.733-1.125c.14-.365.305-.917.35-1.935.057-1.25.069-1.625.069-4.795s-.012-3.545-.069-4.795c-.045-1.018-.21-1.57-.35-1.935a3.097 3.097 0 00-.733-1.125 3.097 3.097 0 00-1.125-.733c-.365-.14-.917-.305-1.935-.35-1.25-.057-1.625-.069-4.795-.069zm0 4.838a5.001 5.001 0 110 10.002 5.001 5.001 0 010-10.002zm0 1.838a3.163 3.163 0 100 6.326 3.163 3.163 0 000-6.326zm4.946-1.839a1.162 1.162 0 11-2.324 0 1.162 1.162 0 012.324 0z" />
-                    </svg>
-                    <span style="font-weight: 700;">@its_me_fanu_</span>
+        <div class="site-footer text-center mt-5 mb-4">
+            <div style="font-size: 0.85rem; color: var(--ink-muted); font-weight: 700;">
+                Crafted by <span style="color: var(--ink); font-weight: 900;">Fanish</span>
+            </div>
+            <div class="d-flex justify-content-center gap-3 mt-3">
+                <a href="tel:+918848112104" class="text-decoration-none" style="color: var(--primary); font-size: 0.8rem; font-weight: 800;">
+                    <i class="bi bi-telephone-fill me-1"></i> Support
                 </a>
-
-                <a href="tel:+918848112104"
-                    style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 6px 14px; background: var(--primary-soft); border-radius: 20px; color: var(--primary); transition: 0.3s;"
-                    onmouseover="this.style.background='var(--bg-body)'; this.style.transform='translateY(-2px)';"
-                    onmouseout="this.style.background='var(--primary-soft)'; this.style.transform='none';">
-                    <i class="bi bi-telephone-fill" style="font-size: 0.8rem;"></i>
-                    <span style="font-weight: 700;">8848112104</span>
+                <a href="https://instagram.com/its_me_fanu_" target="_blank" class="text-decoration-none" style="color: #E1306C; font-size: 0.8rem; font-weight: 800;">
+                    <i class="bi bi-instagram me-1"></i> Instagram
                 </a>
             </div>
         </div>
+    </main>
     </main>
 
     <!-- UNIFIED MODALS -->
