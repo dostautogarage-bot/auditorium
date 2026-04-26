@@ -76,19 +76,39 @@
 
         /* Mobile app card */
         .app-card {
-            background: rgba(255,255,255,0.72);
-            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-            border: 1.5px solid rgba(255,255,255,0.45);
-            border-radius: 20px; padding: 16px; margin-bottom: 10px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            position: relative; z-index: 1;
+            position: relative;
+            z-index: 1;
         }
-        .app-card:active { transform: scale(0.98); }
+
+        .app-card:active {
+            transform: scale(0.98);
+        }
 
         /* Shimmer loading effect */
-        @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-        .shimmer { background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.6) 50%, transparent 75%); background-size: 200% 100%; animation: shimmer 2s infinite; }
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0
+            }
+
+            100% {
+                background-position: 200% 0
+            }
+        }
+
+        .shimmer {
+            background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.6) 50%, transparent 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
 
         h1,
         h2,
@@ -114,6 +134,7 @@
                 align-items: center;
                 min-height: calc(100% - 32px);
             }
+
             .modal-content {
                 width: 100% !important;
                 border-radius: var(--radius-2xl) !important;
@@ -129,6 +150,14 @@
             box-shadow: var(--shadow-xl);
             overflow: hidden;
         }
+
+        @media (min-width: 576px) {
+            .modal-dialog-message {
+                max-width: 440px !important;
+                margin: 1.75rem auto;
+            }
+        }
+
 
         .modal-header-premium {
             border: none;
@@ -172,7 +201,7 @@
         }
 
         .btn-app-ghost {
-            background: rgba(0,0,0,0.03);
+            background: rgba(0, 0, 0, 0.03);
             color: var(--ink-dim);
         }
 
@@ -211,36 +240,81 @@
         }
 
         @keyframes appSlideUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         @keyframes popIn {
-            0% { opacity:0; transform: scale(0.8); }
-            60% { transform: scale(1.05); }
-            100% { opacity:1; transform: scale(1); }
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            60% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
-        .pop-in { animation: popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both; }
+
+        .pop-in {
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+        }
 
         @keyframes slideRight {
-            from { opacity:0; transform: translateX(-20px); }
-            to { opacity:1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
-        .slide-right { animation: slideRight 0.5s ease-out both; }
+
+        .slide-right {
+            animation: slideRight 0.5s ease-out both;
+        }
 
         .btn-app:hover {
             transform: scale(1.02);
             filter: brightness(1.1);
         }
+
         .btn-app:active {
             transform: scale(0.96);
         }
 
-        .stagger-1 { animation-delay: 0.08s; }
-        .stagger-2 { animation-delay: 0.16s; }
-        .stagger-3 { animation-delay: 0.24s; }
-        .stagger-4 { animation-delay: 0.32s; }
-        .stagger-5 { animation-delay: 0.40s; }
+        .stagger-1 {
+            animation-delay: 0.08s;
+        }
+
+        .stagger-2 {
+            animation-delay: 0.16s;
+        }
+
+        .stagger-3 {
+            animation-delay: 0.24s;
+        }
+
+        .stagger-4 {
+            animation-delay: 0.32s;
+        }
+
+        .stagger-5 {
+            animation-delay: 0.40s;
+        }
 
         /* PAGE WRAPPER & LAYOUT SYSTEM */
         .page-wrapper {
@@ -250,14 +324,22 @@
             box-sizing: border-box;
         }
 
-        h1 { font-size: 1.6rem; }
-        h2 { font-size: 1.3rem; }
+        h1 {
+            font-size: 1.6rem;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+        }
 
         @media (min-width: 768px) {
             .page-wrapper {
                 padding: 32px;
             }
-            h1 { font-size: 2rem; }
+
+            h1 {
+                font-size: 2rem;
+            }
         }
 
         @media (min-width: 992px) {
@@ -266,97 +348,154 @@
                 margin: 0;
                 overflow-x: hidden;
             }
+
             .page-wrapper {
                 margin-left: 300px;
                 width: calc(100% - 300px);
                 padding: 40px;
                 min-height: 100vh;
             }
-            h1 { font-size: 2.4rem; }
+
+            h1 {
+                font-size: 2.4rem;
+            }
         }
 
         /* PREMIUM GRADIENT TOP BAR */
         .app-header {
-            position: fixed; top: 0; left: 0; right: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             height: 70px;
             background: #FFFFFF;
-            z-index: 1000; display: flex; align-items: center; justify-content: space-between;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             padding: 0 20px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
         }
 
         @media (min-width: 992px) {
-            .app-header { display: none; }
+            .app-header {
+                display: none;
+            }
         }
 
         /* NATIVE BOTTOM NAVIGATION */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
             height: calc(85px + var(--safe-bottom));
             background: #FFFFFF;
-            display: flex; align-items: center; justify-content: space-around;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
             padding: 0 10px calc(10px + var(--safe-bottom));
             z-index: 1100;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.05);
-            border-top: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.05);
+            border-top: 1px solid rgba(0, 0, 0, 0.03);
         }
 
         .nav-link-app {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            color: #A1A1AA; text-decoration: none;
-            font-size: 0.65rem; font-weight: 700; gap: 4px;
-            transition: 0.3s; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #A1A1AA;
+            text-decoration: none;
+            font-size: 0.65rem;
+            font-weight: 700;
+            gap: 4px;
+            transition: 0.3s;
             width: 70px;
         }
 
-        .nav-link-app i { font-size: 1.3rem; }
+        .nav-link-app i {
+            font-size: 1.3rem;
+        }
 
-        .nav-link-app.active { color: var(--primary) !important; }
+        .nav-link-app.active {
+            color: var(--primary) !important;
+        }
 
         .fab-center {
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             background: var(--primary-gradient);
             border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
             margin-top: -45px;
             box-shadow: 0 10px 25px rgba(255, 122, 0, 0.4);
             border: 5px solid #FFFFFF;
             transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-decoration: none;
         }
-        .fab-center:active { transform: scale(0.9); }
+
+        .fab-center:active {
+            transform: scale(0.9);
+        }
 
         @media (min-width: 992px) {
-            .bottom-nav { display: none; }
+            .bottom-nav {
+                display: none;
+            }
         }
 
 
 
         /* SIDEBAR (DESKTOP APP STYLE) */
         .app-sidebar {
-            position: fixed; top: 0; left: 0; bottom: 0; width: 300px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 300px;
             background: var(--card);
-            border-right: 1px solid rgba(0,0,0,0.04);
-            z-index: 1060; display: none; flex-direction: column;
+            border-right: 1px solid rgba(0, 0, 0, 0.04);
+            z-index: 1060;
+            display: none;
+            flex-direction: column;
             padding: 48px 32px;
         }
 
         .sidebar-brand {
-            font-size: 1.6rem; font-weight: 900; color: var(--ink);
-            margin-bottom: 48px; display: flex; align-items: center;
-            gap: 12px; text-decoration: none; letter-spacing: -0.05em;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: var(--ink);
+            margin-bottom: 48px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            letter-spacing: -0.05em;
         }
 
         .sidebar-link {
-            display: flex; align-items: center; gap: 14px;
-            padding: 14px 20px; color: var(--ink-dim);
-            border-radius: 20px; font-weight: 700;
-            font-size: 1rem; transition: all 0.3s ease;
-            margin-bottom: 4px; text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            color: var(--ink-dim);
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 4px;
+            text-decoration: none;
         }
 
-        .sidebar-link i { font-size: 1.3rem; opacity: 0.8; }
+        .sidebar-link i {
+            font-size: 1.3rem;
+            opacity: 0.8;
+        }
 
         .sidebar-link:hover {
             background: var(--bg);
@@ -369,7 +508,9 @@
         }
 
         @media (min-width: 992px) {
-            .app-sidebar { display: flex; }
+            .app-sidebar {
+                display: flex;
+            }
         }
 
         /* FLOATING ACTION BUTTON (FAB) */
@@ -663,32 +804,37 @@
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
         <div class="d-flex align-items-center gap-2">
-            <div style="width:32px; height:32px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center;">
+            <div
+                style="width:32px; height:32px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center;">
                 <i class="bi bi-gear-fill" style="color: white; font-size: 1rem;"></i>
             </div>
-            <span style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">Auditorium</span>
+            <span
+                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">Auditorium</span>
         </div>
-        <div class="d-flex align-items-center gap-2">
-            <div class="text-end" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#accountDetailsModal">
+        <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="modal"
+            data-bs-target="#accountDetailsModal">
+            <div class="text-end">
                 <div style="font-size: 0.75rem; font-weight: 800; color: var(--ink); line-height: 1.1;">{{ user.username }}</div>
-                <div style="font-size: 0.6rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.02em;">Account</div>
+                <div
+                    style="font-size: 0.6rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.02em;">
+                    Account</div>
             </div>
-            <div data-bs-toggle="modal" data-bs-target="#accountDetailsModal" style="cursor: pointer; width:34px; height:34px; background:#F1F5F9; border:1.5px solid #E2E8F0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:800; font-size:0.85rem; flex-shrink: 0;">
+            <div
+                style="width:34px; height:34px; background:#F1F5F9; border:1.5px solid #E2E8F0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:800; font-size:0.85rem; flex-shrink: 0;">
                 {{ user.username|slice:":1"|upper }}
             </div>
-            <button type="button" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal" style="background:none; border:none; color:#94A3B8; font-size:1.1rem; padding:0; display:flex; align-items:center; margin-left: 4px;">
-                <i class="bi bi-box-arrow-right"></i>
-            </button>
         </div>
     </header>
 
     <!-- DESKTOP SIDEBAR -->
     <aside class="app-sidebar">
         <div class="sidebar-brand">
-            <div style="width:40px; height:40px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; transform: rotate(-10deg);">
+            <div
+                style="width:40px; height:40px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; transform: rotate(-10deg);">
                 <i class="bi bi-gear-fill" style="color:white; font-size:1.4rem;"></i>
             </div>
-            <span style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">Auditorium</span>
+            <span
+                style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">Auditorium</span>
         </div>
         <nav class="flex-column mb-auto">
             <a href="{% url 'dashboard' %}"
@@ -716,15 +862,18 @@
         </nav>
         <div class="mt-auto" style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 32px;">
             <div class="d-flex align-items-center gap-3 mb-4">
-                <div style="width: 48px; height: 48px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);">
+                <div
+                    style="width: 48px; height: 48px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(255, 122, 0, 0.2);">
                     {{ user.username|slice:":1"|upper }}
                 </div>
                 <div style="min-width: 0;">
                     <div style="font-size: 1rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
-                    <div style="font-size: 0.75rem; font-weight: 700; color: #94A3B8; text-transform: uppercase;">Administrator</div>
+                    <div style="font-size: 0.75rem; font-weight: 700; color: #94A3B8; text-transform: uppercase;">
+                        Administrator</div>
                 </div>
             </div>
-            <button type="button" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal" style="width: 100%; padding: 14px; border-radius: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; color: var(--ink); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;">
+            <button type="button" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal"
+                style="width: 100%; padding: 14px; border-radius: 12px; background: #F8FAFC; border: 1px solid #E2E8F0; color: var(--ink); font-weight: 800; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s;">
                 <i class="bi bi-box-arrow-right"></i> Sign Out
             </button>
         </div>
@@ -734,21 +883,25 @@
 
     <!-- MOBILE BOTTOM NAV -->
     <nav class="bottom-nav">
-        <a href="{% url 'dashboard' %}" class="nav-link-app {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+        <a href="{% url 'dashboard' %}"
+            class="nav-link-app {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
             <i class="bi bi-house-door-fill"></i>
             <span>Home</span>
         </a>
-        <a href="{% url 'calendar' %}" class="nav-link-app {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+        <a href="{% url 'calendar' %}"
+            class="nav-link-app {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
             <i class="bi bi-calendar3-event"></i>
             <span>Schedule</span>
         </a>
-        
 
-        <a href="{% url 'booking_list' %}" class="nav-link-app {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
+
+        <a href="{% url 'booking_list' %}"
+            class="nav-link-app {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
             <i class="bi bi-card-list"></i>
-            <span>Records</span>
+            <span>Booking</span>
         </a>
-        <a href="{% url 'admin_list' %}" class="nav-link-app {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
+        <a href="{% url 'admin_list' %}"
+            class="nav-link-app {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
             <i class="bi bi-people-fill"></i>
             <span>Team</span>
         </a>
@@ -758,33 +911,38 @@
         {% if messages %}
         <div class="mb-4">
             {% for message in messages %}
-            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-sm px-4 py-3" style="border-radius: var(--radius-lg); font-weight: 700; font-size: 0.9rem;">
-                <i class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check2-circle{% endif %} me-2"></i>
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-sm px-4 py-3"
+                style="border-radius: var(--radius-lg); font-weight: 700; font-size: 0.9rem;">
+                <i
+                    class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check2-circle{% endif %} me-2"></i>
                 {{ message }}
             </div>
             {% endfor %}
         </div>
         {% endif %}
-        
+
         {% block content %}{% endblock %}
 
-    <footer style="text-align: center; padding: 40px 20px 140px; width: 100%; opacity: 0.8;">
-        <div class="d-flex flex-column align-items-center gap-2">
-            <div style="font-size: 0.75rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">
-                Developed by <span style="font-weight: 800; color: #64748B;">Fanish</span>
+        <footer style="text-align: center; padding: 40px 20px 140px; width: 100%; opacity: 0.8;">
+            <div class="d-flex flex-column align-items-center gap-2">
+                <div
+                    style="font-size: 0.75rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">
+                    Developed by <span style="font-weight: 800; color: #64748B;">Fanish</span>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
+                    <a href="https://instagram.com/its_me_fanu_" target="_blank"
+                        style="text-decoration: none; color: #BE185D; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #FCE7F3;">
+                        <i class="bi bi-instagram"></i> @its_me_fanu_
+                    </a>
+                    <a href="tel:8848112104"
+                        style="text-decoration: none; color: #1D4ED8; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #EFF6FF;">
+                        <i class="bi bi-telephone-fill"></i> 8848112104
+                    </a>
+                </div>
             </div>
-            
-            <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                <a href="https://instagram.com/its_me_fanu_" target="_blank" style="text-decoration: none; color: #BE185D; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #FCE7F3;">
-                    <i class="bi bi-instagram"></i> @its_me_fanu_
-                </a>
-                <a href="tel:8848112104" style="text-decoration: none; color: #1D4ED8; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #EFF6FF;">
-                    <i class="bi bi-telephone-fill"></i> 8848112104
-                </a>
-            </div>
-        </div>
-    </footer>
-</main>
+        </footer>
+    </main>
 
     <!-- UNIFIED MODALS -->
     <div class="modal fade" id="createBookingModal" tabindex="-1" aria-hidden="true">
@@ -829,7 +987,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">💰 Advance Received (Optional)</label>
-                            <input type="number" id="id_advance" name="advance_received" class="form-control-premium" placeholder="0.00" step="0.01" min="0">
+                            <input type="number" id="id_advance" name="advance_received" class="form-control-premium"
+                                placeholder="0.00" step="0.01" min="0">
                         </div>
                         <input type="hidden" id="modal_date_base">
                         <input type="hidden" id="modal_booking_id" value="">
@@ -895,19 +1054,22 @@
             </div>
         </div>
     </div>
-    
+
     <!-- PERMISSION ERROR MODAL -->
     <div class="modal fade" id="permissionModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-message">
             <div class="modal-content modal-content-premium">
-                <div class="modal-body modal-body-premium d-flex flex-column align-items-center justify-content-center text-center py-5">
+                <div
+                    class="modal-body modal-body-premium d-flex flex-column align-items-center justify-content-center text-center py-5">
                     <div class="mb-4 d-flex align-items-center justify-content-center"
                         style="width: 80px; height: 80px; background: #FFF1F2; color: #E11D48; border-radius: 28px;">
                         <i class="bi bi-shield-lock-fill fs-1"></i>
                     </div>
                     <h5 class="fw-800 text-dark mb-2" style="font-size: 1.2rem;">Access Restricted</h5>
-                    <p class="text-muted fw-medium mb-4">Booking permission restricted. Please contact Super Admin (admin) to enable this feature.</p>
-                    <button type="button" class="btn-app btn-app-primary w-100" data-bs-dismiss="modal">I Understand</button>
+                    <p class="text-muted fw-medium mb-4">Booking permission restricted. Please contact Super Admin
+                        (admin) to enable this feature.</p>
+                    <button type="button" class="btn-app btn-app-primary w-100" data-bs-dismiss="modal">I
+                        Understand</button>
                 </div>
             </div>
         </div>
@@ -915,7 +1077,7 @@
 
     <!-- GENERIC DELETE MODAL -->
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-message">
             <div class="modal-content modal-content-premium">
                 <div class="modal-header modal-header-premium">
                     <h4 class="fw-800 mb-0">Delete Confirmation</h4><button type="button" class="btn-close"
@@ -1006,9 +1168,11 @@
                                 <div class="form-label">Mobile Number</div>
                                 <div id="dvMobile" style="font-weight: 700; color: var(--ink);"></div>
                             </div>
-                            <div id="dvAdvanceContainer" style="background: rgba(20, 184, 166, 0.08); padding: 14px 18px; border-radius: 18px; border: 1px dashed rgba(20, 184, 166, 0.3);">
+                            <div id="dvAdvanceContainer"
+                                style="background: rgba(20, 184, 166, 0.08); padding: 14px 18px; border-radius: 18px; border: 1px dashed rgba(20, 184, 166, 0.3);">
                                 <div class="form-label">💰 Advance Received</div>
-                                <div id="dvAdvance" style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">₹0.00</div>
+                                <div id="dvAdvance" style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">
+                                    ₹0.00</div>
                             </div>
                         </div>
 
@@ -1059,33 +1223,39 @@
     </div>
     <!-- Account Details Modal -->
     <div class="modal fade" id="accountDetailsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-content-premium" style="padding: 0; overflow: hidden; border-radius: 32px;">
-                <div style="background: var(--primary-gradient); padding: 40px 32px; text-align: center; color: white;">
-                    <div style="width: 80px; height: 80px; background: rgba(255,255,255,0.2); border: 2px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.4rem; font-weight: 900; margin: 0 auto 16px;">
-                        {{ user.username|slice:":1"|upper }}
+        <div class="modal-dialog modal-dialog-centered modal-dialog-message">
+            <div class="modal-content modal-content-premium">
+                <div
+                    class="modal-body modal-body-premium d-flex flex-column align-items-center justify-content-center text-center py-5">
+                    <div class="mb-4 d-flex align-items-center justify-content-center"
+                        style="width: 80px; height: 80px; background: var(--primary-soft); color: var(--primary); border-radius: 28px;">
+                        <i class="bi bi-person-circle fs-1"></i>
                     </div>
-                    <h3 style="font-weight: 900; font-size: 1.4rem; margin: 0;">{{ user.username }}</h3>
-                    <p style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.8; margin-top: 4px;">
+                    <h5 class="fw-800 text-dark mb-1" style="font-size: 1.2rem;">{{ user.username }}</h5>
+                    <p
+                        style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); margin-bottom: 24px;">
                         {% if user.is_superuser %}Super Administrator{% else %}Auditorium Admin{% endif %}
                     </p>
-                </div>
-                <div style="padding: 32px;">
-                    <div class="d-flex flex-column gap-4">
-                        <div>
-                            <div style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Full Name</div>
-                            <div style="font-weight: 800; color: #1E293B; font-size: 1rem;">{{ user.get_full_name|default:user.username }}</div>
+
+                    <div class="w-100 text-start d-flex flex-column gap-3 mb-4">
+                        <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
+                            <div class="form-label" style="margin-left: 0;">Full Name</div>
+                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.get_full_name|default:user.username }}</div>
                         </div>
-                        <div>
-                            <div style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Email Address</div>
-                            <div style="font-weight: 800; color: #1E293B; font-size: 1rem;">{{ user.email|default:"No email provided" }}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Account Status</div>
-                            <div class="badge rounded-pill" style="background: #F0FDF4; color: #166534; font-weight: 800; padding: 6px 14px;">Active Member</div>
+                        <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
+                            <div class="form-label" style="margin-left: 0;">Email Address</div>
+                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.email|default:"No email provided" }}</div>
                         </div>
                     </div>
-                    <button type="button" class="btn-app btn-app-ghost w-100 py-3 mt-5" data-bs-dismiss="modal" style="border-radius: 16px; font-weight: 800;">Close Details</button>
+
+                    <div class="d-flex flex-column gap-2 w-100">
+                        <button type="button" class="btn-app btn-app-primary w-100 py-3" data-bs-toggle="modal"
+                            data-bs-target="#logoutConfirmModal" style="background: #EF4444; border-radius: 16px;">
+                            <i class="bi bi-box-arrow-right me-2"></i>Sign Out Account
+                        </button>
+                        <button type="button" class="btn-app btn-app-ghost w-100 py-3" data-bs-dismiss="modal"
+                            style="border-radius: 16px; font-weight: 800;">Close Details</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1093,20 +1263,25 @@
 
     <!-- Logout Confirmation Modal -->
     <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content modal-content-premium text-center" style="padding: 40px 32px;">
-                <div class="d-flex justify-content-center mb-4">
-                    <div style="width: 80px; height: 80px; background: #FFF1F1; color: #EF4444; border-radius: 24px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem;">
-                        <i class="bi bi-box-arrow-right"></i>
+        <div class="modal-dialog modal-dialog-centered modal-dialog-message">
+            <div class="modal-content modal-content-premium">
+                <div
+                    class="modal-body modal-body-premium d-flex flex-column align-items-center justify-content-center text-center py-5">
+                    <div class="mb-4 d-flex align-items-center justify-content-center"
+                        style="width: 80px; height: 80px; background: #FFF1F2; color: #E11D48; border-radius: 28px;">
+                        <i class="bi bi-box-arrow-right fs-1"></i>
                     </div>
-                </div>
-                <h3 style="font-weight: 900; font-size: 1.4rem; color: #1E293B; margin-bottom: 8px;">Sign Out?</h3>
-                <p style="color: #64748B; font-weight: 600; font-size: 0.95rem; margin-bottom: 32px;">Are you sure you want to log out of the auditorium portal?</p>
-                <div class="d-flex flex-column gap-2">
-                    <form method="post" action="{% url 'logout' %}">{% csrf_token %}
-                        <button type="submit" class="btn-app btn-app-primary w-100 py-3" style="background: #EF4444; border-radius: 16px;">Yes, Sign Out</button>
-                    </form>
-                    <button type="button" class="btn-app btn-app-ghost w-100 py-3" data-bs-dismiss="modal" style="border-radius: 16px; font-weight: 700;">Stay Logged In</button>
+                    <h5 class="fw-800 text-dark mb-2" style="font-size: 1.2rem;">Sign Out Account?</h5>
+                    <p class="text-muted fw-medium mb-4">Are you sure you want to log out of the auditorium portal?</p>
+
+                    <div class="d-flex flex-column gap-2 w-100">
+                        <form method="post" action="{% url 'logout' %}" class="w-100">{% csrf_token %}
+                            <button type="submit" class="btn-app btn-app-primary w-100 py-3"
+                                style="background: #E11D48; border-radius: 16px;">Yes, Sign Out</button>
+                        </form>
+                        <button type="button" class="btn-app btn-app-ghost w-100 py-3" data-bs-dismiss="modal"
+                            style="border-radius: 16px; font-weight: 800;">Cancel</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1114,7 +1289,7 @@
 
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
-        const USER_CAN_BOOK = {% if request.user.is_superuser or request.user.profile.is_bookable %}true{% else %}false{% endif %};
+        const USER_CAN_BOOK = {% if request.user.is_superuser or request.user.profile.is_bookable %}true{% else %} false{% endif %};
         let selectedStartTime = null; let selectedEndTime = null;
         function generateTimeOptions() {
             const startList = document.getElementById('startTimeSuggestions'); if (!startList) return;
