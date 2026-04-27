@@ -146,79 +146,150 @@
         <p>Real-time auditorium metrics, team activity, and financial oversight.</p>
     </div>
 
+    <!-- Audit Filters (Superuser Only) -->
+    <div class="dg-section-card mb-4" style="padding: 18px;">
+        <form method="GET" class="row g-2 g-md-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <label class="form-label" style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">Select Month (Priority)</label>
+                <select name="month" class="form-select" onchange="toggleDateFilters(this.value)" style="border-radius: 12px; border: 1.5px solid #F1F5F9; font-weight: 700; font-size: 0.85rem; height: 44px; min-width: 140px; padding-right: 35px; background-color: {% if filters.month %}#FFF7ED{% else %}white{% endif %};">
+                    <option value="">Custom Date Range</option>
+                    {% for option in month_options %}
+                    <option value="{{ option.value }}" {% if filters.month == option.value %}selected{% endif %}>{{ option.label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-2 date-filter-group {% if filters.month %}opacity-50{% endif %}">
+                <label class="form-label" style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">Start Date</label>
+                <input type="date" name="start_date" id="id_start_date" value="{{ filters.start_date }}" {% if filters.month %}disabled{% endif %} class="form-control" style="border-radius: 12px; border: 1.5px solid #F1F5F9; font-weight: 700; font-size: 0.85rem; height: 44px;">
+            </div>
+            <div class="col-6 col-md-2 date-filter-group {% if filters.month %}opacity-50{% endif %}">
+                <label class="form-label" style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">End Date</label>
+                <input type="date" name="end_date" id="id_end_date" value="{{ filters.end_date }}" {% if filters.month %}disabled{% endif %} class="form-control" style="border-radius: 12px; border: 1.5px solid #F1F5F9; font-weight: 700; font-size: 0.85rem; height: 44px;">
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label" style="font-size: 0.65rem; font-weight: 800; color: #94A3B8; text-transform: uppercase;">By Admin</label>
+                <select name="admin_id" class="form-select" style="border-radius: 12px; border: 1.5px solid #F1F5F9; font-weight: 700; font-size: 0.85rem; height: 44px;">
+                    <option value="">All Staff</option>
+                    {% for admin in all_admins %}
+                    <option value="{{ admin.id }}" {% if filters.admin_id == admin.id|stringformat:"s" %}selected{% endif %}>{{ admin.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-app btn-app-primary flex-grow-1" style="height: 44px; border-radius: 12px; font-size: 0.85rem;">Apply</button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-light d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 12px; background: #F8FAFC; border: 1.5px solid #F1F5F9;"><i class="bi bi-arrow-counterclockwise"></i></a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleDateFilters(monthValue) {
+            const dateInputs = document.querySelectorAll('.date-filter-group input');
+            const dateGroups = document.querySelectorAll('.date-filter-group');
+            if (monthValue) {
+                dateInputs.forEach(input => input.disabled = true);
+                dateGroups.forEach(group => group.classList.add('opacity-50'));
+            } else {
+                dateInputs.forEach(input => input.disabled = false);
+                dateGroups.forEach(group => group.classList.remove('opacity-50'));
+            }
+        }
+    </script>
+
     <!-- Multi-Color Stat Boxes -->
     <div class="dg-stat-grid">
-        <div class="dg-stat-box dg-box-blue">
-            <div class="dg-stat-label">This Month<br>Bookings</div>
-            <div class="dg-stat-value">{{ stats.month_total }}</div>
-        </div>
         <div class="dg-stat-box dg-box-orange">
             <div class="dg-stat-label">Total Advance<br>Collected</div>
-            <div class="dg-stat-value">₹{{ stats.total_advance|default:"0" }}</div>
+            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.total_advance|default:"0"|floatformat:0 }}</div>
+        </div>
+        <div class="dg-stat-box dg-box-blue">
+            <div class="dg-stat-label">Filtered<br>Booking Count</div>
+            <div class="dg-stat-value" style="font-size: 1.5rem;">{{ stats.filtered_count }}</div>
         </div>
         <div class="dg-stat-box dg-box-green">
-            <div class="dg-stat-label">My Events<br>Count</div>
-            <div class="dg-stat-value">{{ stats.my_total }}</div>
-        </div>
-        <div class="dg-stat-box dg-box-purple">
-            <div class="dg-stat-label">Staff<br>Members</div>
-            <div class="dg-stat-value">{{ stats.admin_total }}</div>
-        </div>
-        <div class="dg-stat-box dg-box-red">
-            <div class="dg-stat-label">Active<br>Users</div>
-            <div class="dg-stat-value">{{ stats.admin_total }}</div>
-        </div>
-        <div class="dg-stat-box dg-box-deep-blue">
-            <div class="dg-stat-label">Lifetime<br>Records</div>
-            <div class="dg-stat-value">{{ stats.total_life }}</div>
+            <div class="dg-stat-label">This Month<br>Total Events</div>
+            <div class="dg-stat-value" style="font-size: 1.5rem;">{{ stats.month_total }}</div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="dg-section-card">
+    <div class="row g-4">
+        <!-- Advances by Admin Breakdown -->
+        <div class="col-12 col-xl-6">
+            <div class="dg-section-card h-100">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2
-                        style="font-size: 1.1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">
-                        Recent Bookings</h2>
-                    <span class="badge"
-                        style="background: #FFF7ED; color: #EA580C; font-weight: 800; border: 1px solid #FFEDD5;">LATEST
-                        5</span>
+                    <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Advances by Admin</h2>
                 </div>
-
                 <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0">
+                    <table class="table table-borderless align-middle mb-0" style="min-width: 400px;">
                         <thead>
                             <tr style="border-bottom: 1.5px solid #F1F5F9;">
-                                <th
-                                    style="font-size:0.7rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">
-                                    Event</th>
-                                <th
-                                    style="font-size:0.7rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">
-                                    Date</th>
-                                <th
-                                    style="font-size:0.7rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">
-                                    Advance</th>
+                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Staff Name</th>
+                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:center;">Count</th>
+                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Total Amount</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for booking in recent_bookings|slice:":5" %}
+                            {% for admin in admin_breakdown %}
                             <tr style="border-bottom: 1px solid #F8FAFC;">
-                                <td style="padding:16px 0;">
-                                    <div style="font-weight: 800; color: #1E293B; font-size: 0.95rem;">{{ booking.title }}</div>
-                                    <div style="font-size: 0.75rem; color: #94A3B8; font-weight: 600;">By {{ booking.created_by.username }}</div>
+                                <td style="padding:14px 0;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div style="width: 32px; height: 32px; background: var(--bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: var(--primary);">
+                                            {{ admin.username|slice:":1"|upper }}
+                                        </div>
+                                        <div style="font-weight: 800; color: #1E293B; font-size: 0.85rem;">{{ admin.username }}</div>
+                                    </div>
                                 </td>
-                                <td style="padding:16px 0; font-weight: 700; color: #64748B; font-size: 0.85rem;">
-                                    {{ booking.start_time|date:"d M" }}
+                                <td style="padding:14px 0; text-align:center; font-weight: 700; color: #64748B; font-size: 0.8rem;">
+                                    {{ admin.booking_count }}
                                 </td>
-                                <td style="padding:16px 0; text-align:right; font-weight:900; color: #1E293B; font-size: 0.95rem;">
+                                <td style="padding:14px 0; text-align:right; font-weight:900; color: var(--primary); font-size: 0.9rem;">
+                                    ₹{{ admin.collected|default:0|floatformat:0 }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center py-4 text-muted small fw-bold">No data found</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="col-12 col-xl-6">
+            <div class="dg-section-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Recent Bookings</h2>
+                    <span class="badge" style="background: #FFF7ED; color: #EA580C; font-weight: 800; border: 1px solid #FFEDD5; font-size: 0.65rem;">LATEST 10</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle mb-0" style="min-width: 450px;">
+                        <thead>
+                            <tr style="border-bottom: 1.5px solid #F1F5F9;">
+                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Event Details</th>
+                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Date</th>
+                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Advance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in recent_bookings %}
+                            <tr style="border-bottom: 1px solid #F8FAFC;">
+                                <td style="padding:14px 0;">
+                                    <div style="font-weight: 800; color: #1E293B; font-size: 0.85rem;">{{ booking.title }}</div>
+                                    <div style="font-size: 0.7rem; color: #94A3B8; font-weight: 600;">By {{ booking.created_by.username }}</div>
+                                </td>
+                                <td style="padding:14px 0; font-weight: 700; color: #64748B; font-size: 0.8rem;">
+                                    {{ booking.start_time|date:"d M, Y" }}
+                                </td>
+                                <td style="padding:14px 0; text-align:right; font-weight:900; color: #1E293B; font-size: 0.85rem;">
                                     ₹{{ booking.advance_received|default:0|floatformat:0 }}
                                 </td>
                             </tr>
                             {% empty %}
-                            <tr>
-                                <td colspan="3" class="text-center py-5 text-muted fw-bold">No recent records</td>
-                            </tr>
+                            <tr><td colspan="3" class="text-center py-4 text-muted small fw-bold">No records found</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>

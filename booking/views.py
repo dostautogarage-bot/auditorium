@@ -16,24 +16,92 @@ User = get_user_model()
 @login_required
 def dashboard(request):
     now = timezone.now()
+    today_str = now.strftime('%Y-%m-%d')
     
+    # Filters
+    selected_month = request.GET.get('month')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    # If no filters at all, default to current month for a clear overview
+    if not any([selected_month, start_date, end_date]):
+        selected_month = now.strftime('%Y-%m')
+    
+    # Default end_date to today if not in month-priority mode and not specified
+    if not selected_month and not end_date:
+        end_date = today_str
+    
+    admin_id = request.GET.get('admin_id')
+    
+    # Base query for filtered metrics
+    filtered_qs = Booking.objects.all()
+    
+    # Filter Logic (Priority: Month > Date Range)
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            filtered_qs = filtered_qs.filter(start_time__year=year, start_time__month=month)
+        except (ValueError, AttributeError):
+            pass
+    else:
+        if start_date:
+            filtered_qs = filtered_qs.filter(start_time__date__gte=start_date)
+        if end_date:
+            filtered_qs = filtered_qs.filter(start_time__date__lte=end_date)
+            
+    if admin_id:
+        filtered_qs = filtered_qs.filter(created_by_id=admin_id)
+
     # Stats
-    total_this_month = Booking.objects.filter(start_time__month=now.month, start_time__year=now.year).count()
-    my_bookings_count = Booking.objects.filter(created_by=request.user).count()
-    total_admins = User.objects.filter(is_staff=True).count()
-    total_bookings = Booking.objects.count()
+    total_advance = filtered_qs.aggregate(Sum('advance_received'))['advance_received__sum'] or 0
+    filtered_count = filtered_qs.count()
     
-    # Recent bookings
-    recent_bookings = Booking.objects.all().order_by('-start_time')[:10]
+    # Fixed Stats (Contextual)
+    month_total = Booking.objects.filter(start_time__month=now.month, start_time__year=now.year).count()
+    my_total = Booking.objects.filter(created_by=request.user).count()
+    admin_total = User.objects.filter(is_staff=True).count()
+    total_life = Booking.objects.count()
+    
+    # Admin Breakdown
+    admin_breakdown = User.objects.filter(is_staff=True).annotate(
+        collected=Sum('bookings__advance_received', filter=Q(bookings__in=filtered_qs)),
+        booking_count=Count('bookings', filter=Q(bookings__in=filtered_qs))
+    ).filter(booking_count__gt=0).order_by('-collected')
+    
+    # Month list for dropdown (last 12 months)
+    month_options = []
+    for i in range(12):
+        m = (now.month - i - 1) % 12 + 1
+        y = now.year + (now.month - i - 1) // 12
+        date_obj = now.replace(year=y, month=m, day=1)
+        month_options.append({
+            'value': date_obj.strftime('%Y-%m'),
+            'label': date_obj.strftime('%B %Y')
+        })
+
+    # Filter Helpers
+    all_admins = User.objects.filter(is_staff=True).order_by('username')
+    recent_bookings = filtered_qs.order_by('-start_time')[:10]
     
     return render(request, 'booking/dashboard.html', {
         'stats': {
-            'month_total': total_this_month,
-            'my_total': my_bookings_count,
-            'admin_total': total_admins,
-            'total_life': total_bookings
+            'month_total': month_total,
+            'total_advance': total_advance,
+            'my_total': my_total,
+            'admin_total': admin_total,
+            'total_life': total_life,
+            'filtered_count': filtered_count
         },
-        'recent_bookings': recent_bookings
+        'admin_breakdown': admin_breakdown,
+        'all_admins': all_admins,
+        'month_options': month_options,
+        'recent_bookings': recent_bookings,
+        'filters': {
+            'month': selected_month,
+            'start_date': start_date,
+            'end_date': end_date,
+            'admin_id': admin_id
+        }
     })
 
 # -------------------- ADMIN MANAGEMENT --------------------
