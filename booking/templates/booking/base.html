@@ -6,13 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0D9488">
+    <meta name="theme-color" content="#FF7A00">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ABC Auditorium">
 
     <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
     <link rel="apple-touch-icon" href="{% static 'favicon.png' %}">
+    <link rel="manifest" href="{% url 'manifest_json' %}">
 
     <title>{% block title %}ABC Auditorium{% endblock %}</title>
 
@@ -133,14 +134,15 @@
         /* MODAL WRAPPER FIX - MOBILE CARD STYLE */
         @media (max-width: 576px) {
             .modal-dialog {
-                margin: 16px;
+                margin: 20px;
                 display: flex;
                 align-items: center;
-                min-height: calc(100% - 32px);
+                justify-content: center;
             }
 
             .modal-content {
                 width: 100% !important;
+                max-height: 85vh !important;
                 border-radius: var(--radius-2xl) !important;
             }
         }
@@ -1725,6 +1727,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             generateTimeOptions();
         });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('{% url "sw_js" %}').catch(err => console.log('SW registration failed:', err));
+            });
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>
