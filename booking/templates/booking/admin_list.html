@@ -1,5 +1,5 @@
 {% extends 'booking/base.html' %}
-{% block title %}Users — Auditorium{% endblock %}
+{% block title %}Users — ABC Auditorium{% endblock %}
 
 {% block content %}
 <div class="fade-in">
@@ -60,22 +60,24 @@
                 {% endif %}
             </div>
 
-            {% if request.user.is_superuser %}
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-column gap-2">
                 {% if admin != request.user %}
-                    <button onclick="toggleStatus('{{ admin.pk }}', 'active')" class="btn-app flex-grow-1" style="background: {% if admin.is_active %}#F0FDF4{% else %}#F1F5F9{% endif %}; color: {% if admin.is_active %}#166534{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.75rem;">
-                        {{ admin.is_active|yesno:"Login Enabled,Suspended" }}
-                    </button>
-                    <button onclick="toggleStatus('{{ admin.pk }}', 'booking')" class="btn-app flex-grow-1" style="background: {% if admin.profile.is_bookable %}#EEF2FF{% else %}#F1F5F9{% endif %}; color: {% if admin.profile.is_bookable %}#3730A3{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.75rem;">
-                        Bookings: {{ admin.profile.is_bookable|yesno:"On,Off" }}
+                    <div class="d-flex gap-2">
+                        <button onclick="toggleStatus('{{ admin.pk }}', 'active')" class="btn-app flex-grow-1" style="background: {% if admin.is_active %}#F0FDF4{% else %}#F1F5F9{% endif %}; color: {% if admin.is_active %}#166534{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.7rem;">
+                            Login: {{ admin.is_active|yesno:"ON,OFF" }}
+                        </button>
+                        <button onclick="toggleStatus('{{ admin.pk }}', 'booking')" class="btn-app flex-grow-1" style="background: {% if admin.profile.is_bookable %}#EEF2FF{% else %}#F1F5F9{% endif %}; color: {% if admin.profile.is_bookable %}#3730A3{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.7rem;">
+                            Booking: {{ admin.profile.is_bookable|yesno:"ON,OFF" }}
+                        </button>
+                    </div>
+                    <button onclick="toggleStatus('{{ admin.pk }}', 'staff')" class="btn-app w-100" style="background: {% if admin.profile.is_auditorium_staff %}#FFF7ED{% else %}#F1F5F9{% endif %}; color: {% if admin.profile.is_auditorium_staff %}#C2410C{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.7rem;">
+                        Auditorium Staff: {{ admin.profile.is_auditorium_staff|yesno:"ENABLED,DISABLED" }}
                     </button>
                 {% endif %}
             </div>
-            {% else %}
             <div class="d-flex gap-2">
                 <span style="background: #F8FAFC; padding: 8px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; color: #94A3B8;">Verified Staff Member</span>
             </div>
-            {% endif %}
         </div>
         {% endfor %}
     </div>
@@ -83,7 +85,11 @@
 
 <script>
     function toggleStatus(pk, type) {
-        const url = type === 'active' ? `/api/toggle-admin/${pk}/` : `/api/toggle-booking/${pk}/`;
+        let url;
+        if (type === 'active') url = `/api/toggle-admin/${pk}/`;
+        else if (type === 'booking') url = `/api/toggle-booking/${pk}/`;
+        else if (type === 'staff') url = `/api/toggle-staff/${pk}/`;
+        
         fetch(url, {
             method: 'POST',
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }

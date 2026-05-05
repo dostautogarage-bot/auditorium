@@ -6,6 +6,7 @@ from django.db.models import Q, Sum, Count
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+import json
 from .models import Booking, UserProfile
 from .forms import AdminCreationForm, AdminEditForm, BookingForm
 
@@ -15,6 +16,9 @@ User = get_user_model()
 # -------------------- DASHBOARD --------------------
 @login_required
 def dashboard(request):
+    if not request.user.is_superuser:
+        return redirect('calendar')
+    
     now = timezone.now()
     today_str = now.strftime('%Y-%m-%d')
     
@@ -239,11 +243,14 @@ def booking_list(request):
 @login_required
 def booking_create(request):
     # Check if user is allowed to create bookings
-    if request.user.is_staff:
+    if request.user.is_staff and not request.user.is_superuser:
         try:
             profile = request.user.profile
-            if not profile.is_bookable:
-                messages.error(request, 'You do not have permission to create bookings. Please contact the super admin.')
+            if profile.is_auditorium_staff or not profile.is_bookable:
+                error_msg = 'You do not have permission to create bookings.'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': error_msg})
+                messages.error(request, error_msg)
                 return redirect(request.META.get('HTTP_REFERER', 'calendar'))
         except UserProfile.DoesNotExist:
             # Create profile if it doesn't exist
@@ -256,21 +263,50 @@ def booking_create(request):
             
             # Prevent Past Bookings
             if booking.start_time < timezone.now():
-                messages.error(request, 'Cannot create a booking in the past!')
-                return redirect(request.META.get('HTTP_REFERER', 'calendar'))
+                error_msg = 'Cannot create a booking in the past!'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': error_msg})
+                messages.error(request, error_msg)
+                return redirect('calendar')
 
             # Backend Conflict Check
             conflicts = Booking.objects.filter(
                 Q(start_time__lt=booking.end_time, end_time__gt=booking.start_time)
             )
             if conflicts.exists():
-                messages.error(request, 'Conflict detected! This slot is already partially or fully booked.')
-                return redirect(request.META.get('HTTP_REFERER', 'calendar'))
+                error_msg = 'Conflict detected! This slot is already partially or fully booked.'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': error_msg})
+                messages.error(request, error_msg)
+                return redirect('calendar')
 
             booking.created_by = request.user
             booking.save()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'message': 'Booking successfully created.'})
             messages.success(request, 'Booking successfully created.')
-            return redirect(request.META.get('HTTP_REFERER', 'booking_list'))
+            return redirect('calendar')
+        else:
+            # Form validation failed - return form with errors for display
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # For AJAX, return JSON with error messages
+                error_messages = []
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        if field == '__all__':
+                            error_messages.append(str(error))
+                        else:
+                            friendly_field = field.replace('_', ' ').title()
+                            error_messages.append(f"{friendly_field}: {error}")
+                final_msg = '<br>'.join(error_messages)
+                return JsonResponse({'status': 'error', 'message': final_msg})
+            # For regular requests, render form with errors
+            return render(request, 'booking/booking_form.html', {
+                'form': form,
+                'title': 'Create New Booking',
+                'submit_text': 'Create Booking'
+            })
+    
     else:
         initial_data = {}
         start_time = request.GET.get('start_time')
@@ -289,6 +325,19 @@ def booking_create(request):
 
 @login_required
 def booking_edit(request, pk):
+    # Check if user is allowed to edit bookings
+    if request.user.is_staff and not request.user.is_superuser:
+        try:
+            profile = request.user.profile
+            if profile.is_auditorium_staff or not profile.is_bookable:
+                error_msg = 'You do not have permission to edit bookings.'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': error_msg})
+                messages.error(request, error_msg)
+                return redirect(request.META.get('HTTP_REFERER', 'calendar'))
+        except UserProfile.DoesNotExist:
+            pass
+            
     booking = get_object_or_404(Booking, pk=pk)
     
     if request.method == 'POST':
@@ -296,11 +345,36 @@ def booking_edit(request, pk):
         if form.is_valid():
             new_booking = form.save(commit=False)
             if new_booking.start_time < timezone.now():
-                messages.error(request, 'Cannot set a booking to a past time!')
-                return redirect('booking_list')
+                error_msg = 'Cannot set a booking to a past time!'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({'status': 'error', 'message': error_msg})
+                messages.error(request, error_msg)
+                return redirect('calendar')
             new_booking.save()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'status': 'success', 'message': 'Booking successfully updated.'})
             messages.success(request, 'Booking successfully updated.')
-            return redirect('booking_list')
+            return redirect('calendar')
+        else:
+            # Form validation failed - return form with errors for display
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # For AJAX, return JSON with error messages
+                error_messages = []
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        if field == '__all__':
+                            error_messages.append(str(error))
+                        else:
+                            friendly_field = field.replace('_', ' ').title()
+                            error_messages.append(f"{friendly_field}: {error}")
+                final_msg = '<br>'.join(error_messages)
+                return JsonResponse({'status': 'error', 'message': final_msg})
+            # For regular requests, render form with errors
+            return render(request, 'booking/booking_form.html', {
+                'form': form,
+                'title': f'Edit Booking: {booking.title}',
+                'submit_text': 'Update Booking'
+            })
     else:
         form = BookingForm(instance=booking)
         
@@ -374,8 +448,8 @@ def payment_report(request):
 
 def manifest_json(request):
     manifest = {
-        "name": "Auditorium Booking System",
-        "short_name": "Auditorium",
+        "name": "ABC Auditorium Booking System",
+        "short_name": "ABC Auditorium",
         "description": "Book auditoriums and manage bookings",
         "start_url": "/",
         "display": "standalone",
@@ -413,7 +487,10 @@ self.addEventListener('fetch', function(event) {
 
 @login_required
 def calendar_view(request):
-    return render(request, 'booking/calendar.html')
+    is_staff_role = False
+    if hasattr(request.user, 'profile'):
+        is_staff_role = request.user.profile.is_auditorium_staff
+    return render(request, 'booking/calendar.html', {'is_auditorium_staff': is_staff_role})
 
 
 @login_required
@@ -421,22 +498,50 @@ def booking_api(request):
     from django.utils import timezone
     bookings = Booking.objects.all()
     events = []
+    is_staff_role = False
+    if hasattr(request.user, 'profile'):
+        is_staff_role = request.user.profile.is_auditorium_staff
+
     for booking in bookings:
         # Ensure times are in the correct timezone
         start_time = timezone.localtime(booking.start_time)
         end_time = timezone.localtime(booking.end_time)
-        events.append({
-            'id': booking.pk,
-            'title': booking.title,
-            'start': start_time.isoformat(),
-            'end': end_time.isoformat(),
-            'contact_person': booking.contact_person,
-            'mobile_number': booking.mobile_number,
-            'advance_received': str(booking.advance_received),
-            'created_by': booking.created_by.username,
-            'created_at': booking.created_at.strftime('%b %d, %Y %I:%M %p'),
-            'url': f'/bookings/{booking.pk}/edit/'
-        })
+        
+        # Determine shift (Day: 7 AM - 7 PM, Night: 7 PM - 7 AM)
+        hour = start_time.hour
+        shift = 'day' if 7 <= hour < 19 else 'night'
+        
+        time_str = f"{start_time.strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')} - {end_time.strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')}"
+        if is_staff_role:
+            # Hide personal details for auditorium staff
+            events.append({
+                'id': booking.pk,
+                'title': 'BOOKED',
+                'start': start_time.isoformat(),
+                'end': end_time.isoformat(),
+                'extendedProps': {
+                    'shift': shift,
+                    'timing': time_str
+                }
+            })
+        else:
+            events.append({
+                'id': booking.pk,
+                'title': booking.title,
+                'start': start_time.isoformat(),
+                'end': end_time.isoformat(),
+                'contact_person': booking.contact_person,
+                'mobile_number': booking.mobile_number,
+                'advance_received': str(booking.advance_received),
+                'created_by': booking.created_by.username,
+                'created_at': booking.created_at.strftime('%b %d, %Y %I:%M %p'),
+                'url': f'/bookings/{booking.pk}/edit/',
+                'extendedProps': {
+                    'shift': shift,
+                    'contact': booking.contact_person,
+                    'mobile': booking.mobile_number
+                }
+            })
     return JsonResponse(events, safe=False)
 
 
@@ -503,3 +608,57 @@ def toggle_booking_status(request, pk):
     profile.is_bookable = not profile.is_bookable
     profile.save()
     return JsonResponse({'status': 'success', 'is_bookable': profile.is_bookable})
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def toggle_staff_status(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    profile, created = UserProfile.objects.get_or_create(user=user)
+    profile.is_auditorium_staff = not profile.is_auditorium_staff
+    profile.save()
+    return JsonResponse({'status': 'success', 'is_auditorium_staff': profile.is_auditorium_staff})
+
+def manifest_json(request):
+    manifest = {
+        "name": "ABC Auditorium",
+        "short_name": "ABC Audit",
+        "description": "Real-time ABC Auditorium booking schedule.",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#ffffff",
+        "theme_color": "#FF7A00",
+        "icons": [
+            {
+                "src": "/static/favicon.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any maskable"
+            },
+            {
+                "src": "/static/favicon.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any maskable"
+            }
+        ]
+    }
+    return JsonResponse(manifest)
+
+def sw_js(request):
+    sw_code = """
+self.addEventListener('install', (e) => {
+  e.waitUntil(
+    caches.open('abc-audit-store').then((cache) => cache.addAll([
+      '/',
+      '/static/favicon.png',
+    ])),
+  );
+});
+
+self.addEventListener('fetch', (e) => {
+  e.respondWith(
+    caches.match(e.request).then((response) => response || fetch(e.request)),
+  );
+});
+"""
+    return HttpResponse(sw_code, content_type='application/javascript')

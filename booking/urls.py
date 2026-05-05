@@ -31,4 +31,5 @@ urlpatterns = [
     path('sw.js', views.sw_js, name='sw_js'),
     path('api/toggle-admin/<int:pk>/', views.toggle_admin_status, name='toggle_admin_status'),
     path('api/toggle-booking/<int:pk>/', views.toggle_booking_status, name='toggle_booking_status'),
+    path('api/toggle-staff/<int:pk>/', views.toggle_staff_status, name='toggle_staff_status'),
 ]

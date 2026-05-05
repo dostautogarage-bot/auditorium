@@ -1,5 +1,5 @@
 {% extends 'booking/base.html' %}
-{% block title %}{{ title }} - Auditorium{% endblock %}
+{% block title %}{{ title }} - ABC Auditorium{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -49,6 +49,12 @@
             </div>
 
             <div class="mb-4">
+                <label class="form-label">Booking Shift</label>
+                {{ form.shift }}
+                <small class="text-muted" style="font-size: 0.75rem;">Choose a quick shift or set custom time below</small>
+            </div>
+
+            <div class="mb-4">
                 <label class="form-label">Contact Person</label>
                 {{ form.contact_person }}
                 {% if form.contact_person.errors %}<div class="text-danger small fw-bold mt-2">{{ form.contact_person.errors.0 }}</div>{% endif %}
@@ -87,7 +93,7 @@
             {% endif %}
 
             <div class="d-flex flex-column gap-3">
-                <button type="submit" class="btn-app btn-app-primary w-100 py-3">
+                <button type="button" onclick="confirmForm()" class="btn-app btn-app-primary w-100 py-3">
                     Save Changes
                 </button>
                 <a href="{% url 'calendar' %}" class="btn-app btn-app-ghost w-100 text-center" style="text-decoration: none;">
@@ -95,6 +101,33 @@
                 </a>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Standalone Confirmation Modal -->
+<div class="modal fade" id="standaloneConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-premium">
+            <div class="modal-header modal-header-premium pb-0">
+                <h5 class="fw-800 mb-0">Review Summary</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-premium pt-4">
+                <div class="summary-card p-4" style="background: var(--bg); border-radius: 20px;">
+                    <div class="mb-4">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;">Event Name</div>
+                        <div style="font-size: 1.1rem; font-weight: 800; color: var(--ink);" id="sumTitle"></div>
+                    </div>
+                    <div class="mb-0">
+                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px;">Time Slot</div>
+                        <div style="font-size: 1rem; font-weight: 700; color: var(--ink);" id="sumTime"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer modal-footer-premium">
+                <button type="button" onclick="submitRealForm()" class="btn btn-app btn-app-primary w-100">Confirm & Save</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -126,9 +159,58 @@ document.addEventListener('DOMContentLoaded', function() {
             static: true
         };
 
-        flatpickr(startTimeInput, config);
-        flatpickr(endTimeInput, config);
+        const startPicker = flatpickr(startTimeInput, config);
+        const endPicker = flatpickr(endTimeInput, config);
+
+        const shiftSelect = document.getElementById('id_shift');
+        shiftSelect.addEventListener('change', function() {
+            const shift = this.value;
+            if (shift === 'custom') return;
+
+            let baseDate = startPicker.selectedDates[0] || new Date();
+            let year = baseDate.getFullYear();
+            let month = baseDate.getMonth();
+            let day = baseDate.getDate();
+
+            let start, end;
+            if (shift === 'day') {
+                start = new Date(year, month, day, 7, 0);
+                end = new Date(year, month, day, 19, 0);
+            } else if (shift === 'night') {
+                start = new Date(year, month, day, 19, 0);
+                end = new Date(year, month, day, 23, 59);
+            }
+
+            startPicker.setDate(start);
+            endPicker.setDate(end);
+        });
     }
 });
+
+function confirmForm() {
+    const title = document.querySelector('[name="title"]').value;
+    const start = document.querySelector('[name="start_time"]').value;
+    const end = document.querySelector('[name="end_time"]').value;
+    
+    if (!title || !start || !end) {
+        document.getElementById('bookingForm').submit(); // Let backend handle validation if empty
+        return;
+    }
+
+    document.getElementById('sumTitle').innerText = title;
+    
+    // Format to 12h for summary
+    const format12h = (dateStr) => {
+        const d = new Date(dateStr);
+        return d.toLocaleString(undefined, { hour: 'numeric', minute: '2-digit', hour12: true });
+    };
+    
+    document.getElementById('sumTime').innerText = `${format12h(start)} – ${format12h(end)}`;
+    new bootstrap.Modal(document.getElementById('standaloneConfirmModal')).show();
+}
+
+function submitRealForm() {
+    document.getElementById('bookingForm').submit();
+}
 </script>
 {% endblock %}

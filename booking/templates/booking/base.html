@@ -9,8 +9,12 @@
     <meta name="theme-color" content="#0D9488">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ABC Auditorium">
 
-    <title>{% block title %}Auditorium{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'favicon.png' %}">
+
+    <title>{% block title %}ABC Auditorium{% endblock %}</title>
 
     <!-- Premium Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -804,12 +808,9 @@
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
         <div class="d-flex align-items-center gap-2">
-            <div
-                style="width:32px; height:32px; background:var(--primary); border-radius:8px; display:flex; align-items:center; justify-content:center;">
-                <i class="bi bi-gear-fill" style="color: white; font-size: 1rem;"></i>
-            </div>
+            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo" style="width:32px; height:32px; border-radius:8px; object-fit:cover;">
             <span
-                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">Auditorium</span>
+                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">ABC Auditorium</span>
         </div>
         <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="modal"
             data-bs-target="#accountDetailsModal">
@@ -829,24 +830,24 @@
     <!-- DESKTOP SIDEBAR -->
     <aside class="app-sidebar">
         <div class="sidebar-brand">
-            <div
-                style="width:40px; height:40px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; transform: rotate(-10deg);">
-                <i class="bi bi-gear-fill" style="color:white; font-size:1.4rem;"></i>
-            </div>
+            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo" style="width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 10px rgba(255, 122, 0, 0.3);">
             <span
-                style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">Auditorium</span>
+                style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">ABC Auditorium</span>
         </div>
         <nav class="flex-column mb-auto">
+            {% if request.user.is_superuser %}
             <a href="{% url 'dashboard' %}"
                 class="sidebar-link {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-grid-fill"></i>
                 <span>Dashboard</span>
             </a>
+            {% endif %}
             <a href="{% url 'calendar' %}"
                 class="sidebar-link {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
                 <i class="bi bi-calendar3-event-fill"></i>
                 <span>Calendar</span>
             </a>
+            {% if not request.user.profile.is_auditorium_staff %}
             <a href="{% url 'booking_list' %}"
                 class="sidebar-link {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-journal-text"></i>
@@ -858,6 +859,7 @@
                 <i class="bi bi-shield-lock-fill"></i>
                 <span>Admins</span>
             </a>
+            {% endif %}
             {% endif %}
         </nav>
         <div class="mt-auto" style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 32px;">
@@ -883,11 +885,13 @@
 
     <!-- MOBILE BOTTOM NAV -->
     <nav class="bottom-nav">
+        {% if request.user.is_superuser %}
         <a href="{% url 'dashboard' %}"
             class="nav-link-app {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
             <i class="bi bi-house-door-fill"></i>
             <span>Home</span>
         </a>
+        {% endif %}
         <a href="{% url 'calendar' %}"
             class="nav-link-app {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
             <i class="bi bi-calendar3-event"></i>
@@ -895,6 +899,7 @@
         </a>
 
 
+        {% if not request.user.profile.is_auditorium_staff %}
         <a href="{% url 'booking_list' %}"
             class="nav-link-app {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
             <i class="bi bi-card-list"></i>
@@ -905,6 +910,7 @@
             <i class="bi bi-people-fill"></i>
             <span>Team</span>
         </a>
+        {% endif %}
     </nav>
 
     <main class="page-wrapper">
@@ -969,19 +975,29 @@
                             <div id="err_mobile" class="error-msg-app">Valid mobile number is required</div>
                         </div>
                         <div id="startTimeSection" class="mb-3"><label class="form-label">Start Time</label>
+                            <div class="d-flex gap-2 mb-3">
+                                <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('day')" style="border-color: #F59E0B; color: #92400E; background: #FEF3C7;">
+                                    <i class="bi bi-sun-fill me-1"></i> Day Shift
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">7 AM - 7 PM</span>
+                                </div>
+                                <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('night')" style="border-color: #6366F1; color: #3730A3; background: #E0E7FF;">
+                                    <i class="bi bi-moon-stars-fill me-1"></i> Night Shift
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">7 PM - 11:59 PM</span>
+                                </div>
+                            </div>
                             <div id="startTimeSuggestions" class="time-suggestion-list"></div>
                             <div id="err_start" class="error-msg-app">Please pick a start time</div>
                         </div>
                         <div id="selectedStartBox" class="selected-box d-none">
                             <div>
-                                <div
+                                <div id="selectedStartLabel"
                                     style="font-size: 0.6rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing:0.06em;">
                                     Selected Start</div>
                                 <div id="displaySelectedStart" style="font-size: 1rem; font-weight: 700;"></div>
                             </div><button type="button" onclick="resetStartTime()" class="btn-app btn-app-ghost"
                                 style="border-radius:12px; font-size:0.75rem; padding:6px 12px;">Change</button>
                         </div>
-                        <div class="mb-2"><label class="form-label">Duration</label>
+                        <div class="mb-2" id="durationSection"><label class="form-label">Duration</label>
                             <div id="endTimeSuggestions" class="time-suggestion-list"></div>
                             <div id="err_end" class="error-msg-app">Please pick a duration</div>
                         </div>
@@ -992,6 +1008,7 @@
                         </div>
                         <input type="hidden" id="modal_date_base">
                         <input type="hidden" id="modal_booking_id" value="">
+                        <input type="hidden" id="id_modal_shift" value="custom">
                     </form>
                 </div>
                 <div class="modal-footer modal-footer-premium"><button type="button" onclick="showConfirmation()"
@@ -1027,16 +1044,39 @@
                             <div style="font-size: 1.1rem; font-weight: 800; color: var(--ink);" id="confDisplayTitle">
                             </div>
                         </div>
-                        <div class="mb-0">
+                        <div class="mb-4">
                             <div
                                 style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
                                 Time Period</div>
                             <div style="font-size: 1rem; font-weight: 700; color: var(--ink);" id="confDisplayTime">
                             </div>
                         </div>
+                        <div class="mb-4">
+                            <div
+                                style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+                                Contact Person</div>
+                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink);" id="confDisplayContact">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <div
+                                style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+                                Mobile Number</div>
+                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink);" id="confDisplayMobile">
+                            </div>
+                        </div>
+                        <div class="mb-0">
+                            <div
+                                style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
+                                💰 Advance Received</div>
+                            <div style="font-size: 1rem; font-weight: 800; color: var(--primary);" id="confDisplayAdvance">
+                                ₹0.00
+                            </div>
+                        </div>
                     </div>
                     <form id="finalSubmitForm" action="{% url 'booking_create' %}" method="POST">{% csrf_token %}
                         <input type="hidden" name="title" id="finalTitle">
+                        <input type="hidden" name="shift" id="finalShift" value="custom">
                         <input type="hidden" name="contact_person" id="finalContact">
                         <input type="hidden" name="mobile_number" id="finalMobile">
                         <input type="hidden" name="start_time" id="finalStart">
@@ -1046,9 +1086,9 @@
                 </div>
                 <div class="modal-footer modal-footer-premium flex-column gap-2">
                     <button type="button" id="btnConfirmFinal"
-                        onclick="document.getElementById('finalSubmitForm').submit()"
+                        onclick="submitFinalBooking()"
                         class="btn btn-app btn-app-primary w-100">Confirm & Save</button>
-                    <button type="button" class="btn btn-light w-100 py-3 rounded-4 fw-bold"
+                    <button type="button" id="btnChangeDetails" class="btn btn-light w-100 py-3 rounded-4 fw-bold"
                         data-bs-target="#createBookingModal" data-bs-toggle="modal">Change Details</button>
                 </div>
             </div>
@@ -1191,9 +1231,10 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer modal-footer-premium">
+                <div class="modal-footer modal-footer-premium flex-column gap-2">
                     <button id="dvEditBtn" class="btn-app btn-app-primary w-100">Edit This Event</button>
-                    <button type="button" class="btn-app btn-app-ghost w-100 mt-2"
+                    <button id="dvDeleteBtn" class="btn-app w-100" style="background: #FFF1F2; color: #E11D48;">Delete This Event</button>
+                    <button type="button" class="btn-app btn-app-ghost w-100"
                         data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -1272,7 +1313,7 @@
                         <i class="bi bi-box-arrow-right fs-1"></i>
                     </div>
                     <h5 class="fw-800 text-dark mb-2" style="font-size: 1.2rem;">Sign Out Account?</h5>
-                    <p class="text-muted fw-medium mb-4">Are you sure you want to log out of the auditorium portal?</p>
+                    <p class="text-muted fw-medium mb-4">Are you sure you want to log out of the ABC Auditorium portal?</p>
 
                     <div class="d-flex flex-column gap-2 w-100">
                         <form method="post" action="{% url 'logout' %}" class="w-100">{% csrf_token %}
@@ -1289,7 +1330,7 @@
 
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
-        const USER_CAN_BOOK = {% if request.user.is_superuser or request.user.profile.is_bookable %}true{% else %} false{% endif %};
+        const USER_CAN_BOOK = {% if request.user.is_superuser %}true{% elif request.user.profile.is_auditorium_staff %}false{% elif request.user.profile.is_bookable %}true{% else %}false{% endif %};
         let selectedStartTime = null; let selectedEndTime = null;
         function generateTimeOptions() {
             const startList = document.getElementById('startTimeSuggestions'); if (!startList) return;
@@ -1306,80 +1347,162 @@
         function selectStartTime(val, display, el) {
             selectedStartTime = val; document.getElementById('startTimeSection').classList.add('d-none');
             const box = document.getElementById('selectedStartBox'); box.classList.remove('d-none');
-            document.getElementById('displaySelectedStart').innerText = display; updateEndTimeSuggestions(val);
+            
+            const shiftInput = document.getElementById('id_modal_shift');
+            const labelEl = document.getElementById('selectedStartLabel');
+            const durationSec = document.getElementById('durationSection');
+            
+            if (shiftInput && shiftInput.value === 'day') {
+                document.getElementById('displaySelectedStart').innerText = '7:00 AM - 7:00 PM (Day Shift)';
+                if (labelEl) labelEl.innerText = 'Selected Shift';
+                if (durationSec) durationSec.classList.add('d-none');
+            } else if (shiftInput && shiftInput.value === 'night') {
+                document.getElementById('displaySelectedStart').innerText = '7:00 PM - 11:59 PM (Night Shift)';
+                if (labelEl) labelEl.innerText = 'Selected Shift';
+                if (durationSec) durationSec.classList.add('d-none');
+            } else {
+                document.getElementById('displaySelectedStart').innerText = display;
+                if (labelEl) labelEl.innerText = 'Selected Start';
+                if (durationSec) durationSec.classList.remove('d-none');
+                if (shiftInput) shiftInput.value = 'custom';
+            }
+            
+            updateEndTimeSuggestions(val);
         }
         function resetStartTime() {
-            selectedStartTime = null; document.getElementById('startTimeSection').classList.remove('d-none');
+            selectedStartTime = null; selectedEndTime = null;
+            document.getElementById('startTimeSection').classList.remove('d-none');
             document.getElementById('selectedStartBox').classList.add('d-none');
             document.getElementById('endTimeSuggestions').innerHTML = '<div class="text-muted small p-4 text-center w-100">Pick start time</div>';
+            const durationSec = document.getElementById('durationSection');
+            if (durationSec) durationSec.classList.remove('d-none');
+            const shiftInput = document.getElementById('id_modal_shift');
+            if (shiftInput) shiftInput.value = 'custom';
         }
         function updateEndTimeSuggestions(startVal) {
             const endList = document.getElementById('endTimeSuggestions'); if (!endList) return;
             endList.innerHTML = '';
             const [sh, sm] = startVal.split(':').map(Number); const startMinutes = sh * 60 + sm;
-            const durations = [{ label: '30m', mins: 30 }, { label: '1h', mins: 60 }, { label: '1.5h', mins: 90 }, { label: '2h', mins: 120 }, { label: '4h', mins: 240 }, { label: 'Full Day', mins: 480 }];
+            const durations = [{ label: '30m', mins: 30 }, { label: '1h', mins: 60 }, { label: '2h', mins: 120 }, { label: '4h', mins: 240 }, { label: '8h', mins: 480 }, { label: '12h', mins: 720 }];
+            
+            let matched = false;
             durations.forEach(d => {
-                const totalMins = startMinutes + d.mins; const eh = Math.floor(totalMins / 60); const em = totalMins % 60;
+                const totalMins = startMinutes + d.mins; const eh = Math.floor(totalMins / 60) % 24; const em = totalMins % 60;
                 const ampm = eh >= 12 ? 'PM' : 'AM'; const displayH = eh % 12 || 12;
                 const timeStr = `${displayH}:${em.toString().padStart(2, '0')} ${ampm}`; const rawValue = `${eh.toString().padStart(2, '0')}:${em.toString().padStart(2, '0')}`;
                 const chip = document.createElement('div'); chip.className = 'time-chip';
+                if (selectedEndTime === rawValue || selectedEndTime === rawValue + ':00') {
+                    chip.classList.add('selected');
+                    matched = true;
+                    selectedEndTime = rawValue;
+                }
                 chip.innerHTML = `${timeStr} <span style="font-size: 0.65rem; display: block; opacity: 0.8; font-weight: 600;">${d.label}</span>`;
                 chip.onclick = () => { selectedEndTime = rawValue; document.querySelectorAll('#endTimeSuggestions .time-chip').forEach(c => c.classList.remove('selected')); chip.classList.add('selected'); };
                 endList.appendChild(chip);
             });
+            
+            if (selectedEndTime && !matched && selectedEndTime !== '19:00' && selectedEndTime !== '23:59') {
+                const eh = parseInt(selectedEndTime.split(':')[0]); const em = parseInt(selectedEndTime.split(':')[1] || 0);
+                const ampm = eh >= 12 ? 'PM' : 'AM'; const displayH = eh % 12 || 12;
+                const timeStr = `${displayH}:${em.toString().padStart(2, '0')} ${ampm}`;
+                const chip = document.createElement('div'); chip.className = 'time-chip selected';
+                chip.innerHTML = `${timeStr} <span style="font-size: 0.65rem; display: block; opacity: 0.8; font-weight: 600;">Custom</span>`;
+                chip.onclick = () => { selectedEndTime = selectedEndTime.substring(0,5); document.querySelectorAll('#endTimeSuggestions .time-chip').forEach(c => c.classList.remove('selected')); chip.classList.add('selected'); };
+                endList.appendChild(chip);
+            }
         }
-        async function showConfirmation() {
-            const title = document.getElementById('id_title').value;
-            const contact = document.getElementById('id_contact').value;
-            const mobile = document.getElementById('id_mobile').value;
-            const advance = document.getElementById('id_advance').value || '0';
-            const dateBase = document.getElementById('modal_date_base').value || new Date().toISOString().split('T')[0];
-
-            // RESET ERRORS
-            document.querySelectorAll('.error-msg-app').forEach(el => el.style.display = 'none');
-            let hasError = false;
-
-            // VALIDATION
-            if (!title.trim()) { document.getElementById('err_title').style.display = 'block'; hasError = true; }
-            if (!contact.trim()) { document.getElementById('err_contact').style.display = 'block'; hasError = true; }
-            if (!mobile.trim() || !/^\+?[0-9\s-]{10,15}$/.test(mobile.trim())) { document.getElementById('err_mobile').style.display = 'block'; hasError = true; }
-            if (!selectedStartTime) { document.getElementById('err_start').style.display = 'block'; hasError = true; }
-            if (!selectedEndTime) { document.getElementById('err_end').style.display = 'block'; hasError = true; }
-
-            if (hasError) return;
-
-            const startFull = `${dateBase} ${selectedStartTime}`; const endFull = `${dateBase} ${selectedEndTime}`;
-            document.getElementById('confDisplayTitle').innerText = title;
-            document.getElementById('confDisplayTime').innerText = `${dateBase} | ${selectedStartTime} – ${selectedEndTime}`;
-            document.getElementById('finalTitle').value = title;
-            document.getElementById('finalContact').value = contact;
-            document.getElementById('finalMobile').value = mobile;
-            document.getElementById('finalAdvance').value = advance;
-            document.getElementById('finalStart').value = startFull; document.getElementById('finalEnd').value = endFull;
-            document.getElementById('conflictBanner').classList.add('d-none');
-            const btn = document.getElementById('btnConfirmFinal'); btn.innerText = 'Confirm & Save'; btn.classList.replace('btn-danger', 'btn-app-primary');
-            new bootstrap.Modal(document.getElementById('confirmationModal')).show();
-            const createModal = bootstrap.Modal.getInstance(document.getElementById('createBookingModal')); if (createModal) createModal.hide();
-            document.getElementById('confLoading').style.display = 'flex';
+        function submitFinalBooking() {
+            const form = document.getElementById('finalSubmitForm');
+            const btn = document.getElementById('btnConfirmFinal');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+            
+            // Set the action URL dynamically
             const bookingId = document.getElementById('modal_booking_id').value;
-            try {
-                const response = await fetch(`/api/check-conflict/?start=${encodeURIComponent(startFull)}&end=${encodeURIComponent(endFull)}&exclude_id=${bookingId}`);
-                const data = await response.json();
-                if (data.conflict) {
-                    const banner = document.getElementById('conflictBanner');
-                    banner.classList.remove('d-none');
-                    if (data.is_past) {
-                        banner.querySelector('.fw-800').innerText = 'Invalid Time';
-                        banner.querySelector('.small').innerText = data.message || 'Cannot book in the past.';
-                    } else {
-                        banner.querySelector('.fw-800').innerText = 'Conflict Found';
-                        banner.querySelector('.small').innerText = 'Slot is partially booked.';
-                    }
-                    btn.innerText = 'OK, Go Back';
-                    btn.onclick = () => window.location.href = "{% url 'calendar' %}";
+            const actionUrl = bookingId ? `/bookings/${bookingId}/edit/` : `{% url 'booking_create' %}`;
+            
+            // Submit form using fetch
+            const formData = new FormData(form);
+            
+            fetch(actionUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            } catch (e) { console.error(e); } finally { document.getElementById('confLoading').style.display = 'none'; }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Close the modals
+                    if (modal) modal.hide();
+                    const createModal = bootstrap.Modal.getInstance(document.getElementById('createBookingModal'));
+                    if (createModal) createModal.hide();
+                    // Redirect to calendar
+                    setTimeout(() => {
+                        window.location.href = '{% url 'calendar' %}';
+                    }, 300);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Confirm & Save';
+                    // Show error message in a styled way
+                    showErrorModal(data.message || 'Error saving booking. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                btn.disabled = false;
+                btn.innerHTML = 'Confirm & Save';
+                showErrorModal('Connection error. Please try again.');
+            });
         }
+        
+        function showErrorModal(message) {
+            // Create and show error modal
+            const errorModal = document.createElement('div');
+            errorModal.className = 'modal fade';
+            errorModal.setAttribute('tabindex', '-1');
+            errorModal.setAttribute('aria-hidden', 'true');
+            errorModal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered modal-dialog-message">
+                    <div class="modal-content modal-content-premium">
+                        <div class="modal-body modal-body-premium d-flex flex-column align-items-center justify-content-center text-center py-5">
+                            <div class="mb-4 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: #FFF1F2; color: #E11D48; border-radius: 28px;">
+                                <i class="bi bi-exclamation-circle-fill fs-1"></i>
+                            </div>
+                            <h5 class="fw-800 text-dark mb-2" style="font-size: 1.1rem;">Validation Error</h5>
+                            <p class="text-muted fw-medium mb-4">${message}</p>
+                            <button type="button" class="btn-app btn-app-primary w-100" data-bs-dismiss="modal">OK, Fix It</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(errorModal);
+            const bsModal = new bootstrap.Modal(errorModal);
+            bsModal.show();
+            // Clean up after modal is hidden
+            errorModal.addEventListener('hidden.bs.modal', () => {
+                errorModal.remove();
+            });
+        }
+        // Handle Shift Selection via Chips in Modal
+        function applyPresetShift(shift) {
+            const shiftInput = document.getElementById('id_modal_shift');
+            if (shiftInput) shiftInput.value = shift;
+            
+            if (shift === 'day') {
+                selectedEndTime = '19:00';
+                selectStartTime('07:00', '7:00 AM');
+            } else if (shift === 'night') {
+                selectedEndTime = '23:59'; 
+                selectStartTime('19:00', '7:00 PM');
+            } else {
+                resetStartTime();
+            }
+        }
+
         function triggerDeleteModal(pk, title, url, subtitle = "Remove this entry?") {
             document.getElementById('deleteModalTitle').innerText = title;
             document.getElementById('deleteModalSubtitle').innerText = subtitle;
@@ -1389,18 +1512,26 @@
         function triggerDetailModal(eventObj) {
             const pk = eventObj.id;
             const title = eventObj.title;
-            const contact = eventObj.extendedProps.contact_person || '';
-            const mobile = eventObj.extendedProps.mobile_number || '';
+            const contact = eventObj.extendedProps.contact || '';
+            const mobile = eventObj.extendedProps.mobile || '';
             const advance = eventObj.extendedProps.advance_received || '0';
             const created_by = eventObj.extendedProps.created_by || 'Admin';
             const created_at = eventObj.extendedProps.created_at || '';
+            
             const date = eventObj.startStr.split('T')[0];
-            const start = eventObj.startStr.split('T')[1].substring(0, 5);
-            const end = eventObj.endStr.split('T')[1].substring(0, 5);
-            const editUrl = eventObj.url;
+            const startTime24 = eventObj.startStr.split('T')[1].substring(0, 5);
+            const endTime24 = eventObj.endStr.split('T')[1].substring(0, 5);
+            
+            const format12h = (time24) => {
+                const [h, m] = time24.split(':');
+                const hour = parseInt(h);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                const displayH = hour % 12 || 12;
+                return `${displayH}:${m} ${ampm}`;
+            };
 
             document.getElementById('dvTitle').innerText = title;
-            document.getElementById('dvTime').innerText = `${date} | ${start} – ${end}`;
+            document.getElementById('dvTime').innerText = `${date} | ${format12h(startTime24)} – ${format12h(endTime24)}`;
             document.getElementById('dvContact').innerText = contact;
             document.getElementById('dvMobile').innerText = mobile;
             document.getElementById('dvAdvance').innerText = `₹${parseFloat(advance).toFixed(2)}`;
@@ -1409,14 +1540,25 @@
             document.getElementById('dvAvatar').innerText = created_by.charAt(0).toUpperCase();
 
             const editBtn = document.getElementById('dvEditBtn');
+            const deleteBtn = document.getElementById('dvDeleteBtn');
             if (!USER_CAN_BOOK) {
                 editBtn.style.display = 'none';
+                if (deleteBtn) deleteBtn.style.display = 'none';
             } else {
                 editBtn.style.display = 'block';
+                if (deleteBtn) deleteBtn.style.display = 'block';
+                
                 editBtn.onclick = () => {
                     bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
-                    triggerEditModal(pk, title, contact, mobile, advance, date, start, end, editUrl);
+                    triggerEditModal(pk, title, contact, mobile, advance, date, startTime24, endTime24, `/bookings/${pk}/edit/`);
                 };
+                
+                if (deleteBtn) {
+                    deleteBtn.onclick = () => {
+                        bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
+                        triggerDeleteModal(pk, `Cancel "${title}"?`, `/bookings/${pk}/delete/`, "Are you sure you want to cancel this booking?");
+                    };
+                }
             }
 
             new bootstrap.Modal(document.getElementById('eventDetailModal')).show();
@@ -1440,8 +1582,16 @@
             document.getElementById('modal_date_base').value = date;
 
             // Handle Start/End selections
-            selectStartTime(start, formatTime12(start), null);
-            selectedEndTime = end; // Assuming end is raw value
+            selectedEndTime = end.substring(0, 5); // Ensure HH:MM format
+            if (start === '07:00' && (end === '19:00' || end === '19:00:00')) {
+                applyPresetShift('day');
+            } else if (start === '19:00' && (end === '23:59' || end === '23:59:00' || end === '23:59:59')) {
+                applyPresetShift('night');
+            } else {
+                const shiftInput = document.getElementById('id_modal_shift');
+                if (shiftInput) shiftInput.value = 'custom';
+                selectStartTime(start, formatTime12(start), null);
+            }
 
             // Change Action
             document.getElementById('finalSubmitForm').action = editUrl;
@@ -1464,7 +1614,12 @@
                 return;
             }
             document.querySelectorAll('.error-msg-app').forEach(el => el.style.display = 'none');
+            
             if (!event.relatedTarget) return; // Triggered by JS (Edit)
+            
+            // If returning to the form to change details after validation error
+            if (event.relatedTarget.id === 'btnChangeDetails') return;
+
             // Triggered by FAB (Create)
             document.getElementById('modal_booking_id').value = '';
             document.getElementById('mainBookingForm').reset();
@@ -1495,6 +1650,77 @@
                     btn.querySelector('span').style.left = isBookable ? '27px' : '3px';
                 }
             } catch (e) { console.error(e); }
+        }
+        async function showConfirmation() {
+            // Validate form fields
+            const title = document.getElementById('id_title').value.trim();
+            const dateBase = document.getElementById('modal_date_base').value;
+            const contact = document.getElementById('id_contact').value.trim();
+            const mobile = document.getElementById('id_mobile').value.trim();
+            const advance = document.getElementById('id_advance').value || '0';
+            
+            if (!title) {
+                document.getElementById('err_title').style.display = 'block';
+                return;
+            }
+            
+            if (!selectedStartTime) {
+                document.getElementById('err_start').style.display = 'block';
+                return;
+            }
+            
+            if (!selectedEndTime) {
+                document.getElementById('err_end').style.display = 'block';
+                return;
+            }
+            
+            // Build full datetime strings
+            const startDateTime = `${dateBase} ${selectedStartTime}`;
+            const endDateTime = `${dateBase} ${selectedEndTime}`;
+            
+            // Check for conflicts
+            const bookingId = document.getElementById('modal_booking_id').value;
+            const conflictCheckUrl = `{% url 'check_conflict' %}?title=${encodeURIComponent(title)}&start_time=${encodeURIComponent(startDateTime)}&end_time=${encodeURIComponent(endDateTime)}&booking_id=${bookingId || ''}`;
+            
+            try {
+                const response = await fetch(conflictCheckUrl);
+                const data = await response.json();
+                
+                // Show loading state if conflict found
+                document.getElementById('confLoading').style.display = data.conflict ? 'flex' : 'none';
+                document.getElementById('conflictBanner').classList.toggle('d-none', !data.conflict);
+                
+                // Format time to 12h
+                const format12h = (time24) => {
+                    const [h, m] = time24.split(':');
+                    const hour = parseInt(h);
+                    const ampm = hour >= 12 ? 'PM' : 'AM';
+                    const displayH = hour % 12 || 12;
+                    return `${displayH}:${m} ${ampm}`;
+                };
+                
+                // Populate all confirmation modal fields
+                document.getElementById('confDisplayTitle').innerText = title;
+                document.getElementById('confDisplayTime').innerText = `${dateBase} | ${format12h(selectedStartTime)} – ${format12h(selectedEndTime)}`;
+                document.getElementById('confDisplayContact').innerText = contact || '—';
+                document.getElementById('confDisplayMobile').innerText = mobile || '—';
+                document.getElementById('confDisplayAdvance').innerText = `₹${parseFloat(advance || 0).toFixed(2)}`;
+                
+                // Populate hidden form fields
+                document.getElementById('finalTitle').value = title;
+                document.getElementById('finalShift').value = document.getElementById('id_modal_shift').value || 'custom';
+                document.getElementById('finalContact').value = contact;
+                document.getElementById('finalMobile').value = mobile;
+                document.getElementById('finalStart').value = startDateTime;
+                document.getElementById('finalEnd').value = endDateTime;
+                document.getElementById('finalAdvance').value = advance;
+                
+                // Show confirmation modal
+                new bootstrap.Modal(document.getElementById('confirmationModal')).show();
+            } catch (e) {
+                console.error('Conflict check error:', e);
+                alert('Error checking availability');
+            }
         }
         document.addEventListener('DOMContentLoaded', () => {
             generateTimeOptions();

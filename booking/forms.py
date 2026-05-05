@@ -21,6 +21,11 @@ class AdminCreationForm(forms.ModelForm):
         initial=True,
         label="Allow to Create Bookings (uncheck to make read-only)"
     )
+    is_auditorium_staff = forms.BooleanField(
+        required=False,
+        initial=False,
+        label="Auditorium Staff (Minimal privileges)"
+    )
 
     class Meta:
         model = User
@@ -61,9 +66,13 @@ class AdminCreationForm(forms.ModelForm):
             user.save()
             # Create or update UserProfile
             is_bookable = self.cleaned_data.get('is_bookable', True)
+            is_auditorium_staff = self.cleaned_data.get('is_auditorium_staff', False)
             UserProfile.objects.update_or_create(
                 user=user,
-                defaults={'is_bookable': is_bookable}
+                defaults={
+                    'is_bookable': is_bookable,
+                    'is_auditorium_staff': is_auditorium_staff
+                }
             )
         return user
 
@@ -109,6 +118,10 @@ class AdminEditForm(forms.ModelForm):
         required=False,
         label="Allow to Create Bookings (uncheck to make read-only)"
     )
+    is_auditorium_staff = forms.BooleanField(
+        required=False,
+        label="Auditorium Staff (Minimal privileges)"
+    )
 
     class Meta:
         model = User
@@ -127,20 +140,37 @@ class AdminEditForm(forms.ModelForm):
             try:
                 profile = self.instance.profile
                 self.fields['is_bookable'].initial = profile.is_bookable
+                self.fields['is_auditorium_staff'].initial = profile.is_auditorium_staff
             except UserProfile.DoesNotExist:
                 self.fields['is_bookable'].initial = True
+                self.fields['is_auditorium_staff'].initial = False
 
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
             is_bookable = self.cleaned_data.get('is_bookable', True)
+            is_auditorium_staff = self.cleaned_data.get('is_auditorium_staff', False)
             UserProfile.objects.update_or_create(
                 user=user,
-                defaults={'is_bookable': is_bookable}
+                defaults={
+                    'is_bookable': is_bookable,
+                    'is_auditorium_staff': is_auditorium_staff
+                }
             )
         return user
 
 class BookingForm(forms.ModelForm):
+    SHIFT_CHOICES = [
+        ('custom', 'Custom Time'),
+        ('day', 'Day (7 AM - 7 PM)'),
+        ('night', 'Night (7 PM - 11:59 PM)'),
+    ]
+    shift = forms.ChoiceField(
+        choices=SHIFT_CHOICES,
+        initial='custom',
+        widget=forms.Select(attrs={'class': 'form-select mb-3', 'id': 'id_shift'}),
+        label='Select Shift'
+    )
     start_time = forms.DateTimeField(
         widget=forms.DateTimeInput(
             format='%Y-%m-%dT%H:%M',

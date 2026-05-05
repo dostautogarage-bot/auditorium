@@ -1,10 +1,11 @@
 {% extends 'booking/base.html' %}
-{% block title %}Calendar - Auditorium{% endblock %}
+{% block title %}Calendar - ABC Auditorium{% endblock %}
 
 {% block extra_css %}
 <style>
     #calendar { padding: 15px; border-radius: var(--r-xl); border: 1.5px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
     .fc { font-family: 'Urbanist', sans-serif; border: none !important; }
+    .fc-theme-standard td, .fc-theme-standard th { border-color: rgba(0,0,0,0.03) !important; }
     .fc a { text-decoration: none !important; color: inherit !important; }
     .fc-col-header-cell-cushion { color: var(--slate-600); font-weight: 700; font-size: 0.75rem; text-transform: uppercase; }
     
@@ -20,13 +21,6 @@
         background: var(--primary) !important; color: white !important;
     }
 
-    .fc-event {
-        background: var(--primary-gradient) !important; border: none !important;
-        border-radius: 6px !important; padding: 2px 6px !important;
-        font-weight: 700 !important; font-size: 0.7rem !important;
-        box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
-        cursor: pointer;
-    }
 
     .fc-day-today { background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.1) 100%) !important; }
     .fc-day-past { background-color: #F8FAFC !important; opacity: 0.5; cursor: not-allowed !important; }
@@ -54,6 +48,106 @@
 
     .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 800 !important; letter-spacing: -0.02em; }
 
+    /* Fix Day Cell Height for consistent splitting */
+    .fc-daygrid-day-frame {
+        min-height: 120px !important;
+        height: 120px !important;
+        position: relative !important;
+        overflow: hidden !important;
+    }
+
+    .fc-daygrid-day-top {
+        position: absolute !important;
+        top: 0 !important;
+        right: 0 !important;
+        z-index: 5 !important;
+        padding: 4px 8px !important;
+    }
+    
+    .fc-daygrid-day-number {
+        color: var(--slate-800) !important;
+        font-weight: 800 !important;
+        font-size: 0.85rem !important;
+        text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+    }
+
+    .fc-daygrid-day-events {
+        position: absolute !important;
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        z-index: 1 !important;
+    }
+
+    .fc-daygrid-event-harness {
+        margin: 0 !important;
+        height: 50% !important; /* Exact Half */
+        flex: 0 0 50% !important;
+        padding: 3px !important;
+    }
+
+    .fc-event {
+        height: 100% !important;
+        border-radius: 8px !important;
+        margin: 0 !important;
+        padding: 4px 8px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        overflow: hidden;
+        box-sizing: border-box !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        cursor: pointer !important;
+    }
+    
+    .fc-event:not(.staff-mode .fc-event):hover {
+        transform: translateY(-2px) scale(1.02);
+        z-index: 10 !important;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.08) !important;
+    }
+
+    .event-day {
+        order: 1;
+        background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%) !important;
+        color: #92400E !important;
+        border: 1px solid rgba(245, 158, 11, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1) !important;
+    }
+
+    .event-night {
+        order: 2;
+        background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%) !important;
+        color: #3730A3 !important;
+        border: 1px solid rgba(99, 102, 241, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1) !important;
+    }
+    
+    .fc-daygrid-day-events:has(.event-night):not(:has(.event-day)) {
+        justify-content: flex-end !important;
+    }
+
+    .fc-event-title {
+        font-size: 0.7rem !important;
+        font-weight: 800 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 1px !important;
+        line-height: 1 !important;
+    }
+
+    .event-details {
+        font-size: 0.55rem;
+        font-weight: 600;
+        opacity: 0.7;
+        line-height: 1.1;
+    }
+
     #yearSelector {
         border: 1px solid #E2E8F0; padding: 8px 16px;
         font-weight: 700; color: var(--slate-600); border-radius: 10px;
@@ -65,6 +159,47 @@
         padding: 0; display: flex; align-items: center; justify-content: center;
         box-shadow: var(--shadow-md);
     }
+    
+    /* Hide details for staff */
+    .staff-mode .fc-event { pointer-events: none !important; }
+    .staff-mode .event-details { display: none !important; }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+        .fc-daygrid-day-frame {
+            min-height: 90px !important;
+            height: 90px !important;
+        }
+        .fc-event {
+            padding: 2px 4px !important;
+        }
+        .fc-event-title {
+            font-size: 0.55rem !important;
+            white-space: normal !important;
+            line-height: 1.1 !important;
+        }
+        .event-timing {
+            font-size: 0.5rem !important;
+            line-height: 1 !important;
+        }
+        .fc-daygrid-day-number {
+            font-size: 0.7rem !important;
+        }
+        .fc-col-header-cell-cushion {
+            font-size: 0.65rem !important;
+        }
+        .fc-toolbar {
+            flex-direction: column !important;
+            gap: 10px !important;
+        }
+        .fc-toolbar-title {
+            font-size: 0.9rem !important;
+        }
+        .fc-button {
+            padding: 4px 10px !important;
+            font-size: 0.7rem !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -72,7 +207,7 @@
 <div class="fade-in">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-5">
         <div>
-            <h1 style="font-weight: 900; letter-spacing: -0.05em; margin-bottom: 4px;">Auditorium Schedule</h1>
+            <h1 style="font-weight: 900; letter-spacing: -0.05em; margin-bottom: 4px;">ABC Auditorium Schedule</h1>
             <p style="color: var(--ink-muted); font-weight: 600; font-size: 0.9rem;">Real-time booking availability</p>
         </div>
         <div class="d-flex align-items-center gap-3 px-3 px-md-4 py-2" style="background: var(--card); border-radius: 50px; border: 1px solid rgba(0,0,0,0.03); box-shadow: var(--shadow-subtle); min-width: fit-content;">
@@ -84,7 +219,7 @@
         </div>
     </div>
 
-    <div id="calendar" class="pop-in" style="box-shadow: var(--shadow-md); border: 1px solid rgba(0,0,0,0.02); border-radius: var(--radius-2xl); overflow: hidden; padding: 20px; background: var(--card);"></div>
+    <div id="calendar" class="pop-in {% if is_auditorium_staff %}staff-mode{% endif %}" style="box-shadow: var(--shadow-md); border: 1px solid rgba(0,0,0,0.02); border-radius: var(--radius-2xl); overflow: hidden; padding: 20px; background: var(--card);"></div>
 </div>
 
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css" rel="stylesheet">
@@ -126,20 +261,65 @@ document.addEventListener('DOMContentLoaded', function() {
             const clickedDate = new Date(info.date).setHours(0,0,0,0);
             if (clickedDate < today) return;
             
+            // Block the date if 2 or more events are already booked
+            const events = calendar.getEvents();
+            let eventsOnDate = 0;
+            events.forEach(e => {
+                const eventDate = new Date(e.start).setHours(0,0,0,0);
+                if (eventDate === clickedDate) {
+                    eventsOnDate++;
+                }
+            });
+            
+            if (eventsOnDate >= 2) {
+                if (typeof showErrorModal === 'function') {
+                    showErrorModal('This date is fully booked (Maximum 2 slots reached).');
+                } else {
+                    alert('This date is fully booked.');
+                }
+                return;
+            }
+            
             if (!USER_CAN_BOOK) {
                 new bootstrap.Modal(document.getElementById('permissionModal')).show();
                 return;
             }
             
             document.getElementById('modal_date_base').value = info.dateStr;
+            const shiftSelect = document.getElementById('id_modal_shift');
+            if (shiftSelect) shiftSelect.value = 'custom';
+            resetStartTime();
             const modal = new bootstrap.Modal(document.getElementById('createBookingModal'));
             modal.show();
         },
+        dayMaxEvents: false, // Show all events (we only expect 2)
+        eventClassNames: function(arg) {
+            return [arg.event.extendedProps.shift === 'day' ? 'event-day' : 'event-night'];
+        },
+        eventContent: function(arg) {
+            let title = arg.event.title;
+            let contact = arg.event.extendedProps.contact || '';
+            let mobile = arg.event.extendedProps.mobile || '';
+            let timing = arg.event.extendedProps.timing || '';
+            
+            let html = `
+                <div class="fc-event-main-frame d-flex flex-column justify-content-center h-100">
+                    <div class="fc-event-title-container">
+                        <div class="fc-event-title fc-sticky text-truncate">${title}</div>
+                    </div>
+                    ${contact ? `<div class="event-details d-none d-md-block opacity-75">${contact}</div>` : ''}
+                    ${mobile ? `<div class="event-details d-none d-md-block opacity-75">${mobile}</div>` : ''}
+                    ${timing ? `<div class="event-timing d-block mt-1 fw-bold opacity-75" style="font-size:0.6rem;">${timing}</div>` : ''}
+                </div>
+            `;
+            return { html: html };
+        },
         eventClick: function(info) {
+            if ("{{ is_auditorium_staff }}" === "True") return;
             triggerDetailModal(info.event);
             info.jsEvent.preventDefault();
         },
-        datesSet: function() {
+        datesSet: function(info) {
             const calendarYear = calendar.getDate().getFullYear();
             if (yearSelector.value != calendarYear) yearSelector.value = calendarYear;
         },

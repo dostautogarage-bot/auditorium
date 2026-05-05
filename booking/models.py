@@ -42,6 +42,7 @@ class UserProfile(models.Model):
     """Extended user profile for additional permissions"""
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     is_bookable = models.BooleanField(default=True, help_text="Whether this admin can create bookings. If disabled, they can only view calendar in read-only mode.")
+    is_auditorium_staff = models.BooleanField(default=False, help_text="Auditorium staff have minimum privileges and cannot see booking details.")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
