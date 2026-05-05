@@ -8,8 +8,8 @@
     .flatpickr-calendar { border-radius: 20px !important; box-shadow: 0 15px 45px rgba(0,0,0,0.1) !important; border: 1px solid rgba(0,0,0,0.05) !important; }
     
     .status-card {
-        background: var(--primary-soft); padding: 18px 22px; border-radius: 24px;
-        display: flex; align-items: center; gap: 14px; margin-bottom: 32px;
+        background: var(--primary-soft); padding: 14px 18px; border-radius: 20px;
+        display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
         border: 1px solid rgba(144, 238, 144, 0.3);
     }
 </style>
@@ -17,11 +17,11 @@
 
 {% block content %}
 <div class="fade-in" style="max-width: 500px; margin: 0 auto; padding-bottom: 40px;">
-    <div class="d-flex align-items-center mb-5">
-        <a href="{% url 'calendar' %}" class="btn-app btn-app-ghost p-0 me-3 shadow-none" style="width: 42px; height: 42px; border-radius: 14px;">
+    <div class="d-flex align-items-center mb-4">
+        <a href="{% url 'calendar' %}" class="btn-app btn-app-ghost p-0 me-3 shadow-none" style="width: 38px; height: 38px; border-radius: 12px;">
             <i class="bi bi-chevron-left"></i>
         </a>
-        <h1 style="font-size: 1.6rem; font-weight: 800; margin: 0; letter-spacing: -0.04em;">{{ title }}</h1>
+        <h1 style="font-size: 1.4rem; font-weight: 800; margin: 0; letter-spacing: -0.04em;">{{ title }}</h1>
     </div>
 
     {% if request.GET.start_time or form.instance.pk %}
@@ -38,7 +38,7 @@
     </div>
     {% endif %}
 
-    <div style="background: var(--card); border-radius: 32px; padding: 32px; border: 1px solid rgba(0,0,0,0.03); box-shadow: var(--shadow);">
+    <div style="background: var(--card); border-radius: 24px; padding: 24px; border: 1px solid rgba(0,0,0,0.03); box-shadow: var(--shadow-subtle);">
         <form method="POST" id="bookingForm">
             {% csrf_token %}
             

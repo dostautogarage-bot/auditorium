@@ -21,9 +21,9 @@
     }
     .booking-mobile-card {
         background: rgba(255,255,255,0.72); backdrop-filter: blur(18px);
-        border: 1.5px solid rgba(255,255,255,0.45); border-radius: 20px;
-        padding: 16px; margin-bottom: 10px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        border: 1.5px solid rgba(255,255,255,0.45); border-radius: 16px;
+        padding: 12px; margin-bottom: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
     }
     .booking-mobile-card:active { transform: scale(0.98); }
@@ -136,7 +136,7 @@
         </div>
         {% empty %}
         <div style="text-align:center; padding:64px 20px;">
-            <div style="width:70px; height:70px; background:rgba(20,184,166,0.08); border-radius:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+            <div style="width:70px; height:70px; background:var(--primary-soft); border-radius:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
                 <i class="bi bi-calendar-x" style="font-size:1.8rem; color:var(--primary); opacity:0.5;"></i>
             </div>
             <p style="color:var(--ink-3); font-size:0.85rem; font-weight:600;">No bookings yet</p>

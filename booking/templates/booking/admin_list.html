@@ -79,6 +79,13 @@
                 <span style="background: #F8FAFC; padding: 8px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; color: #94A3B8;">Verified Staff Member</span>
             </div>
         </div>
+        {% empty %}
+        <div style="text-align:center; padding:64px 20px;">
+            <div style="width:70px; height:70px; background:var(--primary-soft); border-radius:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <i class="bi bi-people" style="font-size:1.8rem; color:var(--primary); opacity:0.5;"></i>
+            </div>
+            <p style="color:var(--ink-muted); font-size:0.85rem; font-weight:600;">No team members found</p>
+        </div>
         {% endfor %}
     </div>
 </div>

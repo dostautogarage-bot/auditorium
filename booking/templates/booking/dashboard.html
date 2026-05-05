@@ -37,9 +37,9 @@
 
     .dg-stat-grid {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-        margin-bottom: 24px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
     }
 
     @media (min-width: 576px) {
@@ -57,13 +57,13 @@
     }
 
     .dg-stat-box {
-        border-radius: 20px;
-        padding: 20px;
+        border-radius: 16px;
+        padding: 16px;
         color: white;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        min-height: 140px;
+        min-height: 100px;
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
         position: relative;
         overflow: hidden;
@@ -214,6 +214,17 @@
         </div>
     </div>
 
+    <!-- Visual Insights Section -->
+    <div class="dg-section-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Advance Collection Share</h2>
+            <i class="bi bi-pie-chart-fill opacity-30 fs-5"></i>
+        </div>
+        <div style="height: 250px; position: relative;">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
     <div class="row g-4">
         <!-- Advances by Admin Breakdown -->
         <div class="col-12 col-xl-6">
@@ -298,4 +309,60 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    const adminData = [
+        {% for admin in admin_breakdown %}
+            {
+                label: '{{ admin.username }}',
+                value: {{ admin.collected|default:0 }}
+            },
+        {% endfor %}
+    ];
+
+    if (adminData.length === 0) {
+        document.getElementById('revenueChart').parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted small fw-bold">Insufficient data for chart</div>';
+        return;
+    }
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: adminData.map(d => d.label),
+            datasets: [{
+                data: adminData.map(d => d.value),
+                backgroundColor: [
+                    '#FF7A00', '#4F7BFF', '#00BA88', '#8E6BF5', '#F65D6D', '#6B79FF'
+                ],
+                borderWidth: 0,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20,
+                        font: {
+                            family: 'Outfit',
+                            size: 11,
+                            weight: '700'
+                        }
+                    }
+                }
+            },
+            cutout: '75%'
+        }
+    });
+});
+</script>
 {% endblock %}

@@ -70,13 +70,16 @@
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             letter-spacing: -0.01em;
-            font-size: 15px;
+            font-size: 14px;
             overflow-x: hidden;
             padding-bottom: calc(90px + var(--safe-bottom));
-            padding-top: 80px;
+            padding-top: 75px;
             min-height: 100vh;
             position: relative;
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* Mobile app card */
@@ -324,18 +327,20 @@
 
         /* PAGE WRAPPER & LAYOUT SYSTEM */
         .page-wrapper {
-            transition: 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
-            padding: 16px;
+            padding: 12px;
             box-sizing: border-box;
         }
 
         h1 {
-            font-size: 1.6rem;
+            font-size: 1.45rem;
+            line-height: 1.2;
         }
 
         h2 {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
+            line-height: 1.3;
         }
 
         @media (min-width: 768px) {
@@ -357,7 +362,7 @@
 
             .page-wrapper {
                 margin-left: 300px;
-                width: calc(100% - 300px);
+                width: auto;
                 padding: 40px;
                 min-height: 100vh;
             }
@@ -395,15 +400,17 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: calc(85px + var(--safe-bottom));
-            background: #FFFFFF;
+            height: calc(75px + var(--safe-bottom));
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 0 10px calc(10px + var(--safe-bottom));
+            padding: 0 10px calc(5px + var(--safe-bottom));
             z-index: 1100;
-            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.05);
-            border-top: 1px solid rgba(0, 0, 0, 0.03);
+            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.04);
+            border-top: 1px solid rgba(0, 0, 0, 0.02);
         }
 
         .nav-link-app {
@@ -802,11 +809,148 @@
             margin-left: 4px;
             display: none;
         }
+        /* PREMIUM TOP LOADING BAR */
+        #loading-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: var(--primary-gradient);
+            z-index: 2000;
+            transition: width 0.4s ease;
+        }
+
+        .loading #loading-bar {
+            width: 100%;
+        }
+
+        /* NETWORK STATUS INDICATOR */
+        #network-status {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: none;
+            box-shadow: var(--shadow-md);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { top: -50px; opacity: 0; }
+            to { top: 10px; opacity: 1; }
+        }
+
+        .online-status { background: #10B981; color: white; }
+        .offline-status { background: #EF4444; color: white; }
+
+        /* TOAST STYLE MESSAGES */
+        .toast-container-app {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2500;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .toast-container-app {
+                right: 12px;
+                left: 12px;
+                top: auto;
+                bottom: 100px;
+            }
+        }
+        /* FLOATING ACTION BUTTON (FAB) */
+        .fab-app {
+            position: fixed;
+            bottom: calc(100px + var(--safe-bottom));
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary-gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 25px rgba(255, 122, 0, 0.4);
+            z-index: 1050;
+            border: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-decoration: none;
+        }
+
+        .fab-app:active {
+            transform: scale(0.85);
+        }
+
+        /* BACK TO TOP */
+        #back-to-top {
+            position: fixed;
+            bottom: calc(170px + var(--safe-bottom));
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: var(--ink);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow-md);
+            z-index: 1040;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: 0.3s;
+        }
+
+        @media (min-width: 992px) {
+            .fab-app { display: none; }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
 
-<body>
+<body class="smooth-scroll">
+    <div id="loading-bar"></div>
+    <div id="network-status"></div>
+    
+    <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    {% if request.resolver_match.url_name != 'booking_create' %}
+    <a href="{% url 'booking_create' %}" class="fab-app">
+        <i class="bi bi-plus-lg"></i>
+    </a>
+    {% endif %}
+    
+    <div class="toast-container-app" id="toast-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-xl px-4 py-3 fade show"
+                    style="border-radius: var(--radius-lg); font-weight: 700; font-size: 0.85rem; pointer-events: auto; min-width: 250px; box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check2-circle{% endif %} me-2 fs-5"></i>
+                            {{ message }}
+                        </div>
+                        <button type="button" class="btn-close ms-3" data-bs-dismiss="alert" style="font-size: 0.6rem;"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
         <div class="d-flex align-items-center gap-2">
@@ -916,19 +1060,6 @@
     </nav>
 
     <main class="page-wrapper">
-        {% if messages %}
-        <div class="mb-4">
-            {% for message in messages %}
-            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-sm px-4 py-3"
-                style="border-radius: var(--radius-lg); font-weight: 700; font-size: 0.9rem;">
-                <i
-                    class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check2-circle{% endif %} me-2"></i>
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
         {% block content %}{% endblock %}
 
         <footer style="text-align: center; padding: 40px 20px 140px; width: 100%; opacity: 0.8;">
@@ -1330,6 +1461,84 @@
         </div>
     </div>
 
+    <script>
+        // PREMIUM HAPTIC FEEDBACK
+        function haptic(type = 'light') {
+            if (!window.navigator.vibrate) return;
+            if (type === 'light') window.navigator.vibrate(10);
+            else if (type === 'medium') window.navigator.vibrate(20);
+            else if (type === 'heavy') window.navigator.vibrate(40);
+        }
+
+        // PAGE TRANSITION SMOOTHNESS
+        window.addEventListener('beforeunload', function() {
+            document.body.classList.add('loading');
+        });
+
+        // ATTACH HAPTIC TO ALL BUTTONS
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('button') || e.target.closest('.btn-app') || e.target.closest('.nav-link-app')) {
+                haptic('light');
+            }
+        });
+
+        // NETWORK STATUS LOGIC
+        function updateNetworkStatus() {
+            const status = document.getElementById('network-status');
+            if (navigator.onLine) {
+                if (status.classList.contains('offline-status')) {
+                    status.innerText = 'Back Online';
+                    status.className = 'online-status';
+                    status.style.display = 'block';
+                    setTimeout(() => status.style.display = 'none', 3000);
+                }
+            } else {
+                status.innerText = 'No Internet Connection';
+                status.className = 'offline-status';
+                status.style.display = 'block';
+            }
+        }
+
+        window.addEventListener('online', updateNetworkStatus);
+        window.addEventListener('offline', updateNetworkStatus);
+
+        // AUTO-DISMISS TOASTS
+        document.addEventListener('DOMContentLoaded', function() {
+            const toasts = document.querySelectorAll('.toast-container-app .alert');
+            toasts.forEach(toast => {
+                setTimeout(() => {
+                    const bsAlert = new bootstrap.Alert(toast);
+                    bsAlert.close();
+                }, 4000);
+            });
+        });
+        // BACK TO TOP LOGIC
+        window.addEventListener('scroll', function() {
+            const btn = document.getElementById('back-to-top');
+            if (btn) {
+                if (window.pageYOffset > 400) {
+                    btn.style.display = 'flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            }
+        });
+
+        // TEXT HIGHLIGHTING UTILITY
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            if (query && query.length > 1) {
+                const elements = document.querySelectorAll('.page-wrapper div, .page-wrapper span, .page-wrapper td');
+                const regex = new RegExp(`(${query})`, 'gi');
+                elements.forEach(el => {
+                    if (el.children.length === 0 && el.innerText.toLowerCase().includes(query.toLowerCase())) {
+                        el.innerHTML = el.innerText.replace(regex, '<mark style="background: #FFE4CC; color: #CC6600; padding: 0 2px; border-radius: 4px; font-weight: inherit;">$1</mark>');
+                    }
+                });
+            }
+        });
+    </script>
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
         const USER_CAN_BOOK = {% if request.user.is_superuser %}true{% elif request.user.profile.is_auditorium_staff %}false{% elif request.user.profile.is_bookable %}true{% else %}false{% endif %};
