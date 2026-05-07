@@ -174,11 +174,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let start, end;
             if (shift === 'day') {
-                start = new Date(year, month, day, 7, 0);
-                end = new Date(year, month, day, 19, 0);
+                start = new Date(year, month, day, 6, 0);
+                end = new Date(year, month, day, 18, 0);
             } else if (shift === 'night') {
-                start = new Date(year, month, day, 19, 0);
-                end = new Date(year, month, day, 23, 59);
+                start = new Date(year, month, day, 18, 0);
+                end = new Date(year, month, day + 1, 6, 0);
             }
 
             startPicker.setDate(start);

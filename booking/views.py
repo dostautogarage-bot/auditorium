@@ -55,7 +55,7 @@ def dashboard(request):
             
     if admin_id:
         filtered_qs = filtered_qs.filter(created_by_id=admin_id)
-
+ 
     # Stats
     total_advance = filtered_qs.aggregate(Sum('advance_received'))['advance_received__sum'] or 0
     filtered_count = filtered_qs.count()
@@ -148,7 +148,8 @@ def admin_create(request):
         form = AdminCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Admin user "{form.cleaned_data.get("username")}" created successfully!')
+            username = form.cleaned_data.get("username")
+            messages.success(request, f'Admin user "{username}" created successfully!')
             return redirect('admin_list')
     else:
         form = AdminCreationForm()
@@ -170,7 +171,7 @@ def admin_edit(request, pk):
         form = AdminEditForm(request.POST, instance=admin)
         if form.is_valid():
             form.save()
-            messages.success(request, f'Admin user "{admin.username}" updated successfully!')
+            messages.success(request, f'Admin user \"{admin.username}\" updated successfully!')
             return redirect('admin_list')
     else:
         form = AdminEditForm(instance=admin)
@@ -196,7 +197,7 @@ def admin_delete(request, pk):
     if request.method == 'POST':
         username = admin.username
         admin.delete()
-        messages.success(request, f'Admin user "{username}" deleted successfully!')
+        messages.success(request, f'Admin user \"{username}\" deleted successfully!')
         return redirect('admin_list')
     
     return render(request, 'booking/admin_confirm_delete.html', {'admin': admin})
@@ -391,6 +392,15 @@ def booking_delete(request, pk):
     if request.method == 'POST':
         booking.delete()
         messages.success(request, 'Booking deleted successfully.')
+        
+        # Smart redirection based on origin
+        next_url = request.GET.get('next')
+        if next_url:
+            return redirect(next_url)
+            
+        referer = request.META.get('HTTP_REFERER', '')
+        if 'calendar' in referer:
+            return redirect('calendar')
         return redirect('booking_list')
         
     return render(request, 'booking/booking_confirm_delete.html', {'booking': booking})
@@ -448,21 +458,21 @@ def payment_report(request):
 
 def manifest_json(request):
     manifest = {
-        "name": "ABC Auditorium Booking System",
-        "short_name": "ABC Auditorium",
-        "description": "Book auditoriums and manage bookings",
-        "start_url": "/",
-        "display": "standalone",
-        "background_color": "#ffffff",
-        "theme_color": "#FF5A00",
-        "icons": [
-            {
-                "src": "/static/logo.png",
-                "sizes": "192x192",
-                "type": "image/png"
-            }
-        ]
-    }
+    "name": "ABC Auditorium Booking System",
+    "short_name": "ABC Auditorium",
+    "description": "Book auditoriums and manage bookings",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#FF5A00",
+    "icons": [
+        {
+            "src": "/static/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ]
+}
     return JsonResponse(manifest)
 
 
@@ -507,18 +517,40 @@ def booking_api(request):
         start_time = timezone.localtime(booking.start_time)
         end_time = timezone.localtime(booking.end_time)
         
-        # Determine shift (Day: 7 AM - 7 PM, Night: 7 PM - 7 AM)
-        hour = start_time.hour
-        shift = 'day' if 7 <= hour < 19 else 'night'
+        # Determine shift (Day: 6 AM - 6 PM, Night: 6 PM - 6 AM)
+        start_hour = start_time.hour
+        end_hour = end_time.hour
         
-        time_str = f"{start_time.strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')} - {end_time.strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')}"
+        is_start_day = 6 <= start_hour < 18
+        
+        # We check the actual duration and span
+        if (end_time - start_time).total_seconds() > 43200: # More than 12 hours is always overlap
+            shift = 'overlap'
+        else:
+            is_end_day = 6 <= end_hour < 18 if end_time.minute > 0 or end_time.second > 0 else 6 <= (end_hour-1) < 18
+            
+            if is_start_day == is_end_day:
+                shift = 'day' if is_start_day else 'night'
+            else:
+                shift = 'overlap'
+        
+        # Clamp display end to 23:59 of the START day so FullCalendar
+        # treats it as a single-day event (actual DB data is untouched).
+        display_end = end_time
+        if end_time.date() > start_time.date():
+            display_end = start_time.replace(hour=23, minute=59, second=59, microsecond=0)
+        
+        # Use display_end for the time label so we show "6 PM - 11:59 PM"
+        # instead of the confusing "6 PM - 6 AM" on the calendar cell.
+        time_str = f"{start_time.strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')} - {display_end.strftime('%I:%M %p').lstrip('0').replace(' 0', ' ')}"
+        
         if is_staff_role:
             # Hide personal details for auditorium staff
             events.append({
                 'id': booking.pk,
                 'title': 'BOOKED',
                 'start': start_time.isoformat(),
-                'end': end_time.isoformat(),
+                'end': display_end.isoformat(),
                 'extendedProps': {
                     'shift': shift,
                     'timing': time_str
@@ -529,7 +561,7 @@ def booking_api(request):
                 'id': booking.pk,
                 'title': booking.title,
                 'start': start_time.isoformat(),
-                'end': end_time.isoformat(),
+                'end': display_end.isoformat(),
                 'contact_person': booking.contact_person,
                 'mobile_number': booking.mobile_number,
                 'advance_received': str(booking.advance_received),
@@ -539,7 +571,8 @@ def booking_api(request):
                 'extendedProps': {
                     'shift': shift,
                     'contact': booking.contact_person,
-                    'mobile': booking.mobile_number
+                    'mobile': booking.mobile_number,
+                    'timing': time_str
                 }
             })
     return JsonResponse(events, safe=False)
@@ -553,7 +586,6 @@ def check_conflict(request):
         return JsonResponse({'conflict': False})
 
     # Check if requested time is in the past
-    # The 'start' from request is usually ISO string or similar
     from django.utils.dateparse import parse_datetime
     requested_start = parse_datetime(start)
     if requested_start and timezone.is_naive(requested_start):
@@ -617,48 +649,3 @@ def toggle_staff_status(request, pk):
     profile.is_auditorium_staff = not profile.is_auditorium_staff
     profile.save()
     return JsonResponse({'status': 'success', 'is_auditorium_staff': profile.is_auditorium_staff})
-
-def manifest_json(request):
-    manifest = {
-        "name": "ABC Auditorium",
-        "short_name": "ABC Audit",
-        "description": "Real-time ABC Auditorium booking schedule.",
-        "start_url": "/",
-        "display": "standalone",
-        "background_color": "#ffffff",
-        "theme_color": "#FF7A00",
-        "icons": [
-            {
-                "src": "/static/favicon.png",
-                "sizes": "192x192",
-                "type": "image/png",
-                "purpose": "any maskable"
-            },
-            {
-                "src": "/static/favicon.png",
-                "sizes": "512x512",
-                "type": "image/png",
-                "purpose": "any maskable"
-            }
-        ]
-    }
-    return JsonResponse(manifest)
-
-def sw_js(request):
-    sw_code = """
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open('abc-audit-store').then((cache) => cache.addAll([
-      '/',
-      '/static/favicon.png',
-    ])),
-  );
-});
-
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((response) => response || fetch(e.request)),
-  );
-});
-"""
-    return HttpResponse(sw_code, content_type='application/javascript')

@@ -75,7 +75,7 @@
             font-size: 14px;
             overflow-x: hidden;
             padding-bottom: calc(90px + var(--safe-bottom));
-            padding-top: 75px;
+            padding-top: calc(85px + env(safe-area-inset-top));
             min-height: 100vh;
             position: relative;
             scroll-behavior: smooth;
@@ -147,6 +147,42 @@
                 width: 100% !important;
                 max-height: 85vh !important;
                 border-radius: var(--radius-2xl) !important;
+            }
+
+            /* Event Detail Modal Mobile Enhancement */
+            #eventDetailModal .modal-body-premium {
+                padding: 16px 20px 20px;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            #eventDetailModal #dvTitle {
+                font-size: 1.25rem !important;
+            }
+
+            #eventDetailModal #detailView>div {
+                background: var(--bg) !important;
+                padding: 12px 14px !important;
+                border-radius: 14px !important;
+                margin-bottom: 10px !important;
+            }
+
+            #eventDetailModal .form-label {
+                font-size: 0.75rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                margin-bottom: 4px;
+            }
+
+            #eventDetailModal .modal-footer-premium {
+                padding: 0 20px 20px;
+                gap: 8px !important;
+            }
+
+            #eventDetailModal .btn-app {
+                padding: 12px 16px !important;
+                font-size: 0.9rem !important;
             }
         }
 
@@ -378,13 +414,13 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 70px;
+            height: calc(80px + env(safe-area-inset-top));
             background: #FFFFFF;
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
+            padding: env(safe-area-inset-top) 20px 0;
             box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
         }
 
@@ -809,6 +845,7 @@
             margin-left: 4px;
             display: none;
         }
+
         /* PREMIUM TOP LOADING BAR */
         #loading-bar {
             position: fixed;
@@ -842,12 +879,26 @@
         }
 
         @keyframes slideDown {
-            from { top: -50px; opacity: 0; }
-            to { top: 10px; opacity: 1; }
+            from {
+                top: -50px;
+                opacity: 0;
+            }
+
+            to {
+                top: 10px;
+                opacity: 1;
+            }
         }
 
-        .online-status { background: #10B981; color: white; }
-        .offline-status { background: #EF4444; color: white; }
+        .online-status {
+            background: #10B981;
+            color: white;
+        }
+
+        .offline-status {
+            background: #EF4444;
+            color: white;
+        }
 
         /* TOAST STYLE MESSAGES */
         .toast-container-app {
@@ -869,6 +920,7 @@
                 bottom: 100px;
             }
         }
+
         /* FLOATING ACTION BUTTON (FAB) */
         .fab-app {
             position: fixed;
@@ -910,12 +962,79 @@
             font-size: 1.1rem;
             box-shadow: var(--shadow-md);
             z-index: 1040;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
             transition: 0.3s;
         }
 
         @media (min-width: 992px) {
-            .fab-app { display: none; }
+            .fab-app {
+                display: none;
+            }
+        }
+
+        /* FLIP CARD STYLES */
+        .branding-card-container {
+            perspective: 1000px;
+            width: 100%;
+            max-width: 320px;
+            height: 100px;
+            margin-bottom: 24px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .branding-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .branding-card-container:hover .branding-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .branding-card-front,
+        .branding-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+        }
+
+        .branding-card-front {
+            background: #fff;
+        }
+
+        .branding-card-front img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .branding-card-back {
+            background: var(--primary-gradient);
+            color: white;
+            transform: rotateY(180deg);
+            padding: 15px;
+            justify-content: center;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        @media (max-width: 992px) {
+            .branding-card-container {
+                max-width: 100%;
+                height: 80px;
+            }
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -924,7 +1043,7 @@
 <body class="smooth-scroll">
     <div id="loading-bar"></div>
     <div id="network-status"></div>
-    
+
     <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
         <i class="bi bi-arrow-up"></i>
     </button>
@@ -934,37 +1053,39 @@
         <i class="bi bi-plus-lg"></i>
     </a>
     {% endif %}
-    
+
     <div class="toast-container-app" id="toast-container">
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-xl px-4 py-3 fade show"
-                    style="border-radius: var(--radius-lg); font-weight: 700; font-size: 0.85rem; pointer-events: auto; min-width: 250px; box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <i class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check2-circle{% endif %} me-2 fs-5"></i>
-                            {{ message }}
-                        </div>
-                        <button type="button" class="btn-close ms-3" data-bs-dismiss="alert" style="font-size: 0.6rem;"></button>
-                    </div>
+        {% for message in messages %}
+        <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} border-0 shadow-xl px-4 py-3 fade show"
+            style="border-radius: var(--radius-lg); font-weight: 700; font-size: 0.85rem; pointer-events: auto; min-width: 250px; box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i
+                        class="bi {% if message.tags == 'error' %}bi-exclamation-octagon{% else %}bi-check2-circle{% endif %} me-2 fs-5"></i>
+                    {{ message }}
                 </div>
-            {% endfor %}
+                <button type="button" class="btn-close ms-3" data-bs-dismiss="alert"
+                    style="font-size: 0.6rem;"></button>
+            </div>
+        </div>
+        {% endfor %}
         {% endif %}
     </div>
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
         <div class="d-flex align-items-center gap-2">
-            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo" style="width:32px; height:32px; border-radius:8px; object-fit:cover;">
+            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo"
+                style="width:32px; height:32px; border-radius:8px; object-fit:cover;">
             <span
-                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">ABC Auditorium</span>
+                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">ABC
+                Auditorium</span>
         </div>
         <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="modal"
             data-bs-target="#accountDetailsModal">
-            <div class="text-end">
-                <div style="font-size: 0.75rem; font-weight: 800; color: var(--ink); line-height: 1.1;">{{ user.username }}</div>
-                <div
-                    style="font-size: 0.6rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.02em;">
-                    Account</div>
+            <div class="text-end me-2">
+                <div style="font-size: 0.85rem; font-weight: 800; color: var(--ink); line-height: 1;">{{ user.username }}</div>
+                <div style="font-size: 0.65rem; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Account</div>
             </div>
             <div
                 style="width:34px; height:34px; background:#F1F5F9; border:1.5px solid #E2E8F0; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:800; font-size:0.85rem; flex-shrink: 0;">
@@ -976,9 +1097,11 @@
     <!-- DESKTOP SIDEBAR -->
     <aside class="app-sidebar">
         <div class="sidebar-brand">
-            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo" style="width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 10px rgba(255, 122, 0, 0.3);">
+            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo"
+                style="width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 10px rgba(255, 122, 0, 0.3);">
             <span
-                style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">ABC Auditorium</span>
+                style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">ABC
+                Auditorium</span>
         </div>
         <nav class="flex-column mb-auto">
             {% if request.user.is_superuser %}
@@ -1015,7 +1138,9 @@
                     {{ user.username|slice:":1"|upper }}
                 </div>
                 <div style="min-width: 0;">
-                    <div style="font-size: 1rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
+                    <div
+                        style="font-size: 1rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        {{ user.username }}</div>
                     <div style="font-size: 0.75rem; font-weight: 700; color: #94A3B8; text-transform: uppercase;">
                         Administrator</div>
                 </div>
@@ -1060,6 +1185,26 @@
     </nav>
 
     <main class="page-wrapper">
+        <!-- Interactive Branding Flip Card -->
+        <div class="branding-card-container fade-in">
+            <div class="branding-card-inner">
+                <div class="branding-card-front">
+                    <img src="{% static 'booking/images/premium_auditorium_banner.png' %}" alt="ABC Auditorium">
+                    <div class="position-absolute bottom-0 start-0 w-100 p-2 text-white"
+                        style="background: linear-gradient(transparent, rgba(0,0,0,0.6)); font-size: 0.7rem; font-weight: 800;">
+                        ABC Auditorium
+                    </div>
+                </div>
+                <div class="branding-card-back">
+                    <div style="font-size: 0.8rem; font-weight: 900;">VISIT US</div>
+                    <div style="font-size: 0.7rem; opacity: 0.9;">Main Road, Downtown City</div>
+                    <div style="font-size: 0.7rem; font-weight: 800; margin-top: 4px;">
+                        <i class="bi bi-telephone-fill"></i> +91 98765 43210
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {% block content %}{% endblock %}
 
         <footer style="text-align: center; padding: 40px 20px 140px; width: 100%; opacity: 0.8;">
@@ -1109,13 +1254,15 @@
                         </div>
                         <div id="startTimeSection" class="mb-3"><label class="form-label">Start Time</label>
                             <div class="d-flex gap-2 mb-3">
-                                <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('day')" style="border-color: #F59E0B; color: #92400E; background: #FEF3C7;">
-                                    <i class="bi bi-sun-fill me-1"></i> Day Shift
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">7 AM - 7 PM</span>
+                                <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('day')"
+                                    style="border-color: #F59E0B; color: #92400E; background: #FEF3C7;">
+                                    <i class="bi bi-sun-fill me-1"></i> Day
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">6 AM - 6 PM</span>
                                 </div>
-                                <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('night')" style="border-color: #6366F1; color: #3730A3; background: #E0E7FF;">
-                                    <i class="bi bi-moon-stars-fill me-1"></i> Night Shift
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">7 PM - 11:59 PM</span>
+                                <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('night')"
+                                    style="border-color: #6366F1; color: #3730A3; background: #E0E7FF;">
+                                    <i class="bi bi-moon-stars-fill me-1"></i> Night
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">6 PM - 6 AM</span>
                                 </div>
                             </div>
                             <div id="startTimeSuggestions" class="time-suggestion-list"></div>
@@ -1188,21 +1335,24 @@
                             <div
                                 style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
                                 Contact Person</div>
-                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink);" id="confDisplayContact">
+                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink);"
+                                id="confDisplayContact">
                             </div>
                         </div>
                         <div class="mb-4">
                             <div
                                 style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
                                 Mobile Number</div>
-                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink);" id="confDisplayMobile">
+                            <div style="font-size: 0.95rem; font-weight: 700; color: var(--ink);"
+                                id="confDisplayMobile">
                             </div>
                         </div>
                         <div class="mb-0">
                             <div
                                 style="font-size: 0.72rem; font-weight: 800; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;">
                                 💰 Advance Received</div>
-                            <div style="font-size: 1rem; font-weight: 800; color: var(--primary);" id="confDisplayAdvance">
+                            <div style="font-size: 1rem; font-weight: 800; color: var(--primary);"
+                                id="confDisplayAdvance">
                                 ₹0.00
                             </div>
                         </div>
@@ -1218,8 +1368,7 @@
                     </form>
                 </div>
                 <div class="modal-footer modal-footer-premium flex-column gap-2">
-                    <button type="button" id="btnConfirmFinal"
-                        onclick="submitFinalBooking()"
+                    <button type="button" id="btnConfirmFinal" onclick="submitFinalBooking()"
                         class="btn btn-app btn-app-primary w-100">Confirm & Save</button>
                     <button type="button" id="btnChangeDetails" class="btn btn-light w-100 py-3 rounded-4 fw-bold"
                         data-bs-target="#createBookingModal" data-bs-toggle="modal">Change Details</button>
@@ -1366,9 +1515,9 @@
                 </div>
                 <div class="modal-footer modal-footer-premium flex-column gap-2">
                     <button id="dvEditBtn" class="btn-app btn-app-primary w-100">Edit This Event</button>
-                    <button id="dvDeleteBtn" class="btn-app w-100" style="background: #FFF1F2; color: #E11D48;">Delete This Event</button>
-                    <button type="button" class="btn-app btn-app-ghost w-100"
-                        data-bs-dismiss="modal">Close</button>
+                    <button id="dvDeleteBtn" class="btn-app w-100" style="background: #FFF1F2; color: #E11D48;">Delete
+                        This Event</button>
+                    <button type="button" class="btn-app btn-app-ghost w-100" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -1414,11 +1563,13 @@
                     <div class="w-100 text-start d-flex flex-column gap-3 mb-4">
                         <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
                             <div class="form-label" style="margin-left: 0;">Full Name</div>
-                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.get_full_name|default:user.username }}</div>
+                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{
+                                user.get_full_name|default:user.username }}</div>
                         </div>
                         <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
                             <div class="form-label" style="margin-left: 0;">Email Address</div>
-                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.email|default:"No email provided" }}</div>
+                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{
+                                user.email|default:"No email provided" }}</div>
                         </div>
                     </div>
 
@@ -1446,7 +1597,8 @@
                         <i class="bi bi-box-arrow-right fs-1"></i>
                     </div>
                     <h5 class="fw-800 text-dark mb-2" style="font-size: 1.2rem;">Sign Out Account?</h5>
-                    <p class="text-muted fw-medium mb-4">Are you sure you want to log out of the ABC Auditorium portal?</p>
+                    <p class="text-muted fw-medium mb-4">Are you sure you want to log out of the ABC Auditorium portal?
+                    </p>
 
                     <div class="d-flex flex-column gap-2 w-100">
                         <form method="post" action="{% url 'logout' %}" class="w-100">{% csrf_token %}
@@ -1471,12 +1623,12 @@
         }
 
         // PAGE TRANSITION SMOOTHNESS
-        window.addEventListener('beforeunload', function() {
+        window.addEventListener('beforeunload', function () {
             document.body.classList.add('loading');
         });
 
         // ATTACH HAPTIC TO ALL BUTTONS
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (e.target.closest('button') || e.target.closest('.btn-app') || e.target.closest('.nav-link-app')) {
                 haptic('light');
             }
@@ -1503,7 +1655,7 @@
         window.addEventListener('offline', updateNetworkStatus);
 
         // AUTO-DISMISS TOASTS
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const toasts = document.querySelectorAll('.toast-container-app .alert');
             toasts.forEach(toast => {
                 setTimeout(() => {
@@ -1513,7 +1665,7 @@
             });
         });
         // BACK TO TOP LOGIC
-        window.addEventListener('scroll', function() {
+        window.addEventListener('scroll', function () {
             const btn = document.getElementById('back-to-top');
             if (btn) {
                 if (window.pageYOffset > 400) {
@@ -1525,7 +1677,7 @@
         });
 
         // TEXT HIGHLIGHTING UTILITY
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('q');
             if (query && query.length > 1) {
@@ -1541,7 +1693,7 @@
     </script>
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
-        const USER_CAN_BOOK = {% if request.user.is_superuser %}true{% elif request.user.profile.is_auditorium_staff %}false{% elif request.user.profile.is_bookable %}true{% else %}false{% endif %};
+        const USER_CAN_BOOK = {% if request.user.is_superuser %}true{% elif request.user.profile.is_auditorium_staff %} false{% elif request.user.profile.is_bookable %} true{% else %} false{% endif %};
         let selectedStartTime = null; let selectedEndTime = null;
         function generateTimeOptions() {
             const startList = document.getElementById('startTimeSuggestions'); if (!startList) return;
@@ -1558,17 +1710,17 @@
         function selectStartTime(val, display, el) {
             selectedStartTime = val; document.getElementById('startTimeSection').classList.add('d-none');
             const box = document.getElementById('selectedStartBox'); box.classList.remove('d-none');
-            
+
             const shiftInput = document.getElementById('id_modal_shift');
             const labelEl = document.getElementById('selectedStartLabel');
             const durationSec = document.getElementById('durationSection');
-            
+
             if (shiftInput && shiftInput.value === 'day') {
-                document.getElementById('displaySelectedStart').innerText = '7:00 AM - 7:00 PM (Day Shift)';
+                document.getElementById('displaySelectedStart').innerText = '6:00 AM - 6:00 PM (Day)';
                 if (labelEl) labelEl.innerText = 'Selected Shift';
                 if (durationSec) durationSec.classList.add('d-none');
             } else if (shiftInput && shiftInput.value === 'night') {
-                document.getElementById('displaySelectedStart').innerText = '7:00 PM - 11:59 PM (Night Shift)';
+                document.getElementById('displaySelectedStart').innerText = '6:00 PM - 6:00 AM (Night)';
                 if (labelEl) labelEl.innerText = 'Selected Shift';
                 if (durationSec) durationSec.classList.add('d-none');
             } else {
@@ -1577,7 +1729,7 @@
                 if (durationSec) durationSec.classList.remove('d-none');
                 if (shiftInput) shiftInput.value = 'custom';
             }
-            
+
             updateEndTimeSuggestions(val);
         }
         function resetStartTime() {
@@ -1595,7 +1747,7 @@
             endList.innerHTML = '';
             const [sh, sm] = startVal.split(':').map(Number); const startMinutes = sh * 60 + sm;
             const durations = [{ label: '30m', mins: 30 }, { label: '1h', mins: 60 }, { label: '2h', mins: 120 }, { label: '4h', mins: 240 }, { label: '8h', mins: 480 }, { label: '12h', mins: 720 }];
-            
+
             let matched = false;
             durations.forEach(d => {
                 const totalMins = startMinutes + d.mins; const eh = Math.floor(totalMins / 60) % 24; const em = totalMins % 60;
@@ -1611,14 +1763,14 @@
                 chip.onclick = () => { selectedEndTime = rawValue; document.querySelectorAll('#endTimeSuggestions .time-chip').forEach(c => c.classList.remove('selected')); chip.classList.add('selected'); };
                 endList.appendChild(chip);
             });
-            
+
             if (selectedEndTime && !matched && selectedEndTime !== '19:00' && selectedEndTime !== '23:59') {
                 const eh = parseInt(selectedEndTime.split(':')[0]); const em = parseInt(selectedEndTime.split(':')[1] || 0);
                 const ampm = eh >= 12 ? 'PM' : 'AM'; const displayH = eh % 12 || 12;
                 const timeStr = `${displayH}:${em.toString().padStart(2, '0')} ${ampm}`;
                 const chip = document.createElement('div'); chip.className = 'time-chip selected';
                 chip.innerHTML = `${timeStr} <span style="font-size: 0.65rem; display: block; opacity: 0.8; font-weight: 600;">Custom</span>`;
-                chip.onclick = () => { selectedEndTime = selectedEndTime.substring(0,5); document.querySelectorAll('#endTimeSuggestions .time-chip').forEach(c => c.classList.remove('selected')); chip.classList.add('selected'); };
+                chip.onclick = () => { selectedEndTime = selectedEndTime.substring(0, 5); document.querySelectorAll('#endTimeSuggestions .time-chip').forEach(c => c.classList.remove('selected')); chip.classList.add('selected'); };
                 endList.appendChild(chip);
             }
         }
@@ -1626,17 +1778,17 @@
             const form = document.getElementById('finalSubmitForm');
             const btn = document.getElementById('btnConfirmFinal');
             const modal = bootstrap.Modal.getInstance(document.getElementById('confirmationModal'));
-            
+
             btn.disabled = true;
             btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
-            
+
             // Set the action URL dynamically
             const bookingId = document.getElementById('modal_booking_id').value;
             const actionUrl = bookingId ? `/bookings/${bookingId}/edit/` : `{% url 'booking_create' %}`;
-            
+
             // Submit form using fetch
             const formData = new FormData(form);
-            
+
             fetch(actionUrl, {
                 method: 'POST',
                 body: formData,
@@ -1644,32 +1796,32 @@
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    // Close the modals
-                    if (modal) modal.hide();
-                    const createModal = bootstrap.Modal.getInstance(document.getElementById('createBookingModal'));
-                    if (createModal) createModal.hide();
-                    // Redirect to calendar
-                    setTimeout(() => {
-                        window.location.href = '{% url 'calendar' %}';
-                    }, 300);
-                } else {
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Close the modals
+                        if (modal) modal.hide();
+                        const createModal = bootstrap.Modal.getInstance(document.getElementById('createBookingModal'));
+                        if (createModal) createModal.hide();
+                        // Redirect to calendar
+                        setTimeout(() => {
+                            window.location.href = '{% url 'calendar' %}';
+                        }, 300);
+                    } else {
+                        btn.disabled = false;
+                        btn.innerHTML = 'Confirm & Save';
+                        // Show error message in a styled way
+                        showErrorModal(data.message || 'Error saving booking. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                     btn.disabled = false;
                     btn.innerHTML = 'Confirm & Save';
-                    // Show error message in a styled way
-                    showErrorModal(data.message || 'Error saving booking. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                btn.disabled = false;
-                btn.innerHTML = 'Confirm & Save';
-                showErrorModal('Connection error. Please try again.');
-            });
+                    showErrorModal('Connection error. Please try again.');
+                });
         }
-        
+
         function showErrorModal(message) {
             // Create and show error modal
             const errorModal = document.createElement('div');
@@ -1702,13 +1854,13 @@
         function applyPresetShift(shift) {
             const shiftInput = document.getElementById('id_modal_shift');
             if (shiftInput) shiftInput.value = shift;
-            
+
             if (shift === 'day') {
-                selectedEndTime = '19:00';
-                selectStartTime('07:00', '7:00 AM');
+                selectedEndTime = '18:00';
+                selectStartTime('06:00', '6:00 AM');
             } else if (shift === 'night') {
-                selectedEndTime = '23:59'; 
-                selectStartTime('19:00', '7:00 PM');
+                selectedEndTime = '06:00'; // Technically 6 AM next day
+                selectStartTime('18:00', '6:00 PM');
             } else {
                 resetStartTime();
             }
@@ -1728,11 +1880,11 @@
             const advance = eventObj.extendedProps.advance_received || '0';
             const created_by = eventObj.extendedProps.created_by || 'Admin';
             const created_at = eventObj.extendedProps.created_at || '';
-            
+
             const date = eventObj.startStr.split('T')[0];
             const startTime24 = eventObj.startStr.split('T')[1].substring(0, 5);
             const endTime24 = eventObj.endStr.split('T')[1].substring(0, 5);
-            
+
             const format12h = (time24) => {
                 const [h, m] = time24.split(':');
                 const hour = parseInt(h);
@@ -1758,12 +1910,12 @@
             } else {
                 editBtn.style.display = 'block';
                 if (deleteBtn) deleteBtn.style.display = 'block';
-                
+
                 editBtn.onclick = () => {
                     bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
                     triggerEditModal(pk, title, contact, mobile, advance, date, startTime24, endTime24, `/bookings/${pk}/edit/`);
                 };
-                
+
                 if (deleteBtn) {
                     deleteBtn.onclick = () => {
                         bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
@@ -1794,9 +1946,9 @@
 
             // Handle Start/End selections
             selectedEndTime = end.substring(0, 5); // Ensure HH:MM format
-            if (start === '07:00' && (end === '19:00' || end === '19:00:00')) {
+            if (start === '06:00' && (end === '18:00' || end === '18:00:00')) {
                 applyPresetShift('day');
-            } else if (start === '19:00' && (end === '23:59' || end === '23:59:00' || end === '23:59:59')) {
+            } else if (start === '18:00' && (end === '06:00' || end === '06:00:00')) {
                 applyPresetShift('night');
             } else {
                 const shiftInput = document.getElementById('id_modal_shift');
@@ -1825,9 +1977,9 @@
                 return;
             }
             document.querySelectorAll('.error-msg-app').forEach(el => el.style.display = 'none');
-            
+
             if (!event.relatedTarget) return; // Triggered by JS (Edit)
-            
+
             // If returning to the form to change details after validation error
             if (event.relatedTarget.id === 'btnChangeDetails') return;
 
@@ -1869,38 +2021,50 @@
             const contact = document.getElementById('id_contact').value.trim();
             const mobile = document.getElementById('id_mobile').value.trim();
             const advance = document.getElementById('id_advance').value || '0';
-            
+
             if (!title) {
                 document.getElementById('err_title').style.display = 'block';
                 return;
             }
-            
+
             if (!selectedStartTime) {
                 document.getElementById('err_start').style.display = 'block';
                 return;
             }
-            
+
             if (!selectedEndTime) {
                 document.getElementById('err_end').style.display = 'block';
                 return;
             }
-            
+
             // Build full datetime strings
             const startDateTime = `${dateBase} ${selectedStartTime}`;
-            const endDateTime = `${dateBase} ${selectedEndTime}`;
-            
+            let endDateTime = `${dateBase} ${selectedEndTime}`;
+
+            // Cross-midnight check: If end time is <= start time, it belongs to the next morning
+            if (selectedEndTime <= selectedStartTime) {
+                const startArr = dateBase.split('-'); // [YYYY, MM, DD]
+                const nextDay = new Date(startArr[0], startArr[1] - 1, startArr[2]);
+                nextDay.setDate(nextDay.getDate() + 1);
+
+                const y = nextDay.getFullYear();
+                const m = (nextDay.getMonth() + 1).toString().padStart(2, '0');
+                const d = nextDay.getDate().toString().padStart(2, '0');
+                endDateTime = `${y}-${m}-${d} ${selectedEndTime}`;
+            }
+
             // Check for conflicts
             const bookingId = document.getElementById('modal_booking_id').value;
             const conflictCheckUrl = `{% url 'check_conflict' %}?title=${encodeURIComponent(title)}&start_time=${encodeURIComponent(startDateTime)}&end_time=${encodeURIComponent(endDateTime)}&booking_id=${bookingId || ''}`;
-            
+
             try {
                 const response = await fetch(conflictCheckUrl);
                 const data = await response.json();
-                
+
                 // Show loading state if conflict found
                 document.getElementById('confLoading').style.display = data.conflict ? 'flex' : 'none';
                 document.getElementById('conflictBanner').classList.toggle('d-none', !data.conflict);
-                
+
                 // Format time to 12h
                 const format12h = (time24) => {
                     const [h, m] = time24.split(':');
@@ -1909,14 +2073,14 @@
                     const displayH = hour % 12 || 12;
                     return `${displayH}:${m} ${ampm}`;
                 };
-                
+
                 // Populate all confirmation modal fields
                 document.getElementById('confDisplayTitle').innerText = title;
                 document.getElementById('confDisplayTime').innerText = `${dateBase} | ${format12h(selectedStartTime)} – ${format12h(selectedEndTime)}`;
                 document.getElementById('confDisplayContact').innerText = contact || '—';
                 document.getElementById('confDisplayMobile').innerText = mobile || '—';
                 document.getElementById('confDisplayAdvance').innerText = `₹${parseFloat(advance || 0).toFixed(2)}`;
-                
+
                 // Populate hidden form fields
                 document.getElementById('finalTitle').value = title;
                 document.getElementById('finalShift').value = document.getElementById('id_modal_shift').value || 'custom';
@@ -1925,7 +2089,7 @@
                 document.getElementById('finalStart').value = startDateTime;
                 document.getElementById('finalEnd').value = endDateTime;
                 document.getElementById('finalAdvance').value = advance;
-                
+
                 // Show confirmation modal
                 new bootstrap.Modal(document.getElementById('confirmationModal')).show();
             } catch (e) {

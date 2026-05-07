@@ -162,8 +162,8 @@ class AdminEditForm(forms.ModelForm):
 class BookingForm(forms.ModelForm):
     SHIFT_CHOICES = [
         ('custom', 'Custom Time'),
-        ('day', 'Day (7 AM - 7 PM)'),
-        ('night', 'Night (7 PM - 11:59 PM)'),
+        ('day', 'Day (6 AM - 6 PM)'),
+        ('night', 'Night (6 PM - 6 AM)'),
     ]
     shift = forms.ChoiceField(
         choices=SHIFT_CHOICES,
