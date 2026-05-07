@@ -971,71 +971,6 @@
                 display: none;
             }
         }
-
-        /* FLIP CARD STYLES */
-        .branding-card-container {
-            perspective: 1000px;
-            width: 100%;
-            max-width: 320px;
-            height: 100px;
-            margin-bottom: 24px;
-            cursor: pointer;
-            z-index: 100;
-        }
-
-        .branding-card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-style: preserve-3d;
-        }
-
-        .branding-card-container:hover .branding-card-inner {
-            transform: rotateY(180deg);
-        }
-
-        .branding-card-front,
-        .branding-card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            -webkit-backface-visibility: hidden;
-            backface-visibility: hidden;
-            border-radius: 20px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            box-shadow: var(--shadow-md);
-        }
-
-        .branding-card-front {
-            background: #fff;
-        }
-
-        .branding-card-front img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .branding-card-back {
-            background: var(--primary-gradient);
-            color: white;
-            transform: rotateY(180deg);
-            padding: 15px;
-            justify-content: center;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        @media (max-width: 992px) {
-            .branding-card-container {
-                max-width: 100%;
-                height: 80px;
-            }
-        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -1185,26 +1120,6 @@
     </nav>
 
     <main class="page-wrapper">
-        <!-- Interactive Branding Flip Card -->
-        <div class="branding-card-container fade-in">
-            <div class="branding-card-inner">
-                <div class="branding-card-front">
-                    <img src="{% static 'booking/images/premium_auditorium_banner.png' %}" alt="ABC Auditorium">
-                    <div class="position-absolute bottom-0 start-0 w-100 p-2 text-white"
-                        style="background: linear-gradient(transparent, rgba(0,0,0,0.6)); font-size: 0.7rem; font-weight: 800;">
-                        ABC Auditorium
-                    </div>
-                </div>
-                <div class="branding-card-back">
-                    <div style="font-size: 0.8rem; font-weight: 900;">VISIT US</div>
-                    <div style="font-size: 0.7rem; opacity: 0.9;">Main Road, Downtown City</div>
-                    <div style="font-size: 0.7rem; font-weight: 800; margin-top: 4px;">
-                        <i class="bi bi-telephone-fill"></i> +91 98765 43210
-                    </div>
-                </div>
-            </div>
-        </div>
-
         {% block content %}{% endblock %}
 
         <footer style="text-align: center; padding: 40px 20px 140px; width: 100%; opacity: 0.8;">
@@ -1563,13 +1478,11 @@
                     <div class="w-100 text-start d-flex flex-column gap-3 mb-4">
                         <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
                             <div class="form-label" style="margin-left: 0;">Full Name</div>
-                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{
-                                user.get_full_name|default:user.username }}</div>
+                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.get_full_name|default:user.username }}</div>
                         </div>
                         <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
                             <div class="form-label" style="margin-left: 0;">Email Address</div>
-                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{
-                                user.email|default:"No email provided" }}</div>
+                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.email|default:"No email provided" }}</div>
                         </div>
                     </div>
 

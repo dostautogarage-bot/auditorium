@@ -1,30 +1,50 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABC Auditorium | Luxury Event Venue</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <style>
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
 
         @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(20, 184, 166, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(20, 184, 166, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
+            }
         }
+
         :root {
             --primary: #FF7A00;
             --primary-dark: #E66E00;
@@ -43,11 +63,20 @@
             background: linear-gradient(135deg, #FEF9C3 0%, #E2E8F0 100%);
             background-attachment: fixed;
             color: var(--ink);
-            margin: 0; padding: 0;
+            margin: 0;
+            padding: 0;
             overflow-x: hidden;
         }
 
-        h1, h2, h3, h4, h5, h6 { font-family: 'Outfit', sans-serif; font-weight: 800; }
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+        }
 
         .navbar-premium {
             background: rgba(255, 255, 255, 0.8);
@@ -175,14 +204,56 @@
             padding: 60px 0 30px;
             border-top: 1px solid rgba(255, 255, 255, 0.5);
         }
+
+        /* Mobile Adjustments */
+        @media (max-width: 991px) {
+            .hero-section { padding: 40px 0; }
+            .hero-card { 
+                padding: 40px 25px; 
+                margin-bottom: 30px;
+                text-align: center;
+                border-radius: 24px;
+            }
+            .hero-image {
+                height: 350px;
+                margin-top: 0;
+            }
+            .display-3 { font-size: 2.5rem !important; }
+            .navbar-premium .btn-premium { padding: 10px 20px; font-size: 0.8rem; }
+            .hero-card .d-flex { justify-content: center; flex-wrap: wrap; }
+            .btn-premium, .btn-outline-dark { width: 100%; justify-content: center; }
+        }
+
+        @media (max-width: 576px) {
+            .hero-image { height: 280px; }
+            .display-3 { font-size: 2.1rem !important; }
+            .section-title h2 { font-size: 1.8rem; }
+            .feature-card { padding: 24px; }
+        }
+
+        /* Image Enhancement */
+        .enhanced-img {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+            filter: contrast(1.04) brightness(1.02) saturate(1.05);
+            transform: translateZ(0);
+            transition: 0.5s ease;
+        }
+
+        .feature-card:hover .enhanced-img {
+            filter: contrast(1.1) brightness(1.05) saturate(1.1);
+            transform: scale(1.05);
+        }
     </style>
 </head>
+
 <body>
 
     <nav class="navbar navbar-expand-lg navbar-premium">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <i class="bi bi-calendar-check-fill gradient-text fs-3"></i>
+                <img src="{% static 'favicon.png' %}" alt="Logo" class="enhanced-img"
+                    style="width: 32px; height: 32px; border-radius: 8px;">
                 <span class="fw-900 fs-4">ABC Auditorium</span>
             </a>
             <div class="ms-auto d-flex gap-3">
@@ -198,24 +269,74 @@
         <div class="row align-items-center">
             <div class="col-lg-6" data-aos="fade-right" data-aos-duration="1000">
                 <div class="hero-card">
-                    <span class="stat-badge">EST. 2024 • PREMIUM VENUE</span>
-                    <h1 class="display-3 mb-4">The Stage for Your <span class="gradient-text">Masterpiece</span></h1>
-                    <p class="lead mb-5 text-muted">Experience elegance and modern technology at its finest. From grand weddings to corporate conferences, we provide the perfect canvas for your events.</p>
+                    <span class="stat-badge">ABC AUDITORIUM • THAVANOOR</span>
+                    <h1 class="display-3 mb-4">The Premier Stage for Your <span class="gradient-text">Exquisite
+                            Events</span></h1>
+                    <p class="lead mb-5 text-muted">Experience elegance and ultra-modern technology at ABC Auditorium.
+                        From grand weddings to professional corporate conferences, we provide the perfect luxury canvas
+                        for your most memorable events.</p>
                     <div class="d-flex gap-3">
-                        <a href="{% url 'login' %}" class="btn-premium">
-                            Book Now <i class="bi bi-arrow-right"></i>
-                        </a>
-                        <a href="#features" class="btn btn-outline-dark" style="border-radius: 18px; padding: 16px 32px; font-weight: 700;">
-                            View Features
+
+                        <a href="#gallery" class="btn btn-outline-dark"
+                            style="border-radius: 18px; padding: 16px 32px; font-weight: 700;">
+                            Take a Tour
                         </a>
                     </div>
                 </div>
             </div>
             <div class="col-lg-6" data-aos="zoom-in" data-aos-delay="200" data-aos-duration="1200">
-                <img src="{% static 'premium_auditorium_interior_1777025341388.png' %}" alt="ABC Auditorium" class="hero-image">
+                <img src="{% static 'booking/images/auditorium_exterior.jpg' %}" alt="ABC Auditorium Exterior"
+                    class="hero-image enhanced-img">
             </div>
         </div>
     </div>
+
+    <!-- Gallery Section -->
+    <section id="gallery" class="py-5">
+        <div class="container">
+            <div class="section-title">
+                <h2 class="display-5">A Glimpse of <span class="gradient-text">Excellence</span></h2>
+                <p class="text-muted">Explore our state-of-the-art facilities and spacious interiors.</p>
+            </div>
+            <div class="row g-4">
+                <!-- Featured Seating -->
+                <div class="col-12" data-aos="fade-up">
+                    <div class="feature-card p-0 overflow-hidden" style="height: 500px;">
+                        <img src="{% static 'booking/images/auditorium_seating.jpg' %}" class="w-100 h-100 enhanced-img" style="object-fit: cover;" alt="Auditorium Seating">
+                    </div>
+                </div>
+
+                <!-- Stage and Exterior Wide -->
+                <div class="col-md-6" data-aos="fade-up">
+                    <div class="feature-card p-0 overflow-hidden" style="height: 350px;">
+                        <img src="{% static 'booking/images/auditorium_stage_back_view.jpg' %}" class="w-100 h-100 enhanced-img" style="object-fit: cover;" alt="Stage Perspective">
+                    </div>
+                </div>
+                <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card p-0 overflow-hidden" style="height: 350px;">
+                        <img src="{% static 'booking/images/auditorium_exterior_wide.jpg' %}" class="w-100 h-100 enhanced-img" style="object-fit: cover;" alt="Exterior Wide View">
+                    </div>
+                </div>
+
+                <!-- Dining and Hall Trio -->
+                <div class="col-md-4" data-aos="fade-up">
+                    <div class="feature-card p-0 overflow-hidden" style="height: 280px;">
+                        <img src="{% static 'booking/images/dining_hall_1.jpg' %}" class="w-100 h-100 enhanced-img" style="object-fit: cover;" alt="Dining Hall">
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-card p-0 overflow-hidden" style="height: 280px;">
+                        <img src="{% static 'booking/images/internal_hall.jpg' %}" class="w-100 h-100 enhanced-img" style="object-fit: cover;" alt="Internal Hall">
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-card p-0 overflow-hidden" style="height: 280px;">
+                        <img src="{% static 'booking/images/dining_hall_2.jpg' %}" class="w-100 h-100 enhanced-img" style="object-fit: cover;" alt="Dining Facility">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section id="features" class="py-5 mt-5">
         <div class="container">
@@ -227,43 +348,100 @@
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-soundwave"></i></div>
-                        <h3>Dolby Atmos Sound</h3>
-                        <p class="text-muted">Immerse your audience in crystal clear audio with our state-of-the-art surround sound system.</p>
+                        <h3>Premium Surround Sound</h3>
+                        <p class="text-muted">Experience rich, immersive audio with our professionally tuned high-fidelity sound system, perfect for every event.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-snow2"></i></div>
                         <h3>Climate Controlled</h3>
-                        <p class="text-muted">Perfect temperature throughout the year with our high-capacity central air conditioning.</p>
+                        <p class="text-muted">Perfect temperature throughout the year with our high-capacity central air
+                            conditioning.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-lightning-fill"></i></div>
                         <h3>Power Backup</h3>
-                        <p class="text-muted">Never lose a moment. Our seamless dual generator system ensures uninterrupted events.</p>
+                        <p class="text-muted">Never lose a moment. Our seamless dual generator system ensures
+                            uninterrupted events.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-p-square-fill"></i></div>
                         <h3>Vast Parking</h3>
-                        <p class="text-muted">Convenient parking space for over 200+ vehicles with dedicated valet services.</p>
+                        <p class="text-muted">Convenient parking space for over 200+ vehicles with dedicated valet
+                            services.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-cup-hot-fill"></i></div>
                         <h3>Gourmet Catering</h3>
-                        <p class="text-muted">A dedicated dining area with ultra-modern kitchen facilities for the finest dining experience.</p>
+                        <p class="text-muted">A dedicated dining area with ultra-modern kitchen facilities for the
+                            finest dining experience.</p>
                     </div>
                 </div>
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="feature-card">
                         <div class="icon-box"><i class="bi bi-shield-check"></i></div>
                         <h3>Enhanced Security</h3>
-                        <p class="text-muted">24/7 CCTV surveillance and trained security personnel for your peace of mind.</p>
+                        <p class="text-muted">24/7 CCTV surveillance and trained security personnel for your peace of
+                            mind.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="py-5 bg-white bg-opacity-50">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h2 class="display-5 mb-4">Visit Our <span class="gradient-text">Venue</span></h2>
+                    <p class="text-muted mb-5">We are located in the heart of Malappuram, easily accessible for all your
+                        guests.</p>
+
+                    <div class="d-flex align-items-start gap-4 mb-4">
+                        <div class="icon-box flex-shrink-0" style="margin-bottom: 0;"><i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-2">Address</h4>
+                            <p class="text-muted mb-0" style="font-size: 1.1rem; line-height: 1.6;">
+                                <strong>ABC Auditorium</strong><br>
+                                Thavanoor Mundilakkal<br>
+                                Malappuram<br>
+                                PIN 673641
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-4">
+                        <div class="icon-box flex-shrink-0" style="margin-bottom: 0;"><i
+                                class="bi bi-telephone-fill"></i></div>
+                        <div>
+                            <h4 class="mb-2">Get in Touch</h4>
+                            <p class="text-muted mb-0" style="font-size: 1.1rem;">
+                                80898 33403<br>
+                                90724 02403
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="zoom-in">
+                    <div class="card border-0 shadow-xl overflow-hidden" style="border-radius: 30px;">
+                        <div class="p-5 text-center bg-white">
+                            <i class="bi bi-info-circle-fill display-1 text-primary opacity-25 mb-4"></i>
+                            <h3 class="mb-3">Official Listing</h3>
+                            <p class="text-muted mb-4">Check out our official business profile for more photos and
+                                reviews.</p>
+                            <a href="https://www.justdial.com/Malappuram/Abc-Auditorium-Pothuvettipara/9999PX483-X483-250220045521-M2K6_BZDET"
+                                target="_blank" class="btn-premium">
+                                <i class="bi bi-star-fill"></i> View on JustDial
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -272,12 +450,17 @@
 
     <footer>
         <div class="container text-center">
-            <h3 class="mb-4 gradient-text">ABC Auditorium</h3>
+            <div class="mb-4 d-flex align-items-center justify-content-center gap-2">
+                <img src="{% static 'favicon.png' %}" alt="Logo" style="width: 32px; height: 32px; border-radius: 8px;">
+                <h3 class="mb-0 gradient-text">ABC Auditorium</h3>
+            </div>
             <p class="text-muted mb-4">Creating memories that last a lifetime.</p>
             <div class="d-flex justify-content-center gap-4 mb-5">
-                <a href="#" class="text-dark fs-4"><i class="bi bi-instagram"></i></a>
+                <a href="https://instagram.com/its_me_fanu_" target="_blank" class="text-dark fs-4"><i
+                        class="bi bi-instagram"></i></a>
                 <a href="#" class="text-dark fs-4"><i class="bi bi-facebook"></i></a>
-                <a href="#" class="text-dark fs-4"><i class="bi bi-whatsapp"></i></a>
+                <a href="https://wa.me/918089833403" target="_blank" class="text-dark fs-4"><i
+                        class="bi bi-whatsapp"></i></a>
             </div>
             <hr class="opacity-10 mb-4">
             <p class="small text-muted">&copy; 2024 ABC Auditorium. All rights reserved.</p>
@@ -294,4 +477,5 @@
         });
     </script>
 </body>
+
 </html>

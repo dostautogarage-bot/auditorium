@@ -13,6 +13,12 @@ from .forms import AdminCreationForm, AdminEditForm, BookingForm
 User = get_user_model()
 
 
+# -------------------- PUBLIC PAGES --------------------
+def home(request):
+    """Public landing page / advertisement page"""
+    return render(request, 'booking/home.html')
+
+
 # -------------------- DASHBOARD --------------------
 @login_required
 def dashboard(request):
