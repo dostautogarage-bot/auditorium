@@ -9,7 +9,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(
         template_name='booking/login.html',
-        authentication_form=CustomAuthenticationForm
+        authentication_form=CustomAuthenticationForm,
+        redirect_authenticated_user=True
     ), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('', include('booking.urls')),

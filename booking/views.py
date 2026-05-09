@@ -16,6 +16,8 @@ User = get_user_model()
 # -------------------- PUBLIC PAGES --------------------
 def home(request):
     """Public landing page / advertisement page"""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
     return render(request, 'booking/home.html')
 
 
