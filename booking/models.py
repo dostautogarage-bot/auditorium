@@ -11,12 +11,19 @@ class Booking(models.Model):
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total booking amount")
     advance_received = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Advance payment received")
+    payment_pending = models.BooleanField(default=True, help_text="Whether payment is still pending")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.title} ({self.start_time} - {self.end_time})"
+    
+    @property
+    def pending_amount(self):
+        """Calculate pending amount (total - advance)"""
+        return self.total_amount - self.advance_received
 
     def clean(self):
         if self.start_time and self.end_time:

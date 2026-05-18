@@ -69,6 +69,7 @@
                         <th style="padding:14px 20px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Event</th>
                         <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Schedule</th>
                         <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">By</th>
+                        <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Payment</th>
                         <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Phone</th>
                         <th style="padding:14px 20px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none; text-align:right;">Actions</th>
                     </tr>
@@ -91,11 +92,33 @@
                             </div>
                         </td>
                         <td style="border:none; padding:16px 14px;">
+                            <div style="font-size:0.75rem; font-weight:600; color:var(--ink-2);">
+                                <div style="color:#1E293B;">Booking Amount: ₹{{ booking.total_amount|floatformat:0 }}</div>
+                                <div style="color:#14B8A6;">Paid: ₹{{ booking.advance_received|floatformat:0 }}</div>
+                                {% if booking.payment_pending %}
+                                <div style="display:inline-block; background:#FEF3C7; color:#92400E; padding:4px 8px; border-radius:6px; font-size:0.65rem; font-weight:800; margin-top:4px;">
+                                    ⏳ Payment Pending
+                                </div>
+                                {% else %}
+                                <div style="display:inline-block; background:#D1FAE5; color:#065F46; padding:4px 8px; border-radius:6px; font-size:0.65rem; font-weight:800; margin-top:4px;">
+                                    ✓ Fully Paid
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% if booking.payment_pending %}
+                            <button onclick="togglePaymentStatus({{ booking.pk }})"
+                                    class="btn btn-sm mt-2"
+                                    style="font-size:0.7rem; padding:6px 12px; background:#14B8A6; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; transition:0.2s;">
+                                Mark as Paid
+                            </button>
+                            {% endif %}
+                        </td>
+                        <td style="border:none; padding:16px 14px;">
                             <span style="font-size:0.82rem; font-weight:600; color:var(--ink-2);">{{ booking.mobile_number }}</span>
                         </td>
                         <td style="border:none; padding:16px 20px; text-align:right;">
                             <div class="d-flex justify-content-end gap-2">
-                                <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
+                                <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
                                         class="action-btn action-btn-edit"><i class="bi bi-pencil"></i></button>
                                 <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
                                         class="action-btn action-btn-del"><i class="bi bi-trash"></i></button>
@@ -103,7 +126,7 @@
                         </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="5" style="padding:48px; text-align:center; color:var(--ink-3); font-size:0.85rem; border:none;">No bookings yet</td></tr>
+                    <tr><td colspan="6" style="padding:48px; text-align:center; color:var(--ink-3); font-size:0.85rem; border:none;">No bookings yet</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -125,9 +148,29 @@
                         {{ booking.start_time|date:"D, M j" }} · {{ booking.start_time|date:"g:i A" }} – {{ booking.end_time|date:"g:i A" }}
                     </div>
                     <div style="font-size:0.68rem; color:var(--ink-3); font-weight:500; margin-top:1px;">📞 {{ booking.mobile_number }}</div>
+                    <div style="font-size:0.68rem; font-weight:600; margin-top:4px;">
+                        <div style="color:#1E293B;">Amount: ₹{{ booking.total_amount|floatformat:0 }}</div>
+                        <div style="color:#14B8A6;">Paid: ₹{{ booking.advance_received|floatformat:0 }}</div>
+                        {% if booking.payment_pending %}
+                        <div style="display:inline-block; background:#FEF3C7; color:#92400E; padding:3px 6px; border-radius:4px; font-size:0.6rem; font-weight:800; margin-top:2px;">
+                            ⏳ Payment Pending
+                        </div>
+                        {% else %}
+                        <div style="display:inline-block; background:#D1FAE5; color:#065F46; padding:3px 6px; border-radius:4px; font-size:0.6rem; font-weight:800; margin-top:2px;">
+                            ✓ Fully Paid
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if booking.payment_pending %}
+                    <button onclick="togglePaymentStatus({{ booking.pk }})"
+                            class="btn btn-sm mt-1"
+                            style="font-size:0.65rem; padding:5px 10px; background:#14B8A6; color:white; border:none; border-radius:6px; font-weight:700; cursor:pointer; transition:0.2s;">
+                        Mark as Paid
+                    </button>
+                    {% endif %}
                 </div>
                 <div style="display:flex; gap:6px; flex-shrink:0;">
-                    <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
+                    <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
                             class="action-btn action-btn-edit"><i class="bi bi-pencil"></i></button>
                     <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
                             class="action-btn action-btn-del"><i class="bi bi-trash"></i></button>
@@ -173,4 +216,52 @@
     </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function togglePaymentStatus(pk) {
+    const csrftoken = getCookie('csrftoken');
+    
+    fetch(`/api/toggle-payment/${pk}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        } else {
+            alert('Failed to update payment status: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error('Error:', err);
+        alert('Failed to update payment status. Check console for details.');
+    });
+}
+</script>
 {% endblock %}

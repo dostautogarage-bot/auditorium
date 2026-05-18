@@ -48,6 +48,13 @@ class AdminCreationForm(forms.ModelForm):
                 'placeholder': 'Last Name'
             })
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make email, first_name, last_name optional
+        self.fields['email'].required = False
+        self.fields['first_name'].required = False
+        self.fields['last_name'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
@@ -135,6 +142,10 @@ class AdminEditForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Make email, first_name, last_name optional
+        self.fields['email'].required = False
+        self.fields['first_name'].required = False
+        self.fields['last_name'].required = False
         # Pre-fill is_bookable from UserProfile
         if self.instance.pk:
             try:
@@ -162,8 +173,8 @@ class AdminEditForm(forms.ModelForm):
 class BookingForm(forms.ModelForm):
     SHIFT_CHOICES = [
         ('custom', 'Custom Time'),
-        ('day', 'Day (6 AM - 6 PM)'),
-        ('night', 'Night (6 PM - 6 AM)'),
+        ('day', 'Day (9 AM - 6 PM)'),
+        ('night', 'Night (7 PM - 11 PM)'),
     ]
     shift = forms.ChoiceField(
         choices=SHIFT_CHOICES,
@@ -191,11 +202,22 @@ class BookingForm(forms.ModelForm):
         ),
         label='End Time'
     )
+    total_amount = forms.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '0.00',
+            'min': '0',
+            'step': '0.01'
+        }),
+        label='💵 Total Booking Amount'
+    )
     advance_received = forms.DecimalField(
         max_digits=10,
         decimal_places=2,
         required=False,
-        initial=0,
         widget=forms.NumberInput(attrs={
             'class': 'form-control',
             'placeholder': '0.00',
@@ -207,7 +229,7 @@ class BookingForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = ['title', 'contact_person', 'mobile_number', 'start_time', 'end_time', 'advance_received']
+        fields = ['title', 'contact_person', 'mobile_number', 'start_time', 'end_time', 'total_amount', 'advance_received']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control', 
@@ -223,6 +245,20 @@ class BookingForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Preserve existing values when editing
+        if self.instance and self.instance.pk:
+            # Set initial values from instance for decimal fields
+            if self.instance.total_amount:
+                self.fields['total_amount'].initial = self.instance.total_amount
+            if self.instance.advance_received:
+                self.fields['advance_received'].initial = self.instance.advance_received
+        else:
+            # For new bookings, default to 0
+            self.fields['total_amount'].initial = 0
+            self.fields['advance_received'].initial = 0
+
     def clean(self):
         cleaned_data = super().clean()
         start_time = cleaned_data.get('start_time')
@@ -234,4 +270,21 @@ class BookingForm(forms.ModelForm):
         if start_time and end_time and end_time <= start_time:
             raise forms.ValidationError("End time must be after start time.")
 
+        # Handle empty decimal fields - convert None/empty to 0
+        if cleaned_data.get('total_amount') is None:
+            cleaned_data['total_amount'] = 0
+        if cleaned_data.get('advance_received') is None:
+            cleaned_data['advance_received'] = 0
+
         return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        # Ensure decimal fields are never None
+        if instance.total_amount is None:
+            instance.total_amount = 0
+        if instance.advance_received is None:
+            instance.advance_received = 0
+        if commit:
+            instance.save()
+        return instance

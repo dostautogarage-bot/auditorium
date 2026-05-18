@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum, Count
 from django.contrib import messages
@@ -66,6 +67,8 @@ def dashboard(request):
  
     # Stats
     total_advance = filtered_qs.aggregate(Sum('advance_received'))['advance_received__sum'] or 0
+    total_amount = filtered_qs.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    pending_amount = total_amount - total_advance
     filtered_count = filtered_qs.count()
     
     # Fixed Stats (Contextual)
@@ -74,11 +77,16 @@ def dashboard(request):
     admin_total = User.objects.filter(is_staff=True).count()
     total_life = Booking.objects.count()
     
-    # Admin Breakdown
+    # Admin Breakdown - Show ALL staff users including superuser, even those without bookings
     admin_breakdown = User.objects.filter(is_staff=True).annotate(
         collected=Sum('bookings__advance_received', filter=Q(bookings__in=filtered_qs)),
-        booking_count=Count('bookings', filter=Q(bookings__in=filtered_qs))
-    ).filter(booking_count__gt=0).order_by('-collected')
+        booking_count=Count('bookings', filter=Q(bookings__in=filtered_qs)),
+        total_booking_amount=Sum('bookings__total_amount', filter=Q(bookings__in=filtered_qs))
+    ).order_by('-collected')
+    
+    # Calculate pending amount for each admin
+    for admin in admin_breakdown:
+        admin.pending_amount = (admin.total_booking_amount or 0) - (admin.collected or 0)
     
     # Month list for dropdown (last 12 months)
     month_options = []
@@ -99,6 +107,8 @@ def dashboard(request):
         'stats': {
             'month_total': month_total,
             'total_advance': total_advance,
+            'total_amount': total_amount,
+            'pending_amount': pending_amount,
             'my_total': my_total,
             'admin_total': admin_total,
             'total_life': total_life,
@@ -525,22 +535,21 @@ def booking_api(request):
         start_time = timezone.localtime(booking.start_time)
         end_time = timezone.localtime(booking.end_time)
         
-        # Determine shift (Day: 6 AM - 6 PM, Night: 6 PM - 6 AM)
+        # Determine shift (Day: 9 AM - 6 PM, Night: 7 PM - 11 PM)
         start_hour = start_time.hour
         end_hour = end_time.hour
         
-        is_start_day = 6 <= start_hour < 18
+        is_start_day = 9 <= start_hour < 18
+        is_start_night = 19 <= start_hour < 23
         
-        # We check the actual duration and span
-        if (end_time - start_time).total_seconds() > 43200: # More than 12 hours is always overlap
-            shift = 'overlap'
+        # Check if it's a day shift (9 AM - 6 PM)
+        if 9 <= start_hour < 18 and 9 <= end_hour <= 18:
+            shift = 'day'
+        # Check if it's a night shift (7 PM - 11 PM)
+        elif 19 <= start_hour < 23 and 19 <= end_hour <= 23:
+            shift = 'night'
         else:
-            is_end_day = 6 <= end_hour < 18 if end_time.minute > 0 or end_time.second > 0 else 6 <= (end_hour-1) < 18
-            
-            if is_start_day == is_end_day:
-                shift = 'day' if is_start_day else 'night'
-            else:
-                shift = 'overlap'
+            shift = 'overlap'
         
         # Clamp display end to 23:59 of the START day so FullCalendar
         # treats it as a single-day event (actual DB data is untouched).
@@ -572,7 +581,10 @@ def booking_api(request):
                 'end': display_end.isoformat(),
                 'contact_person': booking.contact_person,
                 'mobile_number': booking.mobile_number,
+                'total_amount': str(booking.total_amount),
                 'advance_received': str(booking.advance_received),
+                'pending_amount': str(booking.pending_amount),
+                'payment_pending': booking.payment_pending,
                 'created_by': booking.created_by.username,
                 'created_at': booking.created_at.strftime('%b %d, %Y %I:%M %p'),
                 'url': f'/bookings/{booking.pk}/edit/',
@@ -580,7 +592,11 @@ def booking_api(request):
                     'shift': shift,
                     'contact': booking.contact_person,
                     'mobile': booking.mobile_number,
-                    'timing': time_str
+                    'timing': time_str,
+                    'total_amount': str(booking.total_amount),
+                    'advance_received': str(booking.advance_received),
+                    'pending_amount': str(booking.pending_amount),
+                    'payment_pending': booking.payment_pending
                 }
             })
     return JsonResponse(events, safe=False)
@@ -657,3 +673,24 @@ def toggle_staff_status(request, pk):
     profile.is_auditorium_staff = not profile.is_auditorium_staff
     profile.save()
     return JsonResponse({'status': 'success', 'is_auditorium_staff': profile.is_auditorium_staff})
+
+
+@login_required
+@csrf_exempt
+def toggle_payment_status(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST method required'}, status=400)
+    
+    try:
+        booking = get_object_or_404(Booking, pk=pk)
+        # Mark as paid by setting payment_pending to False and advance_received to total_amount
+        booking.payment_pending = False
+        booking.advance_received = booking.total_amount
+        booking.save()
+        return JsonResponse({
+            'status': 'success',
+            'payment_pending': booking.payment_pending,
+            'message': 'Payment marked as complete successfully'
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

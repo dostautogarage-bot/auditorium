@@ -111,7 +111,7 @@
     function confirmDeleteAdmin(pk, name) {
         const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
         document.getElementById('deleteModalTitle').innerText = name;
-        document.getElementById('deleteModalForm').action = `/admins/delete/${pk}/`;
+        document.getElementById('deleteModalForm').action = `/admins/${pk}/delete/`;
         modal.show();
     }
 </script>

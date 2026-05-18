@@ -921,31 +921,6 @@
             }
         }
 
-        /* FLOATING ACTION BUTTON (FAB) */
-        .fab-app {
-            position: fixed;
-            bottom: calc(100px + var(--safe-bottom));
-            right: 20px;
-            width: 56px;
-            height: 56px;
-            background: var(--primary-gradient);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 10px 25px rgba(255, 122, 0, 0.4);
-            z-index: 1050;
-            border: none;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-decoration: none;
-        }
-
-        .fab-app:active {
-            transform: scale(0.85);
-        }
-
         /* BACK TO TOP */
         #back-to-top {
             position: fixed;
@@ -966,11 +941,6 @@
             transition: 0.3s;
         }
 
-        @media (min-width: 992px) {
-            .fab-app {
-                display: none;
-            }
-        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -983,11 +953,6 @@
         <i class="bi bi-arrow-up"></i>
     </button>
 
-    {% if request.resolver_match.url_name != 'booking_create' %}
-    <a href="{% url 'booking_create' %}" class="fab-app">
-        <i class="bi bi-plus-lg"></i>
-    </a>
-    {% endif %}
 
     <div class="toast-container-app" id="toast-container">
         {% if messages %}
@@ -1172,12 +1137,12 @@
                                 <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('day')"
                                     style="border-color: #F59E0B; color: #92400E; background: #FEF3C7;">
                                     <i class="bi bi-sun-fill me-1"></i> Day
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">6 AM - 6 PM</span>
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">9 AM - 6 PM</span>
                                 </div>
                                 <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('night')"
                                     style="border-color: #6366F1; color: #3730A3; background: #E0E7FF;">
                                     <i class="bi bi-moon-stars-fill me-1"></i> Night
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">6 PM - 6 AM</span>
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">7 PM - 11 PM</span>
                                 </div>
                             </div>
                             <div id="startTimeSuggestions" class="time-suggestion-list"></div>
@@ -1197,9 +1162,25 @@
                             <div id="err_end" class="error-msg-app">Please pick a duration</div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">💰 Advance Received (Optional)</label>
+                            <label class="form-label">💵 Total Booking Amount</label>
+                            <input type="number" id="id_total_amount" name="total_amount" class="form-control-premium"
+                                placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Advance Payment (Optional)</label>
                             <input type="number" id="id_advance" name="advance_received" class="form-control-premium"
                                 placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check" style="background: #F0FDF4; padding: 12px 16px; border-radius: 12px; border: 1.5px solid #BBF7D0;">
+                                <input class="form-check-input" type="checkbox" id="id_payment_complete" style="width: 20px; height: 20px; cursor: pointer;">
+                                <label class="form-check-label" for="id_payment_complete" style="font-weight: 700; color: #166534; margin-left: 8px; cursor: pointer;">
+                                    ✓ Payment Fully Completed
+                                </label>
+                                <div style="font-size: 0.7rem; color: #15803D; margin-left: 28px; margin-top: 4px;">
+                                    Check this to automatically set advance = total amount
+                                </div>
+                            </div>
                         </div>
                         <input type="hidden" id="modal_date_base">
                         <input type="hidden" id="modal_booking_id" value="">
@@ -1279,6 +1260,7 @@
                         <input type="hidden" name="mobile_number" id="finalMobile">
                         <input type="hidden" name="start_time" id="finalStart">
                         <input type="hidden" name="end_time" id="finalEnd">
+                        <input type="hidden" name="total_amount" id="finalTotalAmount">
                         <input type="hidden" name="advance_received" id="finalAdvance">
                     </form>
                 </div>
@@ -1629,11 +1611,11 @@
             const durationSec = document.getElementById('durationSection');
 
             if (shiftInput && shiftInput.value === 'day') {
-                document.getElementById('displaySelectedStart').innerText = '6:00 AM - 6:00 PM (Day)';
+                document.getElementById('displaySelectedStart').innerText = '9:00 AM - 6:00 PM (Day)';
                 if (labelEl) labelEl.innerText = 'Selected Shift';
                 if (durationSec) durationSec.classList.add('d-none');
             } else if (shiftInput && shiftInput.value === 'night') {
-                document.getElementById('displaySelectedStart').innerText = '6:00 PM - 6:00 AM (Night)';
+                document.getElementById('displaySelectedStart').innerText = '7:00 PM - 11:00 PM (Night)';
                 if (labelEl) labelEl.innerText = 'Selected Shift';
                 if (durationSec) durationSec.classList.add('d-none');
             } else {
@@ -1770,10 +1752,10 @@
 
             if (shift === 'day') {
                 selectedEndTime = '18:00';
-                selectStartTime('06:00', '6:00 AM');
+                selectStartTime('09:00', '9:00 AM');
             } else if (shift === 'night') {
-                selectedEndTime = '06:00'; // Technically 6 AM next day
-                selectStartTime('18:00', '6:00 PM');
+                selectedEndTime = '23:00';
+                selectStartTime('19:00', '7:00 PM');
             } else {
                 resetStartTime();
             }
@@ -1790,6 +1772,7 @@
             const title = eventObj.title;
             const contact = eventObj.extendedProps.contact || '';
             const mobile = eventObj.extendedProps.mobile || '';
+            const totalAmount = eventObj.extendedProps.total_amount || '0';
             const advance = eventObj.extendedProps.advance_received || '0';
             const created_by = eventObj.extendedProps.created_by || 'Admin';
             const created_at = eventObj.extendedProps.created_at || '';
@@ -1826,7 +1809,7 @@
 
                 editBtn.onclick = () => {
                     bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
-                    triggerEditModal(pk, title, contact, mobile, advance, date, startTime24, endTime24, `/bookings/${pk}/edit/`);
+                    triggerEditModal(pk, title, contact, mobile, totalAmount, advance, date, startTime24, endTime24, `/bookings/${pk}/edit/`);
                 };
 
                 if (deleteBtn) {
@@ -1840,28 +1823,40 @@
             new bootstrap.Modal(document.getElementById('eventDetailModal')).show();
         }
 
-        function triggerEditModal(pk, title, contact, mobile, advance, date, start, end, editUrl) {
+        function triggerEditModal(pk, title, contact, mobile, totalAmount, advance, date, start, end, editUrl) {
             if (!USER_CAN_BOOK) {
                 new bootstrap.Modal(document.getElementById('permissionModal')).show();
                 return;
             }
             // Reset modal first
-            resetStartTime();
             document.getElementById('mainBookingForm').reset();
+            resetStartTime();
 
-            // Populate
+            // Populate - AFTER reset
             document.getElementById('modal_booking_id').value = pk;
             document.getElementById('id_title').value = title;
             document.getElementById('id_contact').value = contact;
             document.getElementById('id_mobile').value = mobile;
+            document.getElementById('id_total_amount').value = totalAmount || '0';
             document.getElementById('id_advance').value = advance;
             document.getElementById('modal_date_base').value = date;
+            
+            // Reset payment checkbox state
+            const paymentCheckbox = document.getElementById('id_payment_complete');
+            if (paymentCheckbox) {
+                paymentCheckbox.checked = false;
+            }
+            const advanceField = document.getElementById('id_advance');
+            if (advanceField) {
+                advanceField.readOnly = false;
+                advanceField.style.backgroundColor = '';
+            }
 
             // Handle Start/End selections
             selectedEndTime = end.substring(0, 5); // Ensure HH:MM format
-            if (start === '06:00' && (end === '18:00' || end === '18:00:00')) {
+            if (start === '09:00' && (end === '18:00' || end === '18:00:00')) {
                 applyPresetShift('day');
-            } else if (start === '18:00' && (end === '06:00' || end === '06:00:00')) {
+            } else if (start === '19:00' && (end === '23:00' || end === '23:00:00')) {
                 applyPresetShift('night');
             } else {
                 const shiftInput = document.getElementById('id_modal_shift');
@@ -1900,6 +1895,18 @@
             document.getElementById('modal_booking_id').value = '';
             document.getElementById('mainBookingForm').reset();
             resetStartTime();
+            
+            // Reset payment completion checkbox and advance field state
+            const paymentCheckbox = document.getElementById('id_payment_complete');
+            const advanceField = document.getElementById('id_advance');
+            if (paymentCheckbox) {
+                paymentCheckbox.checked = false;
+            }
+            if (advanceField) {
+                advanceField.readOnly = false;
+                advanceField.style.backgroundColor = '';
+            }
+            
             document.getElementById('finalSubmitForm').action = "{% url 'booking_create' %}";
             document.getElementById('createBookingModal').querySelector('h4').innerText = 'New Booking';
         });
@@ -1933,6 +1940,7 @@
             const dateBase = document.getElementById('modal_date_base').value;
             const contact = document.getElementById('id_contact').value.trim();
             const mobile = document.getElementById('id_mobile').value.trim();
+            const totalAmount = document.getElementById('id_total_amount').value || '0';
             const advance = document.getElementById('id_advance').value || '0';
 
             if (!title) {
@@ -2001,6 +2009,7 @@
                 document.getElementById('finalMobile').value = mobile;
                 document.getElementById('finalStart').value = startDateTime;
                 document.getElementById('finalEnd').value = endDateTime;
+                document.getElementById('finalTotalAmount').value = totalAmount;
                 document.getElementById('finalAdvance').value = advance;
 
                 // Show confirmation modal
@@ -2012,6 +2021,32 @@
         }
         document.addEventListener('DOMContentLoaded', () => {
             generateTimeOptions();
+            
+            // Payment completion toggle handler
+            const paymentCompleteCheckbox = document.getElementById('id_payment_complete');
+            const totalAmountInput = document.getElementById('id_total_amount');
+            const advanceInput = document.getElementById('id_advance');
+            
+            if (paymentCompleteCheckbox && totalAmountInput && advanceInput) {
+                paymentCompleteCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        const totalAmount = parseFloat(totalAmountInput.value) || 0;
+                        advanceInput.value = totalAmount;
+                        advanceInput.readOnly = true;
+                        advanceInput.style.backgroundColor = '#F0FDF4';
+                    } else {
+                        advanceInput.readOnly = false;
+                        advanceInput.style.backgroundColor = '';
+                    }
+                });
+                
+                // Also update advance when total amount changes while checkbox is checked
+                totalAmountInput.addEventListener('input', function() {
+                    if (paymentCompleteCheckbox.checked) {
+                        advanceInput.value = this.value;
+                    }
+                });
+            }
         });
     </script>
     <script>

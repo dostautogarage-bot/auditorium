@@ -178,7 +178,8 @@
             <div class="col-12 col-md-2">
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-app btn-app-primary flex-grow-1" style="height: 44px; border-radius: 12px; font-size: 0.85rem;">Apply</button>
-                    <a href="{% url 'dashboard' %}" class="btn btn-light d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 12px; background: #F8FAFC; border: 1.5px solid #F1F5F9;"><i class="bi bi-arrow-counterclockwise"></i></a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-light d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 12px; background: #F8FAFC; border: 1.5px solid #F1F5F9;" title="Reset Filters"><i class="bi bi-arrow-counterclockwise"></i></a>
+                    <button type="button" onclick="location.reload()" class="btn btn-light d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; border-radius: 12px; background: #F8FAFC; border: 1.5px solid #F1F5F9;" title="Refresh Data"><i class="bi bi-arrow-clockwise"></i></button>
                 </div>
             </div>
         </form>
@@ -200,112 +201,90 @@
 
     <!-- Multi-Color Stat Boxes -->
     <div class="dg-stat-grid">
-        <div class="dg-stat-box dg-box-orange">
-            <div class="dg-stat-label">Total Advance<br>Collected</div>
-            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.total_advance|default:"0"|floatformat:0 }}</div>
-        </div>
         <div class="dg-stat-box dg-box-blue">
             <div class="dg-stat-label">Filtered<br>Booking Count</div>
             <div class="dg-stat-value" style="font-size: 1.5rem;">{{ stats.filtered_count }}</div>
         </div>
+    </div>
+
+    <!-- Financial Overview Stat Boxes -->
+    <div class="dg-stat-grid">
+        <div class="dg-stat-box dg-box-deep-blue">
+            <div class="dg-stat-label">💵 Total Booking<br>Amount</div>
+            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.total_amount|default:"0"|floatformat:0 }}</div>
+        </div>
         <div class="dg-stat-box dg-box-green">
-            <div class="dg-stat-label">This Month<br>Total Events</div>
-            <div class="dg-stat-value" style="font-size: 1.5rem;">{{ stats.month_total }}</div>
+            <div class="dg-stat-label">💰 Advance<br>Received</div>
+            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.total_advance|default:"0"|floatformat:0 }}</div>
+        </div>
+        <div class="dg-stat-box dg-box-red">
+            <div class="dg-stat-label">⏳ Pending<br>Amount</div>
+            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.pending_amount|default:"0"|floatformat:0 }}</div>
         </div>
     </div>
 
     <!-- Visual Insights Section -->
     <div class="dg-section-card mb-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Advance Collection Share</h2>
-            <i class="bi bi-pie-chart-fill opacity-30 fs-5"></i>
+            <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">
+                {% if filters.admin_id %}
+                    Payment Overview - {{ admin_breakdown.0.username|default:"Selected Admin" }}
+                {% else %}
+                    Payment Overview - All Staff
+                {% endif %}
+            </h2>
+            <i class="bi bi-bar-chart-fill opacity-30 fs-5"></i>
         </div>
-        <div style="height: 250px; position: relative;">
-            <canvas id="revenueChart"></canvas>
+        <div style="height: 350px; position: relative;">
+            <canvas id="paymentChart"></canvas>
         </div>
     </div>
 
-    <div class="row g-4">
-        <!-- Advances by Admin Breakdown -->
-        <div class="col-12 col-xl-6">
-            <div class="dg-section-card h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Advances by Admin</h2>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0" style="min-width: 400px;">
-                        <thead>
-                            <tr style="border-bottom: 1.5px solid #F1F5F9;">
-                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Staff Name</th>
-                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:center;">Count</th>
-                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Total Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for admin in admin_breakdown %}
-                            <tr style="border-bottom: 1px solid #F8FAFC;">
-                                <td style="padding:14px 0;">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div style="width: 32px; height: 32px; background: var(--bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: var(--primary);">
-                                            {{ admin.username|slice:":1"|upper }}
-                                        </div>
-                                        <div style="font-weight: 800; color: #1E293B; font-size: 0.85rem;">{{ admin.username }}</div>
-                                    </div>
-                                </td>
-                                <td style="padding:14px 0; text-align:center; font-weight: 700; color: #64748B; font-size: 0.8rem;">
-                                    {{ admin.booking_count }}
-                                </td>
-                                <td style="padding:14px 0; text-align:right; font-weight:900; color: var(--primary); font-size: 0.9rem;">
-                                    ₹{{ admin.collected|default:0|floatformat:0 }}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="3" class="text-center py-4 text-muted small fw-bold">No data found</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <!-- Payment Details by Admin -->
+    <div class="dg-section-card mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Payment Details by Admin</h2>
         </div>
-
-        <!-- Recent Bookings -->
-        <div class="col-12 col-xl-6">
-            <div class="dg-section-card h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Recent Bookings</h2>
-                    <span class="badge" style="background: #FFF7ED; color: #EA580C; font-weight: 800; border: 1px solid #FFEDD5; font-size: 0.65rem;">LATEST 10</span>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-borderless align-middle mb-0" style="min-width: 450px;">
-                        <thead>
-                            <tr style="border-bottom: 1.5px solid #F1F5F9;">
-                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Event Details</th>
-                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Date</th>
-                                <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Advance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for booking in recent_bookings %}
-                            <tr style="border-bottom: 1px solid #F8FAFC;">
-                                <td style="padding:14px 0;">
-                                    <div style="font-weight: 800; color: #1E293B; font-size: 0.85rem;">{{ booking.title }}</div>
-                                    <div style="font-size: 0.7rem; color: #94A3B8; font-weight: 600;">By {{ booking.created_by.username }}</div>
-                                </td>
-                                <td style="padding:14px 0; font-weight: 700; color: #64748B; font-size: 0.8rem;">
-                                    {{ booking.start_time|date:"d M, Y" }}
-                                </td>
-                                <td style="padding:14px 0; text-align:right; font-weight:900; color: #1E293B; font-size: 0.85rem;">
-                                    ₹{{ booking.advance_received|default:0|floatformat:0 }}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="3" class="text-center py-4 text-muted small fw-bold">No records found</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="table-responsive">
+            <table class="table table-borderless align-middle mb-0" style="min-width: 600px;">
+                <thead>
+                    <tr style="border-bottom: 1.5px solid #F1F5F9;">
+                        <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Staff Name</th>
+                        <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:center;">Bookings</th>
+                        <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Total Amount</th>
+                        <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Received</th>
+                        <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Pending</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin in admin_breakdown %}
+                    <tr style="border-bottom: 1px solid #F8FAFC;">
+                        <td style="padding:14px 0;">
+                            <div class="d-flex align-items-center gap-2">
+                                <div style="width: 32px; height: 32px; background: var(--bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: var(--primary);">
+                                    {{ admin.username|slice:":1"|upper }}
+                                </div>
+                                <div style="font-weight: 800; color: #1E293B; font-size: 0.85rem;">{{ admin.username }}</div>
+                            </div>
+                        </td>
+                        <td style="padding:14px 0; text-align:center; font-weight: 700; color: #64748B; font-size: 0.8rem;">
+                            {{ admin.booking_count }}
+                        </td>
+                        <td style="padding:14px 0; text-align:right; font-weight:800; color: #4F7BFF; font-size: 0.85rem;">
+                            ₹{{ admin.total_booking_amount|default:0|floatformat:0 }}
+                        </td>
+                        <td style="padding:14px 0; text-align:right; font-weight:800; color: #00BA88; font-size: 0.85rem;">
+                            ₹{{ admin.collected|default:0|floatformat:0 }}
+                        </td>
+                        <td style="padding:14px 0; text-align:right; font-weight:800; color: #FF7A00; font-size: 0.85rem;">
+                            ₹{{ admin.pending_amount|default:0|floatformat:0 }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center py-4 text-muted small fw-bold">No staff users found</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -314,53 +293,119 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const ctx = document.getElementById('paymentChart').getContext('2d');
     
     const adminData = [
         {% for admin in admin_breakdown %}
             {
                 label: '{{ admin.username }}',
-                value: {{ admin.collected|default:0 }}
+                totalAmount: {{ admin.total_booking_amount|default:0 }},
+                received: {{ admin.collected|default:0 }},
+                pending: {{ admin.pending_amount|default:0 }}
             },
         {% endfor %}
     ];
 
     if (adminData.length === 0) {
-        document.getElementById('revenueChart').parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted small fw-bold">Insufficient data for chart</div>';
+        document.getElementById('paymentChart').parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted small fw-bold">Insufficient data for chart</div>';
         return;
     }
 
     new Chart(ctx, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
             labels: adminData.map(d => d.label),
-            datasets: [{
-                data: adminData.map(d => d.value),
-                backgroundColor: [
-                    '#FF7A00', '#4F7BFF', '#00BA88', '#8E6BF5', '#F65D6D', '#6B79FF'
-                ],
-                borderWidth: 0,
-                hoverOffset: 15
-            }]
+            datasets: [
+                {
+                    label: 'Total Booking Amount',
+                    data: adminData.map(d => d.totalAmount),
+                    backgroundColor: '#4F7BFF',
+                    borderRadius: 6,
+                    borderSkipped: false
+                },
+                {
+                    label: 'Amount Received',
+                    data: adminData.map(d => d.received),
+                    backgroundColor: '#00BA88',
+                    borderRadius: 6,
+                    borderSkipped: false
+                },
+                {
+                    label: 'Pending Amount',
+                    data: adminData.map(d => d.pending),
+                    backgroundColor: '#FF7A00',
+                    borderRadius: 6,
+                    borderSkipped: false
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 20,
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
                         font: {
                             family: 'Outfit',
                             size: 11,
                             weight: '700'
                         }
                     }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#F1F5F9'
+                    },
+                    ticks: {
+                        font: {
+                            family: 'Outfit',
+                            size: 11,
+                            weight: '600'
+                        },
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
                 }
             },
-            cutout: '75%'
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15,
+                        font: {
+                            family: 'Outfit',
+                            size: 11,
+                            weight: '700'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1E293B',
+                    padding: 12,
+                    titleFont: {
+                        family: 'Outfit',
+                        size: 12,
+                        weight: '700'
+                    },
+                    bodyFont: {
+                        family: 'Outfit',
+                        size: 11,
+                        weight: '600'
+                    },
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
         }
     });
 });
