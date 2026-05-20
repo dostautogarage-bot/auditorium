@@ -463,33 +463,115 @@
         }
     }
 
-    /* Disable heavy animations on small screens for performance */
+    /* Mobile-Optimized Animations - Keep them attractive! */
     @media (max-width: 576px) {
+        /* Keep gradient animation */
         body {
-            animation: gradientShift 20s ease infinite;
+            animation: gradientShift 15s ease infinite;
         }
 
+        /* Keep logo pulse */
         .dg-shield-logo {
-            animation: pulse 4s ease-in-out infinite;
+            animation: pulse 3s ease-in-out infinite;
         }
 
+        /* Keep floating particles */
         body::before, body::after {
-            animation: float 10s ease-in-out infinite;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        /* Add card entrance animation */
+        .dg-login-card {
+            animation: fadeInUp 0.6s ease-out, float 6s ease-in-out 1s infinite;
+        }
+
+        /* Smooth input interactions */
+        .dg-input {
+            transition: all 0.3s ease;
+        }
+
+        .dg-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        /* Enhanced button animation */
+        .dg-submit-btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dg-submit-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .dg-submit-btn:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Add shimmer to title */
+        .dg-title {
+            animation: shimmer 3s infinite;
+            background-size: 200% auto;
+        }
+
+        /* Stagger input animations */
+        .dg-input-wrapper:nth-child(3) {
+            animation: fadeInUp 0.6s ease-out 0.1s backwards;
+        }
+
+        .dg-input-wrapper:nth-child(4) {
+            animation: fadeInUp 0.6s ease-out 0.2s backwards;
         }
     }
 
-    /* Touch device optimizations */
+    /* Touch device optimizations - Keep animations! */
     @media (hover: none) and (pointer: coarse) {
+        /* Remove hover but keep focus */
         .dg-input:focus {
-            transform: none;
+            transform: translateY(-2px);
         }
 
         .dg-submit-btn:hover {
             transform: none;
         }
 
+        /* Enhanced touch feedback */
         .dg-submit-btn:active {
             transform: scale(0.97);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .dg-input:active {
+            transform: scale(0.99);
+        }
+    }
+
+    /* Add ripple effect for mobile */
+    @media (max-width: 576px) {
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .dg-submit-btn:active::before {
+            animation: ripple 0.6s ease-out;
         }
     }
 </style>

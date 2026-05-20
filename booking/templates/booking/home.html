@@ -611,27 +611,48 @@
             }
         }
 
-        /* Prevent animations on small screens for better performance */
+        /* Mobile-Optimized Animations - Keep them smooth and attractive! */
         @media (max-width: 576px) {
+            /* Keep hero image floating but slower */
             .hero-image {
-                animation: none;
+                animation: float 8s ease-in-out infinite;
             }
 
-            .feature-card:hover {
-                transform: translateY(-8px) scale(1.01);
+            /* Smooth card interactions */
+            .feature-card {
+                transition: all 0.3s ease;
             }
 
+            .feature-card:active {
+                transform: translateY(-5px) scale(0.98);
+                box-shadow: 0 15px 40px rgba(102, 126, 234, 0.25);
+            }
+
+            /* Keep icon animations but slower */
             .icon-box {
-                animation: none;
+                animation: pulse-glow 4s ease-in-out infinite;
             }
 
+            /* Keep badge glow */
             .stat-badge {
-                animation: none;
+                animation: pulse-glow 4s ease-in-out infinite;
+            }
+
+            /* Smooth button press */
+            .btn-premium:active {
+                transform: scale(0.95);
+                box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            }
+
+            /* Add scroll reveal animation */
+            [data-aos] {
+                transition-duration: 600ms !important;
             }
         }
 
-        /* Touch device optimizations */
+        /* Touch device optimizations - Keep animations! */
         @media (hover: none) and (pointer: coarse) {
+            /* Remove hover states but keep active states */
             .feature-card:hover {
                 transform: none;
             }
@@ -640,17 +661,87 @@
                 transform: none;
             }
 
-            .icon-box:hover {
-                transform: none;
-            }
-
-            /* Add active states for touch */
+            /* Enhanced touch feedback */
             .feature-card:active {
-                transform: scale(0.98);
+                transform: translateY(-8px) scale(0.98);
+                background: rgba(255, 255, 255, 0.98);
+                box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
             }
 
             .btn-premium:active {
                 transform: scale(0.95);
+            }
+
+            .icon-box:active {
+                transform: scale(1.1) rotate(5deg);
+            }
+
+            .stat-badge:active {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Add mobile-specific enhancements */
+        @media (max-width: 576px) {
+            /* Smooth scroll behavior */
+            html {
+                scroll-behavior: smooth;
+            }
+
+            /* Add subtle parallax to sections */
+            .hero-section,
+            #gallery,
+            #features,
+            #contact {
+                animation: fadeInUp 0.8s ease-out;
+            }
+
+            /* Stagger section animations */
+            #gallery {
+                animation-delay: 0.1s;
+            }
+
+            #features {
+                animation-delay: 0.2s;
+            }
+
+            #contact {
+                animation-delay: 0.3s;
+            }
+
+            /* Add bounce to buttons */
+            @keyframes mobileBounce {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-3px); }
+            }
+
+            .btn-premium {
+                animation: mobileBounce 2s ease-in-out infinite;
+            }
+
+            /* Enhance navbar on mobile */
+            .navbar-premium {
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+                transition: all 0.3s ease;
+            }
+
+            /* Add gradient animation to cards */
+            .feature-card::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, transparent 0%, rgba(102, 126, 234, 0.05) 100%);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                pointer-events: none;
+                border-radius: 24px;
+            }
+
+            .feature-card:active::after {
+                opacity: 1;
             }
         }
 
