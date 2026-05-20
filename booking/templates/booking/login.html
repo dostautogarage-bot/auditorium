@@ -3,8 +3,43 @@
 
 {% block extra_css %}
 <style>
+    /* Animated Gradient Background */
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
     body {
-        background: #F4F7F9;
+        background: linear-gradient(-45deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -15,42 +50,107 @@
         position: fixed;
         top: 0; left: 0;
         z-index: 9999;
+        overflow: hidden;
+    }
+
+    /* Floating Particles */
+    body::before,
+    body::after {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.3;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    body::before {
+        background: rgba(255, 122, 0, 0.4);
+        top: -100px;
+        left: -100px;
+        animation-delay: 0s;
+    }
+
+    body::after {
+        background: rgba(102, 126, 234, 0.4);
+        bottom: -100px;
+        right: -100px;
+        animation-delay: 2s;
+    }
+
+    .page-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 20px !important;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-height: 100vh;
+        position: relative;
+        z-index: 1;
     }
-    .page-wrapper { margin-left: 0 !important; width: 100% !important; padding: 20px !important; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
     .app-header, .bottom-nav, .app-sidebar, footer, .fab, .branding-card-container { display: none !important; }
     
     .dg-login-card {
         width: 100%;
         max-width: 420px;
-        background: #FFFFFF;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         border-radius: 30px;
         padding: 40px 30px;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.05);
-        border-top: 6px solid var(--primary);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.5);
+        border-top: 6px solid transparent;
+        background-image: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)),
+                          linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background-origin: border-box;
+        background-clip: padding-box, border-box;
         position: relative;
+        animation: fadeInUp 0.6s ease-out;
     }
 
     .dg-shield-logo {
-        width: 64px;
-        height: 64px;
-        background: var(--primary-gradient);
-        border-radius: 18px;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        border-radius: 24px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 24px;
         color: white;
-        font-size: 1.8rem;
-        box-shadow: 0 10px 20px rgba(255, 122, 0, 0.3);
+        font-size: 2.2rem;
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        animation: pulse 3s ease-in-out infinite;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dg-shield-logo::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0) 100%
+        );
+        animation: shimmer 3s infinite;
     }
 
     .dg-title {
-        font-size: 1.6rem;
-        font-weight: 800;
-        color: #1E293B;
+        font-size: 1.8rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         text-align: center;
         text-transform: uppercase;
         letter-spacing: -0.02em;
@@ -60,7 +160,7 @@
     .dg-subtitle {
         color: #64748B;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         text-align: center;
         margin-bottom: 40px;
     }
@@ -78,46 +178,319 @@
 
     .dg-input-wrapper {
         margin-bottom: 24px;
+        animation: fadeInUp 0.6s ease-out backwards;
     }
+
+    .dg-input-wrapper:nth-child(3) { animation-delay: 0.1s; }
+    .dg-input-wrapper:nth-child(4) { animation-delay: 0.2s; }
 
     .dg-input {
         width: 100%;
         background: #F8FAFC;
-        border: 1.5px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 14px 18px;
+        border: 2px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 16px 20px;
         font-weight: 700;
         color: #1E293B;
         font-size: 0.95rem;
         outline: none;
-        transition: 0.3s;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    
     .dg-input:focus {
         background: #FFFFFF;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(255, 122, 0, 0.1);
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        transform: translateY(-2px);
     }
 
     .dg-submit-btn {
-        background: var(--primary-gradient);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         border: none;
         width: 100%;
-        padding: 16px;
-        border-radius: 12px;
+        padding: 18px;
+        border-radius: 14px;
         font-weight: 900;
         font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-top: 10px;
-        transition: 0.3s;
-        box-shadow: 0 10px 25px rgba(255, 122, 0, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out 0.3s backwards;
     }
-    .dg-submit-btn:active { transform: scale(0.97); }
+
+    .dg-submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.3),
+            transparent
+        );
+        transition: left 0.5s;
+    }
+
+    .dg-submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+    }
+
+    .dg-submit-btn:hover::before {
+        left: 100%;
+    }
+
+    .dg-submit-btn:active {
+        transform: translateY(-1px);
+    }
 
     .dg-footer-info {
         text-align: center;
         margin-top: 40px;
+        animation: fadeInUp 0.6s ease-out 0.4s backwards;
+    }
+
+    .alert {
+        animation: fadeInUp 0.4s ease-out;
+        border-radius: 12px !important;
+    }
+
+    /* Responsive Design for Login Page */
+    
+    /* Tablet & Below (991px) */
+    @media (max-width: 991px) {
+        .dg-login-card {
+            max-width: 480px;
+            padding: 40px 35px;
+        }
+
+        .dg-shield-logo {
+            width: 75px;
+            height: 75px;
+            font-size: 2rem;
+        }
+
+        .dg-title {
+            font-size: 1.7rem;
+        }
+    }
+
+    /* Tablet Portrait (768px) */
+    @media (max-width: 768px) {
+        body::before, body::after {
+            width: 250px;
+            height: 250px;
+        }
+
+        .dg-login-card {
+            max-width: 440px;
+            padding: 35px 30px;
+        }
+
+        .dg-shield-logo {
+            width: 70px;
+            height: 70px;
+            font-size: 1.9rem;
+            margin-bottom: 20px;
+        }
+
+        .dg-title {
+            font-size: 1.6rem;
+        }
+
+        .dg-subtitle {
+            font-size: 0.9rem;
+            margin-bottom: 35px;
+        }
+    }
+
+    /* Mobile (576px) */
+    @media (max-width: 576px) {
+        body::before, body::after {
+            width: 200px;
+            height: 200px;
+            filter: blur(70px);
+        }
+
+        .page-wrapper {
+            padding: 15px !important;
+        }
+
+        .dg-login-card {
+            max-width: 100%;
+            padding: 30px 25px;
+            border-radius: 24px;
+        }
+
+        .dg-shield-logo {
+            width: 65px;
+            height: 65px;
+            font-size: 1.7rem;
+            border-radius: 20px;
+            margin-bottom: 18px;
+        }
+
+        .dg-title {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .dg-subtitle {
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+        }
+
+        .dg-label {
+            font-size: 0.7rem;
+            margin-bottom: 6px;
+        }
+
+        .dg-input-wrapper {
+            margin-bottom: 20px;
+        }
+
+        .dg-input {
+            padding: 14px 18px;
+            font-size: 0.9rem;
+            border-radius: 12px;
+        }
+
+        .dg-submit-btn {
+            padding: 16px;
+            font-size: 0.95rem;
+            border-radius: 12px;
+        }
+
+        .dg-footer-info {
+            margin-top: 30px;
+        }
+
+        .dg-footer-info p {
+            font-size: 0.65rem !important;
+        }
+
+        .dg-footer-info a {
+            font-size: 0.7rem !important;
+            padding: 5px 12px;
+        }
+    }
+
+    /* Extra Small Mobile (400px) */
+    @media (max-width: 400px) {
+        .dg-login-card {
+            padding: 25px 20px;
+            border-radius: 20px;
+        }
+
+        .dg-shield-logo {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            border-radius: 18px;
+        }
+
+        .dg-title {
+            font-size: 1.3rem;
+        }
+
+        .dg-subtitle {
+            font-size: 0.8rem;
+        }
+
+        .dg-input {
+            padding: 13px 16px;
+            font-size: 0.85rem;
+        }
+
+        .dg-submit-btn {
+            padding: 15px;
+            font-size: 0.9rem;
+        }
+    }
+
+    /* Landscape Mobile Optimization */
+    @media (max-height: 600px) and (orientation: landscape) {
+        body {
+            padding: 10px;
+        }
+
+        .dg-login-card {
+            padding: 20px 25px;
+            margin: 10px auto;
+        }
+
+        .dg-shield-logo {
+            width: 50px;
+            height: 50px;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .dg-title {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+        }
+
+        .dg-subtitle {
+            font-size: 0.75rem;
+            margin-bottom: 20px;
+        }
+
+        .dg-input-wrapper {
+            margin-bottom: 15px;
+        }
+
+        .dg-input {
+            padding: 12px 16px;
+        }
+
+        .dg-submit-btn {
+            padding: 14px;
+            margin-top: 5px;
+        }
+
+        .dg-footer-info {
+            margin-top: 20px;
+        }
+    }
+
+    /* Disable heavy animations on small screens for performance */
+    @media (max-width: 576px) {
+        body {
+            animation: gradientShift 20s ease infinite;
+        }
+
+        .dg-shield-logo {
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        body::before, body::after {
+            animation: float 10s ease-in-out infinite;
+        }
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+        .dg-input:focus {
+            transform: none;
+        }
+
+        .dg-submit-btn:hover {
+            transform: none;
+        }
+
+        .dg-submit-btn:active {
+            transform: scale(0.97);
+        }
     }
 </style>
 {% endblock %}
