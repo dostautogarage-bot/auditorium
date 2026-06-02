@@ -476,14 +476,8 @@ async function downloadOrSharePDF(bookingId, contactPerson) {
         }
     }
     
-    // Fallback: Direct download using link element
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = `ABC_Auditorium_Invoice_${bookingId}.pdf`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Fallback: Open PDF in new window (let server handle filename)
+    window.open(pdfUrl, '_blank');
 }
 
 // Toggle dropdown menu
