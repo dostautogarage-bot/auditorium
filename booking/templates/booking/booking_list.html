@@ -250,8 +250,8 @@
                                         <i class="bi bi-file-earmark-pdf"></i>
                                         <span>Download PDF</span>
                                     </a>
-                                    <a href="javascript:void(0);" onclick="shareViaWhatsApp({{ booking.pk }}, '{{ booking.mobile_number }}', '{{ booking.contact_person|escapejs }}', '{{ booking.title|escapejs }}', '{{ booking.start_time|date:'D, M j, Y'|escapejs }}', '{{ booking.start_time|date:'g:i A'|escapejs }}', '{{ booking.end_time|date:'g:i A'|escapejs }}', '{{ booking.total_amount|floatformat:0 }}', '{{ booking.advance_received|floatformat:0 }}', '{{ booking.pending_amount|floatformat:0 }}')"
-                                       class="dropdown-item whatsapp">
+                                    <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20ABC%20Auditorium%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
+                                       target="_blank" class="dropdown-item whatsapp">
                                         <i class="bi bi-whatsapp"></i>
                                         <span>Share WhatsApp</span>
                                     </a>
@@ -323,8 +323,8 @@
                             <i class="bi bi-file-earmark-pdf"></i>
                             <span>Download PDF</span>
                         </a>
-                        <a href="javascript:void(0);" onclick="shareViaWhatsApp({{ booking.pk }}, '{{ booking.mobile_number }}', '{{ booking.contact_person|escapejs }}', '{{ booking.title|escapejs }}', '{{ booking.start_time|date:'D, M j, Y'|escapejs }}', '{{ booking.start_time|date:'g:i A'|escapejs }}', '{{ booking.end_time|date:'g:i A'|escapejs }}', '{{ booking.total_amount|floatformat:0 }}', '{{ booking.advance_received|floatformat:0 }}', '{{ booking.pending_amount|floatformat:0 }}')"
-                           class="dropdown-item whatsapp">
+                        <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20ABC%20Auditorium%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
+                           target="_blank" class="dropdown-item whatsapp">
                             <i class="bi bi-whatsapp"></i>
                             <span>Share WhatsApp</span>
                         </a>
@@ -432,26 +432,6 @@ function togglePaymentStatus(pk) {
         console.error('Error:', err);
         alert('Failed to update payment status. Check console for details.');
     });
-}
-
-// Share via WhatsApp with PDF
-async function shareViaWhatsApp(bookingId, mobile, contactPerson, title, date, startTime, endTime, total, paid, balance) {
-    const pdfUrl = `/booking/export-single-pdf/${bookingId}/`;
-    const message = `Hello ${contactPerson},\n\nYour booking at ABC Auditorium has been confirmed!\n\n*Booking Details:*\nEvent: ${title}\nDate: ${date}\nTime: ${startTime} - ${endTime}\n\n*Payment:*\nTotal: Rs ${total}\nPaid: Rs ${paid}\nBalance: Rs ${balance}\n\nThank you!`;
-    
-    // Download PDF first
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = `ABC_Auditorium_Invoice_${bookingId}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    // Open WhatsApp chat with customer
-    setTimeout(() => {
-        const whatsappUrl = `https://wa.me/91${mobile}?text=${encodeURIComponent(message + '\n\n📎 Invoice PDF has been downloaded. Please attach it to this chat.')}`;
-        window.open(whatsappUrl, '_blank');
-    }, 800);
 }
 
 // Toggle dropdown menu
