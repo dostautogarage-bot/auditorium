@@ -246,7 +246,7 @@
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <div class="dropdown-menu" id="dropdown-{{ booking.pk }}">
-                                    <a href="{% url 'export_single_booking_pdf' booking.pk %}" class="dropdown-item pdf">
+                                    <a href="javascript:void(0);" onclick="downloadOrSharePDF({{ booking.pk }}, '{{ booking.contact_person|escapejs }}')" class="dropdown-item pdf">
                                         <i class="bi bi-file-earmark-pdf"></i>
                                         <span>Download PDF</span>
                                     </a>
@@ -319,7 +319,7 @@
                         <i class="bi bi-three-dots-vertical"></i>
                     </button>
                     <div class="dropdown-menu" id="dropdown-mobile-{{ booking.pk }}">
-                        <a href="{% url 'export_single_booking_pdf' booking.pk %}" class="dropdown-item pdf">
+                        <a href="javascript:void(0);" onclick="downloadOrSharePDF({{ booking.pk }}, '{{ booking.contact_person|escapejs }}')" class="dropdown-item pdf">
                             <i class="bi bi-file-earmark-pdf"></i>
                             <span>Download PDF</span>
                         </a>
@@ -432,6 +432,41 @@ function togglePaymentStatus(pk) {
         console.error('Error:', err);
         alert('Failed to update payment status. Check console for details.');
     });
+}
+
+// Download or Share PDF (uses native share on mobile)
+async function downloadOrSharePDF(bookingId, contactPerson) {
+    const pdfUrl = `/booking/export-single-pdf/${bookingId}/`;
+    
+    // Try Web Share API (works on mobile)
+    if (navigator.share && navigator.canShare) {
+        try {
+            // Fetch the PDF as a blob
+            const response = await fetch(pdfUrl);
+            const blob = await response.blob();
+            const file = new File([blob], `ABC_Auditorium_Invoice_${bookingId}.pdf`, { type: 'application/pdf' });
+            
+            // Check if we can share files
+            if (navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    title: `ABC Auditorium Invoice - ${contactPerson}`,
+                    text: 'Booking Invoice',
+                    files: [file]
+                });
+                return;
+            }
+        } catch (error) {
+            // User cancelled or error occurred, fall through to download
+            if (error.name !== 'AbortError') {
+                console.log('Share failed, downloading instead');
+            } else {
+                return; // User cancelled, don't download
+            }
+        }
+    }
+    
+    // Fallback: Direct download
+    window.location.href = pdfUrl;
 }
 
 // Toggle dropdown menu
