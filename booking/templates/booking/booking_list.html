@@ -441,8 +441,19 @@ async function downloadOrSharePDF(bookingId, contactPerson) {
     // Try Web Share API (works on mobile)
     if (navigator.share && navigator.canShare) {
         try {
-            // Fetch the PDF as a blob
-            const response = await fetch(pdfUrl);
+            // Fetch the PDF as a blob with credentials
+            const response = await fetch(pdfUrl, {
+                method: 'GET',
+                credentials: 'same-origin',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch PDF');
+            }
+            
             const blob = await response.blob();
             const file = new File([blob], `ABC_Auditorium_Invoice_${bookingId}.pdf`, { type: 'application/pdf' });
             
@@ -458,15 +469,21 @@ async function downloadOrSharePDF(bookingId, contactPerson) {
         } catch (error) {
             // User cancelled or error occurred, fall through to download
             if (error.name !== 'AbortError') {
-                console.log('Share failed, downloading instead');
+                console.log('Share failed, downloading instead:', error);
             } else {
                 return; // User cancelled, don't download
             }
         }
     }
     
-    // Fallback: Direct download
-    window.location.href = pdfUrl;
+    // Fallback: Direct download using link element
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = `ABC_Auditorium_Invoice_${bookingId}.pdf`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
 
 // Toggle dropdown menu
