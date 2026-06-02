@@ -202,16 +202,17 @@ document.addEventListener('DOMContentLoaded', function() {
             let start, end;
             if (shift === 'day') {
                 start = new Date(year, month, day, 9, 0);
-                end = new Date(year, month, day, 18, 0);
+                end = new Date(year, month, day, 16, 0);
             } else if (shift === 'night') {
-                start = new Date(year, month, day, 19, 0);
-                end = new Date(year, month, day, 23, 0);
+                start = new Date(year, month, day, 17, 0);
+                end = new Date(year, month, day, 21, 0);
             }
 
             startPicker.setDate(start);
             endPicker.setDate(end);
         });
     }
+    
     // Payment completion toggle handler for standalone form
     const paymentCompleteCheckbox = document.getElementById('id_payment_complete_standalone');
     const totalAmountInput = document.getElementById('id_total_amount');

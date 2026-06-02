@@ -173,8 +173,8 @@ class AdminEditForm(forms.ModelForm):
 class BookingForm(forms.ModelForm):
     SHIFT_CHOICES = [
         ('custom', 'Custom Time'),
-        ('day', 'Day (9 AM - 6 PM)'),
-        ('night', 'Night (7 PM - 11 PM)'),
+        ('day', 'Day (9 AM - 4 PM)'),
+        ('night', 'Night (5 PM - 9 PM)'),
     ]
     shift = forms.ChoiceField(
         choices=SHIFT_CHOICES,
@@ -232,15 +232,15 @@ class BookingForm(forms.ModelForm):
         fields = ['title', 'contact_person', 'mobile_number', 'start_time', 'end_time', 'total_amount', 'advance_received']
         widgets = {
             'title': forms.TextInput(attrs={
-                'class': 'form-control', 
+                'class': 'form-control',
                 'placeholder': 'Enter event title'
             }),
             'contact_person': forms.TextInput(attrs={
-                'class': 'form-control', 
+                'class': 'form-control',
                 'placeholder': 'Full name'
             }),
             'mobile_number': forms.TextInput(attrs={
-                'class': 'form-control', 
+                'class': 'form-control',
                 'placeholder': '+91 9876543210'
             }),
         }

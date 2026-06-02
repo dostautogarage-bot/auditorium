@@ -11,8 +11,22 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ABC Auditorium">
 
-    <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
-    <link rel="apple-touch-icon" href="{% static 'favicon.png' %}">
+    <!-- Favicon for browsers -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon.png' %}">
+    <link rel="shortcut icon" href="{% static 'favicon.png' %}">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'favicon.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'favicon.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'favicon.png' %}">
+    
+    <!-- Android Chrome Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'favicon.png' %}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'favicon.png' %}">
+    
+    <!-- Web App Manifest -->
     <link rel="manifest" href="{% url 'manifest_json' %}">
 
     <title>{% block title %}ABC Auditorium{% endblock %}</title>
@@ -1137,12 +1151,12 @@
                                 <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('day')"
                                     style="border-color: #F59E0B; color: #92400E; background: #FEF3C7;">
                                     <i class="bi bi-sun-fill me-1"></i> Day
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">9 AM - 6 PM</span>
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">9 AM - 4 PM</span>
                                 </div>
                                 <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('night')"
                                     style="border-color: #6366F1; color: #3730A3; background: #E0E7FF;">
                                     <i class="bi bi-moon-stars-fill me-1"></i> Night
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">7 PM - 11 PM</span>
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">5 PM - 9 PM</span>
                                 </div>
                             </div>
                             <div id="startTimeSuggestions" class="time-suggestion-list"></div>
@@ -1611,11 +1625,11 @@
             const durationSec = document.getElementById('durationSection');
 
             if (shiftInput && shiftInput.value === 'day') {
-                document.getElementById('displaySelectedStart').innerText = '9:00 AM - 6:00 PM (Day)';
+                document.getElementById('displaySelectedStart').innerText = '9:00 AM - 4:00 PM (Day)';
                 if (labelEl) labelEl.innerText = 'Selected Shift';
                 if (durationSec) durationSec.classList.add('d-none');
             } else if (shiftInput && shiftInput.value === 'night') {
-                document.getElementById('displaySelectedStart').innerText = '7:00 PM - 11:00 PM (Night)';
+                document.getElementById('displaySelectedStart').innerText = '5:00 PM - 9:00 PM (Night)';
                 if (labelEl) labelEl.innerText = 'Selected Shift';
                 if (durationSec) durationSec.classList.add('d-none');
             } else {
@@ -1751,11 +1765,11 @@
             if (shiftInput) shiftInput.value = shift;
 
             if (shift === 'day') {
-                selectedEndTime = '18:00';
+                selectedEndTime = '16:00';
                 selectStartTime('09:00', '9:00 AM');
             } else if (shift === 'night') {
-                selectedEndTime = '23:00';
-                selectStartTime('19:00', '7:00 PM');
+                selectedEndTime = '21:00';
+                selectStartTime('17:00', '5:00 PM');
             } else {
                 resetStartTime();
             }
@@ -1840,23 +1854,12 @@
             document.getElementById('id_total_amount').value = totalAmount || '0';
             document.getElementById('id_advance').value = advance;
             document.getElementById('modal_date_base').value = date;
-            
-            // Reset payment checkbox state
-            const paymentCheckbox = document.getElementById('id_payment_complete');
-            if (paymentCheckbox) {
-                paymentCheckbox.checked = false;
-            }
-            const advanceField = document.getElementById('id_advance');
-            if (advanceField) {
-                advanceField.readOnly = false;
-                advanceField.style.backgroundColor = '';
-            }
 
             // Handle Start/End selections
             selectedEndTime = end.substring(0, 5); // Ensure HH:MM format
-            if (start === '09:00' && (end === '18:00' || end === '18:00:00')) {
+            if (start === '09:00' && (end === '16:00' || end === '16:00:00')) {
                 applyPresetShift('day');
-            } else if (start === '19:00' && (end === '23:00' || end === '23:00:00')) {
+            } else if (start === '17:00' && (end === '21:00' || end === '21:00:00')) {
                 applyPresetShift('night');
             } else {
                 const shiftInput = document.getElementById('id_modal_shift');
@@ -1895,17 +1898,6 @@
             document.getElementById('modal_booking_id').value = '';
             document.getElementById('mainBookingForm').reset();
             resetStartTime();
-            
-            // Reset payment completion checkbox and advance field state
-            const paymentCheckbox = document.getElementById('id_payment_complete');
-            const advanceField = document.getElementById('id_advance');
-            if (paymentCheckbox) {
-                paymentCheckbox.checked = false;
-            }
-            if (advanceField) {
-                advanceField.readOnly = false;
-                advanceField.style.backgroundColor = '';
-            }
             
             document.getElementById('finalSubmitForm').action = "{% url 'booking_create' %}";
             document.getElementById('createBookingModal').querySelector('h4').innerText = 'New Booking';

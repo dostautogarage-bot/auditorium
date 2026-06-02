@@ -19,6 +19,13 @@
         border-radius: 14px; padding: 12px 14px; font-family: inherit;
         font-size: 0.82rem; font-weight: 700; color: var(--ink); outline: none; cursor: pointer;
     }
+    .export-pdf-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4) !important;
+    }
+    .export-pdf-btn:active {
+        transform: translateY(0);
+    }
     .booking-mobile-card {
         background: rgba(255,255,255,0.72); backdrop-filter: blur(18px);
         border: 1.5px solid rgba(255,255,255,0.45); border-radius: 16px;
@@ -36,6 +43,107 @@
     .action-btn:active { transform: scale(0.9); }
     .action-btn-edit { color: var(--primary); }
     .action-btn-del { color: #EF4444; }
+    
+    /* Dropdown Menu Styles */
+    .dropdown-menu-container {
+        position: relative;
+        display: inline-block;
+    }
+    .dropdown-menu-btn {
+        width: 34px; height: 34px; background: rgba(241,245,249,0.8);
+        border: 1.5px solid rgba(0,0,0,0.04); border-radius: 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer; font-size: 1rem; transition: 0.2s;
+        color: var(--ink-2);
+    }
+    .dropdown-menu-btn:hover {
+        background: rgba(20,184,166,0.1);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: 40px;
+        background: white;
+        border: 1.5px solid rgba(0,0,0,0.08);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        min-width: 180px;
+        z-index: 9999;
+        display: none;
+        overflow: hidden;
+    }
+    .dropdown-menu.show {
+        display: block;
+        animation: dropdownFadeIn 0.2s ease-out;
+    }
+    @keyframes dropdownFadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: 0.2s;
+        cursor: pointer;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+    }
+    .dropdown-item:hover {
+        background: rgba(20,184,166,0.08);
+    }
+    .dropdown-item i {
+        font-size: 0.9rem;
+        width: 20px;
+    }
+    .dropdown-item.pdf { color: #EF4444; }
+    .dropdown-item.whatsapp { color: #25D366; }
+    .dropdown-item.edit { color: var(--primary); }
+    .dropdown-item.delete { color: #EF4444; }
+    .dropdown-divider {
+        height: 1px;
+        background: rgba(0,0,0,0.06);
+        margin: 4px 0;
+    }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+        .search-bar {
+            flex-wrap: wrap;
+        }
+        .export-pdf-btn {
+            width: 100%;
+            justify-content: center !important;
+            margin-top: 10px;
+        }
+        .per-page-select {
+            flex-shrink: 0;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .export-pdf-btn {
+            padding: 10px 16px !important;
+            font-size: 0.75rem !important;
+        }
+        .search-input {
+            font-size: 0.8rem;
+            padding: 10px 14px 10px 38px;
+        }
+        .per-page-select {
+            font-size: 0.75rem;
+            padding: 10px 12px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -47,25 +155,38 @@
     </div>
 
     <!-- Search + Filter -->
-    <form method="GET" class="search-bar">
-        <div class="position-relative flex-grow-1">
+    <form method="GET" class="search-bar" style="flex-wrap: wrap;">
+        <div class="position-relative flex-grow-1" style="min-width: 200px;">
             <i class="bi bi-search search-icon"></i>
-            <input type="text" name="q" value="{{ query }}" placeholder="Search events..." class="search-input">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search events, contact, phone..." class="search-input">
         </div>
+        <select name="payment_status" onchange="this.form.submit()" class="per-page-select" style="min-width: 140px;">
+            <option value="">All Payments</option>
+            <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>✓ Fully Paid</option>
+            <option value="pending" {% if payment_status == 'pending' %}selected{% endif %}>⏳ Pending</option>
+        </select>
         <select name="per_page" onchange="this.form.submit()" class="per-page-select">
+            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
             <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
-            <option value="200" {% if per_page == 200 %}selected{% endif %}>200</option>
-            <option value="300" {% if per_page == 300 %}selected{% endif %}>300</option>
+            <option value="300" {% if per_page == 300 or not per_page %}selected{% endif %}>300</option>
             <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
         </select>
+        <a href="{% url 'export_bookings_pdf' %}?{{ request.GET.urlencode }}"
+           class="btn btn-sm export-pdf-btn"
+           style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; border: none; border-radius: 12px; padding: 12px 20px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); transition: all 0.3s; white-space: nowrap;">
+            <i class="bi bi-file-earmark-pdf-fill"></i>
+            <span class="export-text">Export PDF</span>
+            <span class="export-icon-only d-none"><i class="bi bi-file-earmark-pdf-fill"></i></span>
+        </a>
     </form>
 
     <!-- Desktop Table -->
     <div class="d-none d-lg-block w-100">
-        <div class="glass-card table-responsive" style="overflow:hidden; border:1px solid rgba(255,255,255,0.4);">
+        <div class="glass-card table-responsive" style="overflow:visible; border:1px solid rgba(255,255,255,0.4);">
             <table class="table mb-0">
                 <thead>
                     <tr style="background:rgba(241, 245, 249, 0.5); border-bottom:1px solid rgba(0,0,0,0.05);">
+                        <th style="padding:14px 12px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">#</th>
                         <th style="padding:14px 20px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Event</th>
                         <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">Schedule</th>
                         <th style="padding:14px; font-size:0.68rem; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:0.06em; border:none;">By</th>
@@ -77,6 +198,9 @@
                 <tbody>
                     {% for booking in bookings %}
                     <tr style="border-bottom:1px solid #F2F2F5;" class="align-middle">
+                        <td style="padding:16px 12px; border:none;">
+                            <div style="font-size:0.85rem; font-weight:800; color:var(--primary);">#{{ booking.serial_number }}</div>
+                        </td>
                         <td style="padding:16px 20px; border:none;">
                             <div style="font-size:0.9rem; font-weight:700; color:var(--ink);">{{ booking.title }}</div>
                             <div style="font-size:0.72rem; color:var(--ink-3); font-weight:500; margin-top:2px;">{{ booking.created_at|date:"M j, Y" }}</div>
@@ -117,11 +241,32 @@
                             <span style="font-size:0.82rem; font-weight:600; color:var(--ink-2);">{{ booking.mobile_number }}</span>
                         </td>
                         <td style="border:none; padding:16px 20px; text-align:right;">
-                            <div class="d-flex justify-content-end gap-2">
-                                <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
-                                        class="action-btn action-btn-edit"><i class="bi bi-pencil"></i></button>
-                                <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
-                                        class="action-btn action-btn-del"><i class="bi bi-trash"></i></button>
+                            <div class="dropdown-menu-container">
+                                <button class="dropdown-menu-btn" onclick="toggleDropdown({{ booking.pk }})">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <div class="dropdown-menu" id="dropdown-{{ booking.pk }}">
+                                    <a href="{% url 'export_single_booking_pdf' booking.pk %}" class="dropdown-item pdf">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                        <span>Download PDF</span>
+                                    </a>
+                                    <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20ABC%20Auditorium%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
+                                       target="_blank" class="dropdown-item whatsapp">
+                                        <i class="bi bi-whatsapp"></i>
+                                        <span>Share WhatsApp</span>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
+                                            class="dropdown-item edit">
+                                        <i class="bi bi-pencil"></i>
+                                        <span>Edit Booking</span>
+                                    </button>
+                                    <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
+                                            class="dropdown-item delete">
+                                        <i class="bi bi-trash"></i>
+                                        <span>Delete Booking</span>
+                                    </button>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -169,11 +314,32 @@
                     </button>
                     {% endif %}
                 </div>
-                <div style="display:flex; gap:6px; flex-shrink:0;">
-                    <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
-                            class="action-btn action-btn-edit"><i class="bi bi-pencil"></i></button>
-                    <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
-                            class="action-btn action-btn-del"><i class="bi bi-trash"></i></button>
+                <div class="dropdown-menu-container">
+                    <button class="dropdown-menu-btn" onclick="toggleDropdown('mobile-{{ booking.pk }}')">
+                        <i class="bi bi-three-dots-vertical"></i>
+                    </button>
+                    <div class="dropdown-menu" id="dropdown-mobile-{{ booking.pk }}">
+                        <a href="{% url 'export_single_booking_pdf' booking.pk %}" class="dropdown-item pdf">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                            <span>Download PDF</span>
+                        </a>
+                        <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20ABC%20Auditorium%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
+                           target="_blank" class="dropdown-item whatsapp">
+                            <i class="bi bi-whatsapp"></i>
+                            <span>Share WhatsApp</span>
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
+                                class="dropdown-item edit">
+                            <i class="bi bi-pencil"></i>
+                            <span>Edit Booking</span>
+                        </button>
+                        <button onclick="triggerDeleteModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{% url 'booking_delete' booking.pk %}')"
+                                class="dropdown-item delete">
+                            <i class="bi bi-trash"></i>
+                            <span>Delete Booking</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -190,10 +356,10 @@
     <!-- PAGINATION -->
     {% if bookings.has_other_pages %}
     <div class="d-flex align-items-center justify-content-between mt-4" style="flex-wrap:wrap; gap:12px;">
-        <span style="font-size:0.75rem; font-weight:600; color:var(--ink-3);">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}</span>
+        <span style="font-size:0.75rem; font-weight:600; color:var(--ink-3);">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }} ({{ bookings.paginator.count }} total)</span>
         <div class="d-flex gap-2">
             {% if bookings.has_previous %}
-            <a href="?q={{ query }}&per_page={{ per_page }}&page={{ bookings.previous_page_number }}"
+            <a href="?q={{ query }}&payment_status={{ payment_status }}&per_page={{ per_page }}&page={{ bookings.previous_page_number }}"
                style="width:34px; height:34px; background:rgba(255,255,255,0.8); border:1.5px solid rgba(0,0,0,0.06); border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.85rem;">
                <i class="bi bi-chevron-left"></i>
             </a>
@@ -202,12 +368,12 @@
                 {% if bookings.number == num %}
                 <span style="width:34px; height:34px; background:var(--primary-gradient); color:white; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; box-shadow:0 4px 12px rgba(20,184,166,0.2);">{{ num }}</span>
                 {% elif num > bookings.number|add:'-3' and num < bookings.number|add:'3' %}
-                <a href="?q={{ query }}&per_page={{ per_page }}&page={{ num }}"
+                <a href="?q={{ query }}&payment_status={{ payment_status }}&per_page={{ per_page }}&page={{ num }}"
                    style="width:34px; height:34px; background:rgba(255,255,255,0.8); border:1.5px solid rgba(0,0,0,0.06); border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.8rem; font-weight:700;">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if bookings.has_next %}
-            <a href="?q={{ query }}&per_page={{ per_page }}&page={{ bookings.next_page_number }}"
+            <a href="?q={{ query }}&payment_status={{ payment_status }}&per_page={{ per_page }}&page={{ bookings.next_page_number }}"
                style="width:34px; height:34px; background:rgba(255,255,255,0.8); border:1.5px solid rgba(0,0,0,0.06); border-radius:10px; display:flex; align-items:center; justify-content:center; text-decoration:none; color:var(--ink); font-size:0.85rem;">
                <i class="bi bi-chevron-right"></i>
             </a>
@@ -243,7 +409,10 @@ function togglePaymentStatus(pk) {
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
-        }
+        },
+        body: JSON.stringify({
+            redirect_to: 'booking_list'
+        })
     })
     .then(res => {
         if (!res.ok) {
@@ -253,6 +422,7 @@ function togglePaymentStatus(pk) {
     })
     .then(data => {
         if (data.status === 'success') {
+            // Stay on booking list page
             location.reload();
         } else {
             alert('Failed to update payment status: ' + (data.message || 'Unknown error'));
@@ -263,5 +433,30 @@ function togglePaymentStatus(pk) {
         alert('Failed to update payment status. Check console for details.');
     });
 }
+
+// Toggle dropdown menu
+function toggleDropdown(id) {
+    const dropdown = document.getElementById('dropdown-' + id);
+    const allDropdowns = document.querySelectorAll('.dropdown-menu');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(d => {
+        if (d.id !== 'dropdown-' + id) {
+            d.classList.remove('show');
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.dropdown-menu-container')) {
+        document.querySelectorAll('.dropdown-menu').forEach(d => {
+            d.classList.remove('show');
+        });
+    }
+});
 </script>
 {% endblock %}

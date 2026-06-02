@@ -20,6 +20,8 @@ urlpatterns = [
     path('bookings/create/', views.booking_create, name='booking_create'),
     path('bookings/<int:pk>/edit/', views.booking_edit, name='booking_edit'),
     path('bookings/<int:pk>/delete/', views.booking_delete, name='booking_delete'),
+    path('bookings/export/pdf/', views.export_bookings_pdf, name='export_bookings_pdf'),
+    path('bookings/<int:pk>/export/pdf/', views.export_single_booking_pdf, name='export_single_booking_pdf'),
     
     # Calendar
     path('calendar/', views.calendar_view, name='calendar'),

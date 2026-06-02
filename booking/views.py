@@ -228,21 +228,33 @@ def booking_list(request):
     now = timezone.now()
     
     query = request.GET.get('q', '').strip()
-    bookings = Booking.objects.all().order_by('-start_time')
+    payment_status = request.GET.get('payment_status', '').strip()
+    
+    bookings = Booking.objects.all().order_by('-created_at')
     
     # Stats
     total_this_month = Booking.objects.filter(start_time__month=now.month, start_time__year=now.year).count()
     my_bookings_count = Booking.objects.filter(created_by=request.user).count()
     total_admins = User.objects.filter(is_staff=True).count()
 
+    # Search filter
     if query:
         bookings = bookings.filter(
-            Q(title__icontains=query)
+            Q(title__icontains=query) |
+            Q(contact_person__icontains=query) |
+            Q(mobile_number__icontains=query)
         )
+    
+    # Payment status filter
+    if payment_status == 'paid':
+        bookings = bookings.filter(payment_pending=False)
+    elif payment_status == 'pending':
+        bookings = bookings.filter(payment_pending=True)
+    # 'all' or empty shows everything
         
-    per_page = int(request.GET.get('per_page', 100))
-    if per_page not in [100, 200, 300, 500]:
-        per_page = 100
+    per_page = int(request.GET.get('per_page', 300))
+    if per_page not in [50, 100, 300, 500]:
+        per_page = 300
 
     paginator = Paginator(bookings, per_page)
     page_number = request.GET.get('page')
@@ -251,6 +263,7 @@ def booking_list(request):
     return render(request, 'booking/booking_list.html', {
         'bookings': booking_page,
         'query': query,
+        'payment_status': payment_status,
         'per_page': per_page,
         'stats': {
             'month_total': total_this_month,
@@ -301,6 +314,7 @@ def booking_create(request):
 
             booking.created_by = request.user
             booking.save()
+            
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success', 'message': 'Booking successfully created.'})
             messages.success(request, 'Booking successfully created.')
@@ -370,6 +384,7 @@ def booking_edit(request, pk):
                 messages.error(request, error_msg)
                 return redirect('calendar')
             new_booking.save()
+            
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'status': 'success', 'message': 'Booking successfully updated.'})
             messages.success(request, 'Booking successfully updated.')
@@ -535,18 +550,18 @@ def booking_api(request):
         start_time = timezone.localtime(booking.start_time)
         end_time = timezone.localtime(booking.end_time)
         
-        # Determine shift (Day: 9 AM - 6 PM, Night: 7 PM - 11 PM)
+        # Determine shift (Day: 9 AM - 4 PM, Night: 5 PM - 9 PM)
         start_hour = start_time.hour
         end_hour = end_time.hour
         
-        is_start_day = 9 <= start_hour < 18
-        is_start_night = 19 <= start_hour < 23
+        is_start_day = 9 <= start_hour < 16
+        is_start_night = 17 <= start_hour < 21
         
-        # Check if it's a day shift (9 AM - 6 PM)
-        if 9 <= start_hour < 18 and 9 <= end_hour <= 18:
+        # Check if it's a day shift (9 AM - 4 PM)
+        if 9 <= start_hour < 16 and 9 <= end_hour <= 16:
             shift = 'day'
-        # Check if it's a night shift (7 PM - 11 PM)
-        elif 19 <= start_hour < 23 and 19 <= end_hour <= 23:
+        # Check if it's a night shift (5 PM - 9 PM)
+        elif 17 <= start_hour < 21 and 17 <= end_hour <= 21:
             shift = 'night'
         else:
             shift = 'overlap'
@@ -687,10 +702,92 @@ def toggle_payment_status(request, pk):
         booking.payment_pending = False
         booking.advance_received = booking.total_amount
         booking.save()
+        
+        # Get redirect_to from request body
+        try:
+            body = json.loads(request.body.decode('utf-8'))
+            redirect_to = body.get('redirect_to', 'current')
+        except:
+            redirect_to = 'current'
+        
         return JsonResponse({
             'status': 'success',
             'payment_pending': booking.payment_pending,
+            'redirect_to': redirect_to,
             'message': 'Payment marked as complete successfully'
         })
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+from django.http import HttpResponse
+from .utils import generate_bookings_pdf, generate_single_booking_pdf
+
+
+@login_required
+def export_bookings_pdf(request):
+    """Export bookings list to PDF"""
+    now = timezone.now()
+    
+    # Get filters from request
+    selected_month = request.GET.get('month')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    admin_id = request.GET.get('admin_id')
+    query = request.GET.get('q', '').strip()
+    
+    # Base query
+    bookings = Booking.objects.all().order_by('-start_time')
+    
+    # Apply filters
+    filters = {}
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            bookings = bookings.filter(start_time__year=year, start_time__month=month)
+            filters['month'] = selected_month
+        except (ValueError, AttributeError):
+            pass
+    else:
+        if start_date:
+            bookings = bookings.filter(start_time__date__gte=start_date)
+            filters['start_date'] = start_date
+        if end_date:
+            bookings = bookings.filter(start_time__date__lte=end_date)
+            filters['end_date'] = end_date
+    
+    if admin_id:
+        bookings = bookings.filter(created_by_id=admin_id)
+        try:
+            admin = User.objects.get(pk=admin_id)
+            filters['admin_name'] = admin.username
+        except User.DoesNotExist:
+            pass
+    
+    if query:
+        bookings = bookings.filter(Q(title__icontains=query))
+    
+    # Generate PDF
+    pdf = generate_bookings_pdf(bookings, filters)
+    
+    # Create response
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f'bookings_report_{now.strftime("%Y%m%d_%H%M%S")}.pdf'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response
+
+
+@login_required
+def export_single_booking_pdf(request, pk):
+    """Export a single booking as PDF receipt"""
+    booking = get_object_or_404(Booking, pk=pk)
+    
+    # Generate PDF
+    pdf = generate_single_booking_pdf(booking)
+    
+    # Create response
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f'booking_{booking.pk}_{booking.title[:20].replace(" ", "_")}.pdf'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    return response

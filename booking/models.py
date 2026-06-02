@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 class Booking(models.Model):
+    serial_number = models.PositiveIntegerField(unique=True, null=True, blank=True, help_text="Auto-generated serial number")
     title = models.CharField(max_length=200)
     contact_person = models.CharField(max_length=150, default='')
     mobile_number = models.CharField(max_length=20, default='')
@@ -42,6 +43,18 @@ class Booking(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
+        
+        # Auto-generate serial number for new bookings
+        if not self.serial_number:
+            last_booking = Booking.objects.order_by('-serial_number').first()
+            self.serial_number = (last_booking.serial_number + 1) if last_booking and last_booking.serial_number else 1
+        
+        # Auto-mark as fully paid if advance equals or exceeds total amount
+        if self.advance_received >= self.total_amount and self.total_amount > 0:
+            self.payment_pending = False
+        elif self.advance_received < self.total_amount:
+            self.payment_pending = True
+            
         super().save(*args, **kwargs)
 
 
