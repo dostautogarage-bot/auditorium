@@ -439,29 +439,7 @@ async function shareViaWhatsApp(bookingId, mobile, contactPerson, title, date, s
     const pdfUrl = `/booking/export-single-pdf/${bookingId}/`;
     const message = `Hello ${contactPerson},\n\nYour booking at ABC Auditorium has been confirmed!\n\n*Booking Details:*\nEvent: ${title}\nDate: ${date}\nTime: ${startTime} - ${endTime}\n\n*Payment:*\nTotal: Rs ${total}\nPaid: Rs ${paid}\nBalance: Rs ${balance}\n\nThank you!`;
     
-    // Try Web Share API (works on mobile with file sharing)
-    if (navigator.share && navigator.canShare) {
-        try {
-            // Fetch the PDF as a blob
-            const response = await fetch(pdfUrl);
-            const blob = await response.blob();
-            const file = new File([blob], `ABC_Auditorium_Invoice_${bookingId}.pdf`, { type: 'application/pdf' });
-            
-            // Check if we can share files
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    title: 'ABC Auditorium Invoice',
-                    text: message,
-                    files: [file]
-                });
-                return;
-            }
-        } catch (error) {
-            console.log('Web Share API failed, falling back to download + WhatsApp');
-        }
-    }
-    
-    // Fallback: Download PDF and open WhatsApp
+    // Download PDF first
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.download = `ABC_Auditorium_Invoice_${bookingId}.pdf`;
@@ -469,11 +447,11 @@ async function shareViaWhatsApp(bookingId, mobile, contactPerson, title, date, s
     link.click();
     document.body.removeChild(link);
     
-    // Open WhatsApp with message
+    // Open WhatsApp chat with customer
     setTimeout(() => {
-        const whatsappUrl = `https://wa.me/91${mobile}?text=${encodeURIComponent(message + '\n\n📎 Invoice PDF has been downloaded to your device.')}`;
+        const whatsappUrl = `https://wa.me/91${mobile}?text=${encodeURIComponent(message + '\n\n📎 Invoice PDF has been downloaded. Please attach it to this chat.')}`;
         window.open(whatsappUrl, '_blank');
-    }, 500);
+    }, 800);
 }
 
 // Toggle dropdown menu
