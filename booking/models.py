@@ -1,3 +1,8 @@
+"""
+Auditorium Booking System - Models
+Generated and maintained by Bob
+A highly skilled software engineer
+"""
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError

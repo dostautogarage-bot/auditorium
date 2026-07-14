@@ -1,3 +1,8 @@
+"""
+Auditorium Booking System - Views
+Generated and maintained by Bob
+A highly skilled software engineer
+"""
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -774,6 +779,85 @@ def export_bookings_pdf(request):
     filename = f'bookings_report_{now.strftime("%Y%m%d_%H%M%S")}.pdf'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
+    return response
+
+
+@login_required
+def export_bookings_excel(request):
+    """Export bookings list to Excel"""
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+    except ImportError:
+        return HttpResponse('openpyxl is not installed. Run: pip install openpyxl', status=500)
+
+    now = timezone.now()
+
+    # Reuse the same filters as the booking list / PDF export
+    query = request.GET.get('q', '').strip()
+    payment_status = request.GET.get('payment_status', '').strip()
+
+    bookings = Booking.objects.all().order_by('-created_at')
+
+    if query:
+        bookings = bookings.filter(
+            Q(title__icontains=query) |
+            Q(contact_person__icontains=query) |
+            Q(mobile_number__icontains=query)
+        )
+
+    if payment_status == 'paid':
+        bookings = bookings.filter(payment_pending=False)
+    elif payment_status == 'pending':
+        bookings = bookings.filter(payment_pending=True)
+
+    # Build workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Bookings'
+
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(start_color='14B8A6', end_color='14B8A6', fill_type='solid')
+    center = Alignment(horizontal='center', vertical='center')
+
+    headers = ['#', 'Serial No', 'Title', 'Contact Person', 'Mobile', 'Start Time', 'End Time', 'Total (₹)', 'Advance (₹)', 'Pending (₹)', 'Status', 'Created By']
+    ws.append(headers)
+    for col_num, _ in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = center
+
+    for i, b in enumerate(bookings, 1):
+        pending = b.total_amount - b.advance_received if b.total_amount else 0
+        status = 'Paid' if not b.payment_pending else 'Pending'
+        ws.append([
+            i,
+            b.serial_number or '',
+            b.title,
+            b.contact_person or '',
+            b.mobile_number or '',
+            b.start_time.strftime('%d-%m-%Y %H:%M') if b.start_time else '',
+            b.end_time.strftime('%d-%m-%Y %H:%M') if b.end_time else '',
+            float(b.total_amount) if b.total_amount else 0,
+            float(b.advance_received) if b.advance_received else 0,
+            float(pending),
+            status,
+            b.created_by.get_full_name() or b.created_by.username if b.created_by else '',
+        ])
+
+    # Auto-size columns
+    for col in ws.columns:
+        max_len = max((len(str(cell.value)) if cell.value else 0) for cell in col)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+
+    # Stream response
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f'bookings_{now.strftime("%Y%m%d_%H%M%S")}.xlsx'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    wb.save(response)
     return response
 
 

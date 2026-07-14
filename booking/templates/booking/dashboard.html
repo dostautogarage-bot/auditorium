@@ -301,7 +301,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: '{{ admin.username }}',
                 totalAmount: {{ admin.total_booking_amount|default:0 }},
                 received: {{ admin.collected|default:0 }},
-                pending: {{ admin.pending_amount|default:0 }}
+                pending: {{ admin.pending_amount|default:0 }},
+                bookingCount: {{ admin.booking_count|default:0 }}
             },
         {% endfor %}
     ];
@@ -311,31 +312,46 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    const allAmountsZero = adminData.every(d => d.totalAmount === 0 && d.received === 0 && d.pending === 0);
+
     new Chart(ctx, {
         type: 'bar',
         data: {
             labels: adminData.map(d => d.label),
-            datasets: [
+            datasets: allAmountsZero ? [
+                {
+                    label: 'Bookings',
+                    data: adminData.map(d => d.bookingCount),
+                    backgroundColor: '#4F7BFF',
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    minBarLength: 4,
+                    yAxisID: 'y'
+                }
+            ] : [
                 {
                     label: 'Total Booking Amount',
                     data: adminData.map(d => d.totalAmount),
                     backgroundColor: '#4F7BFF',
                     borderRadius: 6,
-                    borderSkipped: false
+                    borderSkipped: false,
+                    minBarLength: 4
                 },
                 {
                     label: 'Amount Received',
                     data: adminData.map(d => d.received),
                     backgroundColor: '#00BA88',
                     borderRadius: 6,
-                    borderSkipped: false
+                    borderSkipped: false,
+                    minBarLength: 4
                 },
                 {
                     label: 'Pending Amount',
                     data: adminData.map(d => d.pending),
                     backgroundColor: '#FF7A00',
                     borderRadius: 6,
-                    borderSkipped: false
+                    borderSkipped: false,
+                    minBarLength: 4
                 }
             ]
         },
@@ -367,7 +383,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             weight: '600'
                         },
                         callback: function(value) {
-                            return '₹' + value.toLocaleString();
+                            return allAmountsZero
+                                ? (Number.isInteger(value) ? value + ' booking' + (value !== 1 ? 's' : '') : '')
+                                : '₹' + value.toLocaleString();
                         }
                     }
                 }
@@ -401,6 +419,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     callbacks: {
                         label: function(context) {
+                            if (allAmountsZero) {
+                                return context.dataset.label + ': ' + context.parsed.y;
+                            }
                             return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString();
                         }
                     }

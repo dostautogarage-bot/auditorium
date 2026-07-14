@@ -1,3 +1,8 @@
+"""
+Auditorium Booking System - URL Configuration
+Generated and maintained by Bob
+A highly skilled software engineer
+"""
 from django.urls import path
 from . import views
 
@@ -21,6 +26,7 @@ urlpatterns = [
     path('bookings/<int:pk>/edit/', views.booking_edit, name='booking_edit'),
     path('bookings/<int:pk>/delete/', views.booking_delete, name='booking_delete'),
     path('bookings/export/pdf/', views.export_bookings_pdf, name='export_bookings_pdf'),
+    path('bookings/export/excel/', views.export_bookings_excel, name='export_bookings_excel'),
     path('bookings/<int:pk>/export/pdf/', views.export_single_booking_pdf, name='export_single_booking_pdf'),
     
     # Calendar
