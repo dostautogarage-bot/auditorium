@@ -8,13 +8,14 @@ from io import BytesIO
 from django.utils import timezone
 
 
-def generate_bookings_pdf(bookings, filters=None):
+def generate_bookings_pdf(bookings, filters=None, auditorium=None):
     """
     Generate a PDF report of bookings
     
     Args:
         bookings: QuerySet of Booking objects
         filters: Dictionary containing filter information (optional)
+        auditorium: Auditorium object (optional)
     
     Returns:
         BytesIO buffer containing the PDF
@@ -26,6 +27,15 @@ def generate_bookings_pdf(bookings, filters=None):
     # Container for the 'Flowable' objects
     elements = []
     
+    # Determine auditorium name
+    auditorium_name = "Auditorium"
+    if auditorium and auditorium.name:
+        auditorium_name = auditorium.name
+    elif bookings:
+        first_b = bookings.first()
+        if first_b and first_b.auditorium and first_b.auditorium.name:
+            auditorium_name = first_b.auditorium.name
+
     # Define styles
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
@@ -50,7 +60,7 @@ def generate_bookings_pdf(bookings, filters=None):
     normal_style = styles['Normal']
     
     # Add title
-    title = Paragraph("ABC Auditorium - Booking Report", title_style)
+    title = Paragraph(f"{auditorium_name} - Booking Report", title_style)
     elements.append(title)
     
     # Add generation date
@@ -149,7 +159,7 @@ def generate_bookings_pdf(bookings, filters=None):
     
     # Add footer
     elements.append(Spacer(1, 30))
-    footer_text = "ABC Auditorium Booking System | Generated automatically"
+    footer_text = f"{auditorium_name} Booking System | Generated automatically"
     footer_para = Paragraph(footer_text, ParagraphStyle(
         'Footer',
         parent=styles['Normal'],
@@ -185,10 +195,22 @@ def generate_single_booking_pdf(booking):
     elements = []
     styles = getSampleStyleSheet()
     
+    # Determine auditorium details
+    auditorium = getattr(booking, 'auditorium', None)
+    aud_name = auditorium.name if auditorium and auditorium.name else "Auditorium"
+    aud_phone = auditorium.contact_phone if auditorium and auditorium.contact_phone else ""
+    aud_email = auditorium.contact_email if auditorium and auditorium.contact_email else ""
+
+    contact_parts = []
+    if aud_phone:
+        contact_parts.append(f"<b>Phone:</b> {aud_phone}")
+    if aud_email:
+        contact_parts.append(f"<b>Email:</b> {aud_email}")
+
     # ===== HEADER SECTION =====
     # Company name with decorative border
     header_data = [[Paragraph(
-        '<font size="24" color="#14B8A6"><b>ABC AUDITORIUM</b></font>',
+        f'<font size="24" color="#14B8A6"><b>{aud_name.upper()}</b></font>',
         ParagraphStyle('HeaderTitle', parent=styles['Normal'], alignment=TA_CENTER)
     )]]
     
@@ -203,12 +225,14 @@ def generate_single_booking_pdf(booking):
     elements.append(Spacer(1, 8))
     
     # Contact info bar (separate from header)
-    contact_info = Paragraph(
-        '<font size="8" color="#0F766E"><b>Phone:</b> +91 808 983 3403 | <b>Email:</b> abcauditorium@gmail.com | <b>Location:</b> Kerala, India</font>',
-        ParagraphStyle('ContactInfo', parent=styles['Normal'], alignment=TA_CENTER)
-    )
-    elements.append(contact_info)
-    elements.append(Spacer(1, 10))
+    if contact_parts:
+        contact_text = f'<font size="8" color="#0F766E">{" | ".join(contact_parts)}</font>'
+        contact_info = Paragraph(
+            contact_text,
+            ParagraphStyle('ContactInfo', parent=styles['Normal'], alignment=TA_CENTER)
+        )
+        elements.append(contact_info)
+        elements.append(Spacer(1, 10))
     
     # ===== BOOKING CONFIRMATION BANNER =====
     booking_serial = f"#{booking.serial_number}" if booking.serial_number else f"#BK{booking.pk}"
@@ -372,7 +396,7 @@ def generate_single_booking_pdf(booking):
     # ===== FOOTER =====
     footer_data = [[
         Paragraph(
-            '<font size="10" color="#14B8A6"><b>Thank you for choosing ABC Auditorium!</b></font><br/>'
+            f'<font size="10" color="#14B8A6"><b>Thank you for choosing {aud_name}!</b></font><br/>'
             '<font size="7" color="grey">This is a computer-generated document and does not require a signature.</font>',
             ParagraphStyle('Footer', parent=styles['Normal'], alignment=TA_CENTER)
         )

@@ -1082,7 +1082,7 @@ def export_bookings_pdf(request):
         bookings = bookings.filter(Q(title__icontains=query))
     
     # Generate PDF
-    pdf = generate_bookings_pdf(bookings, filters)
+    pdf = generate_bookings_pdf(bookings, filters, auditorium=auditorium)
     
     # Create response
     response = HttpResponse(pdf, content_type='application/pdf')
