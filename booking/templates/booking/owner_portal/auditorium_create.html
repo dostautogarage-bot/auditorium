@@ -1,0 +1,102 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Create New Auditorium Customer - Owner Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0" style="max-width: 800px; margin: 0 auto;">
+    <!-- Navigation Back -->
+    <div class="mb-3">
+        <a href="{% url 'owner_portal_dashboard' %}" class="btn btn-sm btn-light fw-bold text-muted">
+            <i class="bi bi-arrow-left"></i> Back to All Auditoriums
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: var(--radius-2xl); background: #FFFFFF;">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="p-3 rounded-circle text-white shadow-sm" style="background: linear-gradient(135deg, #7C3AED, #6D28D9);">
+                <i class="bi bi-building-add fs-3"></i>
+            </div>
+            <div>
+                <h1 class="fw-black mb-1 fs-3" style="color: var(--ink);">Create Customer Auditorium</h1>
+                <p class="text-muted mb-0 small">Provision a new auditorium client, set subscription charges, and configure their super admin account.</p>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="alert alert-danger mb-4" style="border-radius: var(--radius-lg);">
+                <div class="fw-bold mb-1"><i class="bi bi-exclamation-octagon-fill me-1"></i> Please resolve the following errors:</div>
+                <ul class="mb-0 ps-3 small">
+                    {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Section 1: Auditorium & Billing -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                    <i class="bi bi-building text-primary me-2"></i> 1. Auditorium & Client Information
+                </h5>
+                <div class="row g-3">
+                    <div class="col-12 col-md-8">
+                        <label class="form-label">Auditorium / Hall Name *</label>
+                        {{ form.auditorium_name }}
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <label class="form-label">Monthly Subscription (₹)</label>
+                        {{ form.monthly_fee }}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Client Phone / Contact</label>
+                        {{ form.contact_phone }}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Client Email Address</label>
+                        {{ form.contact_email }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Owner Private Notes (Billing terms, renewals, etc.)</label>
+                        {{ form.notes }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Auditorium Super Admin Credentials -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                    <i class="bi bi-shield-lock text-purple me-2" style="color: #7C3AED;"></i> 2. Super Admin Credentials (To Share with Customer)
+                </h5>
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Admin Username *</label>
+                        {{ form.admin_username }}
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label">Admin Full Name</label>
+                        {{ form.admin_first_name }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Admin Password *</label>
+                        {{ form.admin_password }}
+                        <div class="form-text small">This is the super admin password you will give to the auditorium owner/manager.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <a href="{% url 'owner_portal_dashboard' %}" class="btn btn-light px-4 fw-bold">Cancel</a>
+                <button type="submit" class="btn btn-app btn-app-primary px-5 shadow" style="background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);">
+                    <i class="bi bi-check2-circle"></i> Create Auditorium & Generate Access
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

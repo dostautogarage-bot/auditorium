@@ -1,111 +1,388 @@
 {% extends 'booking/base.html' %}
-{% block title %}Users — ABC Auditorium{% endblock %}
+{% block title %}Directory — {{ current_auditorium.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .user-card {
+        background: var(--card);
+        border-radius: 28px;
+        padding: 20px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(0,0,0,0.04);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        transition: transform 0.18s cubic-bezier(0.2,0.8,0.2,1);
+    }
+    .user-card:active { transform: scale(0.985); }
+
+    .avatar-circle {
+        width: 48px; height: 48px;
+        border-radius: 16px;
+        background: var(--primary-soft);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 900; font-size: 1.1rem;
+        color: var(--primary);
+        border: 1.5px solid rgba(255,122,0,0.12);
+        flex-shrink: 0;
+    }
+
+    /* Permission row */
+    .perm-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    .perm-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 14px;
+        border-radius: 14px;
+        border: none;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.15s;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+    }
+    .perm-btn:active { transform: scale(0.94); opacity: 0.85; }
+
+    .perm-btn .perm-label { letter-spacing: 0.01em; opacity: 0.75; font-size: 0.65rem; text-transform: uppercase; }
+    .perm-btn .perm-state { font-size: 0.78rem; font-weight: 900; }
+
+    /* State colour pairs: bg / text */
+    .perm-on-green  { background: #ECFDF5; color: #065F46; }
+    .perm-off       { background: #F1F5F9; color: #94A3B8; }
+    .perm-on-indigo { background: #EEF2FF; color: #3730A3; }
+    .perm-on-orange { background: #FFF7ED; color: #C2410C; }
+    .perm-on-red    { background: #FEF2F2; color: #991B1B; }
+    .perm-on-blue   { background: #EFF6FF; color: #1D4ED8; }
+
+    /* Pill dot indicator */
+    .perm-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: currentColor; opacity: 0.5;
+        flex-shrink: 0; margin-left: 4px;
+    }
+
+    /* Section divider label */
+    .perm-section-label {
+        font-size: 0.62rem; font-weight: 800; letter-spacing: 0.1em;
+        text-transform: uppercase; color: #CBD5E1;
+        margin-bottom: 6px; margin-top: 14px; padding-left: 2px;
+    }
+
+    /* Dropdown polish */
+    .dropdown-menu { min-width: 170px; }
+    .dropdown-item { font-weight: 700; font-size: 0.85rem; border-radius: 12px; padding: 10px 14px; }
+    .dropdown-item:hover { background: var(--bg); }
+
+    /* Search bar */
+    .search-bar {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 4px 6px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.04);
+        display: flex; align-items: center; gap: 6px;
+        margin-bottom: 24px;
+    }
+    .search-bar input {
+        flex: 1; border: none; background: transparent; outline: none;
+        font-weight: 700; font-size: 0.92rem; color: var(--ink);
+        padding: 12px 12px 12px 8px;
+        font-family: 'Outfit', sans-serif;
+    }
+    .search-bar input::placeholder { color: #CBD5E1; }
+    .search-bar .search-icon { color: #CBD5E1; font-size: 1rem; padding-left: 10px; flex-shrink: 0; }
+    .search-bar select {
+        border: none; background: var(--bg); border-radius: 14px;
+        padding: 8px 12px; font-weight: 800; font-size: 0.78rem;
+        color: var(--ink); outline: none; cursor: pointer;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Role badge */
+    .role-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em;
+        text-transform: uppercase; color: #94A3B8;
+        background: #F8FAFC; border: 1px solid #E2E8F0;
+        padding: 5px 10px; border-radius: 100px;
+    }
+    .role-badge.is-staff2 { background: #FFF7ED; border-color: #FDBA74; color: #C2410C; }
+
+    /* Loading spinner on button */
+    .perm-btn.loading { pointer-events: none; opacity: 0.55; }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center; padding: 72px 20px;
+    }
+    .empty-icon-box {
+        width: 72px; height: 72px;
+        background: var(--primary-soft); border-radius: 24px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 16px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="fade-in">
-    <!-- Minimal Header -->
-    <div class="d-flex justify-content-between align-items-center mb-5">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
-            <h1 style="font-weight: 900; font-size: 2rem; letter-spacing: -0.06em; color: var(--ink); margin: 0;">
-                Directory</h1>
-            <p style="color: var(--ink-muted); font-weight: 700; font-size: 0.9rem;">Team & Access control</p>
+            <h1 style="font-weight:900; font-size:1.85rem; letter-spacing:-0.05em; margin:0 0 2px;">Directory</h1>
+            <p style="color:var(--ink-muted); font-weight:600; font-size:0.82rem; margin:0;">Team & access control</p>
         </div>
         {% if request.user.is_superuser %}
-        <button class="btn-app" data-bs-toggle="modal" data-bs-target="#createAdminModal"
-            style="width: 50px; height: 50px; border-radius: 50%; background: #000; color: white; border: none; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <button data-bs-toggle="modal" data-bs-target="#createAdminModal"
+            style="width:48px;height:48px;border-radius:50%;background:#111;color:#fff;border:none;
+                   display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+                   box-shadow:0 8px 20px rgba(0,0,0,0.18);flex-shrink:0;
+                   -webkit-tap-highlight-color:transparent;">
             <i class="bi bi-plus-lg"></i>
         </button>
         {% endif %}
     </div>
 
-    <!-- Search Bento -->
-    <div
-        style="background: white; border-radius: 24px; padding: 8px; box-shadow: var(--shadow-subtle); margin-bottom: 32px; border: 1px solid rgba(0,0,0,0.03);">
-        <form method="GET" class="d-flex gap-2">
-            <div class="position-relative flex-grow-1">
-                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 opacity-30"></i>
-                <input type="text" name="q" value="{{ query }}" placeholder="Find someone..."
-                    style="width:100%; border:none; padding:16px 16px 16px 45px; background:transparent; font-weight:700; outline:none; color:var(--ink);">
-            </div>
-            <select name="per_page" onchange="this.form.submit()"
-                style="border:none; background:#F4F4F5; border-radius:18px; padding:0 15px; font-weight:800; font-size:0.8rem; color:var(--ink);">
-                <option value="100">100</option>
-                <option value="500">500</option>
+    <!-- Search bar -->
+    <form method="GET">
+        <div class="search-bar">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" name="q" value="{{ query }}" placeholder="Find someone…" autocomplete="off">
+            <select name="per_page" onchange="this.form.submit()">
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
             </select>
-        </form>
-    </div>    <!-- User Rows (Modern Mobile Style) -->
-    <div class="user-list">
+        </div>
+    </form>
+
+    <!-- User cards -->
+    <div>
         {% for admin in admins %}
-        <div class="bento-item mb-3" style="background: white; border-radius: 28px; padding: 20px; border: 1px solid rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
-            <div class="d-flex align-items-center gap-3">
-                <div style="width: 50px; height: 50px; border-radius: 18px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); font-size: 1.1rem; border: 1px solid rgba(0,0,0,0.05);">
-                    {{ admin.username|slice:":1"|upper }}
+        <div class="user-card">
+
+            <!-- Top row: avatar + name + menu -->
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="avatar-circle">{{ admin.username|slice:":1"|upper }}</div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-weight:900;font-size:1rem;letter-spacing:-0.02em;
+                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ admin.username }}
+                    </div>
+                    <div style="font-size:0.75rem;color:var(--ink-muted);font-weight:600;
+                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ admin.email|default:"No email set" }}
+                    </div>
                 </div>
-                <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 900; color: var(--ink); font-size: 1.1rem; letter-spacing: -0.02em;">{{ admin.username }}</div>
-                    <div style="font-size: 0.8rem; color: var(--ink-muted); font-weight: 600;">{{ admin.email|default:"No email provided" }}</div>
-                </div>
-                
                 {% if request.user.is_superuser %}
                 <div class="dropdown">
-                    <button class="btn p-0" data-bs-toggle="dropdown"><i class="bi bi-three-dots fs-4 opacity-40"></i></button>
-                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow-xl" style="border-radius: 20px; padding: 8px;">
-                        <li><a class="dropdown-item fw-800 py-2" href="{% url 'admin_edit' admin.pk %}">Edit Account</a></li>
+                    <button class="btn p-0" data-bs-toggle="dropdown"
+                        style="-webkit-tap-highlight-color:transparent;width:36px;height:36px;
+                               display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-three-dots" style="font-size:1.2rem;opacity:0.35;"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end border-0 shadow" style="border-radius:18px;padding:6px;">
+                        <li><a class="dropdown-item" href="{% url 'admin_edit' admin.pk %}">
+                            <i class="bi bi-pencil me-2 opacity-50"></i>Edit account
+                        </a></li>
                         {% if admin != request.user %}
-                        <li><hr class="dropdown-divider"></li>
-                        <li><button class="dropdown-item fw-800 py-2 text-danger" onclick="confirmDeleteAdmin('{{ admin.pk }}', '{{ admin.username }}')">Delete User</button></li>
+                        <li><button class="dropdown-item"
+                                onclick="openResetPassword('{{ admin.pk }}','{{ admin.username }}')">
+                            <i class="bi bi-key me-2 opacity-50"></i>Reset password
+                        </button></li>
+                        <li><hr class="dropdown-divider mx-2 my-1"></li>
+                        <li><button class="dropdown-item text-danger"
+                                onclick="confirmDeleteAdmin('{{ admin.pk }}','{{ admin.username }}')">
+                            <i class="bi bi-trash me-2 opacity-50"></i>Delete user
+                        </button></li>
                         {% endif %}
                     </ul>
                 </div>
                 {% endif %}
             </div>
 
-            <div class="d-flex flex-column gap-2">
-                {% if admin != request.user %}
-                    <div class="d-flex gap-2">
-                        <button onclick="toggleStatus('{{ admin.pk }}', 'active')" class="btn-app flex-grow-1" style="background: {% if admin.is_active %}#F0FDF4{% else %}#F1F5F9{% endif %}; color: {% if admin.is_active %}#166534{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.7rem;">
-                            Login: {{ admin.is_active|yesno:"ON,OFF" }}
-                        </button>
-                        <button onclick="toggleStatus('{{ admin.pk }}', 'booking')" class="btn-app flex-grow-1" style="background: {% if admin.profile.is_bookable %}#EEF2FF{% else %}#F1F5F9{% endif %}; color: {% if admin.profile.is_bookable %}#3730A3{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.7rem;">
-                            Booking: {{ admin.profile.is_bookable|yesno:"ON,OFF" }}
-                        </button>
+            <!-- Permission toggles (only for other users) -->
+            {% if admin != request.user and request.user.is_superuser %}
+
+            <div class="perm-section-label">Access</div>
+            <div class="perm-row">
+                <button class="perm-btn {% if admin.is_active %}perm-on-green{% else %}perm-off{% endif %}"
+                        onclick="toggleStatus(this, '{{ admin.pk }}', 'active')">
+                    <div>
+                        <div class="perm-label">Login</div>
+                        <div class="perm-state">{{ admin.is_active|yesno:"ON,OFF" }}</div>
                     </div>
-                    <button onclick="toggleStatus('{{ admin.pk }}', 'staff')" class="btn-app w-100" style="background: {% if admin.profile.is_auditorium_staff %}#FFF7ED{% else %}#F1F5F9{% endif %}; color: {% if admin.profile.is_auditorium_staff %}#C2410C{% else %}#64748B{% endif %}; border: none; padding: 12px; border-radius: 16px; font-weight: 800; font-size: 0.7rem;">
-                        Auditorium Staff: {{ admin.profile.is_auditorium_staff|yesno:"ENABLED,DISABLED" }}
-                    </button>
-                {% endif %}
+                    <div class="perm-dot"></div>
+                </button>
+                <button class="perm-btn {% if admin.profile.is_bookable %}perm-on-indigo{% else %}perm-off{% endif %}"
+                        onclick="toggleStatus(this, '{{ admin.pk }}', 'booking')">
+                    <div>
+                        <div class="perm-label">Booking</div>
+                        <div class="perm-state">{{ admin.profile.is_bookable|yesno:"ON,OFF" }}</div>
+                    </div>
+                    <div class="perm-dot"></div>
+                </button>
             </div>
-            <div class="d-flex gap-2">
-                <span style="background: #F8FAFC; padding: 8px 12px; border-radius: 12px; font-size: 0.7rem; font-weight: 800; color: #94A3B8;">Verified Staff Member</span>
+
+            <div class="perm-section-label">Roles & Features</div>
+            <div class="perm-row">
+                <button class="perm-btn {% if admin.profile.is_staff2 %}perm-on-orange{% else %}perm-off{% endif %}"
+                        onclick="toggleStatus(this, '{{ admin.pk }}', 'staff')">
+                    <div>
+                        <div class="perm-label">Staff mode</div>
+                        <div class="perm-state">{{ admin.profile.is_staff2|yesno:"ON,OFF" }}</div>
+                    </div>
+                    <div class="perm-dot"></div>
+                </button>
+                <button class="perm-btn {% if admin.profile.expense_enabled %}perm-on-green{% else %}perm-off{% endif %}"
+                        onclick="toggleStatus(this, '{{ admin.pk }}', 'expense')">
+                    <div>
+                        <div class="perm-label">Expenses</div>
+                        <div class="perm-state">{{ admin.profile.expense_enabled|yesno:"ON,OFF" }}</div>
+                    </div>
+                    <div class="perm-dot"></div>
+                </button>
+                <button class="perm-btn {% if admin.profile.export_enabled %}perm-on-blue{% else %}perm-off{% endif %}"
+                        onclick="toggleStatus(this, '{{ admin.pk }}', 'export')">
+                    <div>
+                        <div class="perm-label">Export</div>
+                        <div class="perm-state">{{ admin.profile.export_enabled|yesno:"ON,OFF" }}</div>
+                    </div>
+                    <div class="perm-dot"></div>
+                </button>
             </div>
+
+            {% endif %}
+
+            <!-- Role badge -->
+            <div class="mt-3">
+                <span class="role-badge {% if admin.profile.is_staff2 %}is-staff2{% endif %}">
+                    {% if admin.is_superuser %}
+                        <i class="bi bi-shield-check" style="font-size:0.7rem;"></i> {% if admin == request.user %}You (Super Admin){% else %}Super Admin{% endif %}
+                    {% elif admin.profile.is_staff2 %}
+                        <i class="bi bi-eye" style="font-size:0.7rem;"></i> Staff (view only)
+                    {% else %}
+                        <i class="bi bi-person-check" style="font-size:0.7rem;"></i> Staff member
+                    {% endif %}
+                </span>
+            </div>
+
         </div>
         {% empty %}
-        <div style="text-align:center; padding:64px 20px;">
-            <div style="width:70px; height:70px; background:var(--primary-soft); border-radius:22px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
-                <i class="bi bi-people" style="font-size:1.8rem; color:var(--primary); opacity:0.5;"></i>
+        <div class="empty-state">
+            <div class="empty-icon-box">
+                <i class="bi bi-people" style="font-size:1.8rem;color:var(--primary);opacity:0.45;"></i>
             </div>
-            <p style="color:var(--ink-muted); font-size:0.85rem; font-weight:600;">No team members found</p>
+            <p style="color:var(--ink-muted);font-size:0.85rem;font-weight:600;margin:0;">No team members yet</p>
         </div>
         {% endfor %}
+    </div>
+
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-premium">
+            <div class="modal-header-premium">
+                <h5 style="font-weight:900;font-size:1.15rem;margin:0;">Delete user?</h5>
+            </div>
+            <div class="modal-body-premium" style="padding-top:4px;">
+                <p style="color:var(--ink-muted);font-size:0.9rem;margin:0;">
+                    <strong id="deleteModalTitle" style="color:var(--ink);"></strong> will be permanently removed.
+                    This cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer-premium d-flex gap-2">
+                <button type="button" class="btn-app btn-app-ghost flex-grow-1"
+                    data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteModalForm" method="POST" style="flex:1;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-app w-100"
+                        style="background:#FEF2F2;color:#DC2626;font-weight:900;">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-premium">
+            <div class="modal-header-premium d-flex align-items-center gap-2">
+                <div style="width:36px;height:36px;border-radius:12px;background:#FFF7ED;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="bi bi-key-fill" style="color:var(--primary);font-size:1rem;"></i>
+                </div>
+                <div>
+                    <h5 style="font-weight:900;font-size:1.05rem;margin:0;">Reset Password</h5>
+                    <div style="font-size:0.75rem;color:var(--ink-muted);font-weight:600;" id="resetModalSubtitle"></div>
+                </div>
+            </div>
+            <div class="modal-body-premium" style="padding-top:4px;">
+                <form id="resetPasswordForm" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="new_password" id="resetNewPassword"
+                               class="form-control-premium" placeholder="Min. 6 characters"
+                               autocomplete="new-password" required style="width:100%;">
+                    </div>
+                    <div>
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="confirm_password" id="resetConfirmPassword"
+                               class="form-control-premium" placeholder="Repeat password"
+                               autocomplete="new-password" required style="width:100%;">
+                    </div>
+                    <div id="resetErrorMsg"
+                         style="display:none;margin-top:12px;padding:10px 14px;background:#FEF2F2;
+                                border-radius:12px;color:#DC2626;font-size:0.78rem;font-weight:700;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer-premium d-flex gap-2">
+                <button type="button" class="btn-app btn-app-ghost flex-grow-1"
+                    data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-app flex-grow-1"
+                    style="background:var(--primary-gradient);color:white;font-weight:900;"
+                    onclick="submitResetPassword()">
+                    Set Password
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script>
-    function toggleStatus(pk, type) {
-        let url;
-        if (type === 'active') url = `/api/toggle-admin/${pk}/`;
-        else if (type === 'booking') url = `/api/toggle-booking/${pk}/`;
-        else if (type === 'staff') url = `/api/toggle-staff/${pk}/`;
-        
-        fetch(url, {
+    function toggleStatus(btn, pk, type) {
+        const urlMap = {
+            active:  `/api/toggle-admin/${pk}/`,
+            booking: `/api/toggle-booking/${pk}/`,
+            staff:   `/api/toggle-staff/${pk}/`,
+            expense: `/api/toggle-expense/${pk}/`,
+            export:  `/api/toggle-export/${pk}/`,
+        };
+        btn.classList.add('loading');
+        fetch(urlMap[type], {
             method: 'POST',
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }
         })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') location.reload();
-                else alert(data.message || 'Action failed');
-            });
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') location.reload();
+            else { btn.classList.remove('loading'); alert(data.message || 'Action failed'); }
+        })
+        .catch(() => { btn.classList.remove('loading'); alert('Network error'); });
     }
 
     function confirmDeleteAdmin(pk, name) {
@@ -113,6 +390,36 @@
         document.getElementById('deleteModalTitle').innerText = name;
         document.getElementById('deleteModalForm').action = `/admins/${pk}/delete/`;
         modal.show();
+    }
+
+    function openResetPassword(pk, username) {
+        document.getElementById('resetModalSubtitle').innerText = username;
+        document.getElementById('resetPasswordForm').action = `/admins/${pk}/reset-password/`;
+        document.getElementById('resetNewPassword').value = '';
+        document.getElementById('resetConfirmPassword').value = '';
+        document.getElementById('resetErrorMsg').style.display = 'none';
+        new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+    }
+
+    function submitResetPassword() {
+        const pw = document.getElementById('resetNewPassword').value.trim();
+        const cpw = document.getElementById('resetConfirmPassword').value.trim();
+        const errEl = document.getElementById('resetErrorMsg');
+
+        if (!pw) {
+            errEl.textContent = 'Password cannot be empty.';
+            errEl.style.display = 'block'; return;
+        }
+        if (pw.length < 6) {
+            errEl.textContent = 'Password must be at least 6 characters.';
+            errEl.style.display = 'block'; return;
+        }
+        if (pw !== cpw) {
+            errEl.textContent = 'Passwords do not match.';
+            errEl.style.display = 'block'; return;
+        }
+        errEl.style.display = 'none';
+        document.getElementById('resetPasswordForm').submit();
     }
 </script>
 {% endblock %}

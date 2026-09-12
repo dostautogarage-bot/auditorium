@@ -9,27 +9,28 @@
     <meta name="theme-color" content="#FF7A00">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ABC Auditorium">
+    <meta name="apple-mobile-web-app-title" content="Audy">
 
     <!-- Favicon for browsers -->
-    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon.png' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon-32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon-16.png' %}">
     <link rel="shortcut icon" href="{% static 'favicon.png' %}">
-    
+
     <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon.png' %}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'favicon.png' %}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'favicon.png' %}">
-    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'favicon.png' %}">
-    
+    <link rel="apple-touch-icon" href="{% static 'icon-512.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icon-512.png' %}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{% static 'icon-512.png' %}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{% static 'icon-512.png' %}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'icon-192.png' %}">
+
     <!-- Android Chrome Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'favicon.png' %}">
-    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'favicon.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'icon-192.png' %}">
+    <link rel="icon" type="image/png" sizes="512x512" href="{% static 'icon-512.png' %}">
     
     <!-- Web App Manifest -->
     <link rel="manifest" href="{% url 'manifest_json' %}">
 
-    <title>{% block title %}ABC Auditorium{% endblock %}</title>
+    <title>{% block title %}Audy{% endblock %}</title>
 
     <!-- Developer structured data for Google -->
     <script type="application/ld+json">
@@ -38,9 +39,9 @@
       "@type": "Person",
       "name": "Muhammed Fanish K P",
       "url": "https://in.bold.pro/my/muhammed-fanishkp",
-      "image": "https://i.ibb.co/jkWVgb8y/IMG-0339-Original.jpg",
+      "image": "{% static 'vendor/fonts/developer.jpg' %}",
       "sameAs": [
-        "https://instagram.com/f4ni.___",
+        "https://instagram.com/f4ni.__",
         "https://in.linkedin.com/in/muhammed-fanish-k-p-28a41714a",
         "https://in.bold.pro/my/muhammed-fanishkp"
       ],
@@ -57,12 +58,8 @@
     }
     </script>
 
-    <!-- Premium Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Urbanist:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <!-- Local Typography -->
+    <link href="{% static 'vendor/fonts/outfit.css' %}" rel="stylesheet">
 
     <!-- Bootstrap & Icons -->
     <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
@@ -981,6 +978,80 @@
             transition: 0.3s;
         }
 
+        /* ---- PWA INSTALL BANNERS ---- */
+        #pwa-android-banner,
+        #pwa-ios-banner {
+            position: fixed;
+            bottom: calc(var(--safe-bottom) + 84px);
+            left: 12px;
+            right: 12px;
+            background: #FFFFFF;
+            border-radius: 22px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.14);
+            padding: 16px 18px;
+            display: none;
+            align-items: center;
+            gap: 14px;
+            z-index: 1200;
+            border: 1.5px solid rgba(255,122,0,0.15);
+            animation: appSlideUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        #pwa-android-banner img,
+        #pwa-ios-banner img {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+        .pwa-banner-text {
+            flex: 1;
+            min-width: 0;
+        }
+        .pwa-banner-text strong {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--ink);
+        }
+        .pwa-banner-text span {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--ink-muted);
+        }
+        .pwa-banner-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .pwa-install-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 9px 16px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'Outfit', sans-serif;
+        }
+        .pwa-dismiss-btn {
+            background: #F1F5F9;
+            color: var(--ink-muted);
+            border: none;
+            border-radius: 12px;
+            padding: 9px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+        }
+        @media (min-width: 992px) {
+            #pwa-android-banner,
+            #pwa-ios-banner { display: none !important; }
+        }
+
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -988,6 +1059,31 @@
 <body class="smooth-scroll">
     <div id="loading-bar"></div>
     <div id="network-status"></div>
+
+    <!-- Android / Chrome install banner -->
+    <div id="pwa-android-banner">
+        <img src="{% static 'icon-192.png' %}" alt="Audy">
+        <div class="pwa-banner-text">
+            <strong>Install Audy</strong>
+            <span>Add to your home screen for the best experience</span>
+        </div>
+        <div class="pwa-banner-actions">
+            <button class="pwa-install-btn" id="pwa-install-btn">Install</button>
+            <button class="pwa-dismiss-btn" id="pwa-android-dismiss">✕</button>
+        </div>
+    </div>
+
+    <!-- iOS Safari nudge banner -->
+    <div id="pwa-ios-banner">
+        <img src="{% static 'icon-192.png' %}" alt="Audy">
+        <div class="pwa-banner-text">
+            <strong>Install Audy on iPhone</strong>
+            <span>Tap <strong>Share</strong> <i class="bi bi-box-arrow-up"></i> then <strong>"Add to Home Screen"</strong></span>
+        </div>
+        <div class="pwa-banner-actions">
+            <button class="pwa-dismiss-btn" id="pwa-ios-dismiss">Got it</button>
+        </div>
+    </div>
 
     <button id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
         <i class="bi bi-arrow-up"></i>
@@ -1015,11 +1111,12 @@
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
         <div class="d-flex align-items-center gap-2">
-            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo"
+            <img src="{% static 'favicon.png' %}" alt="Auditorium Logo"
                 style="width:32px; height:32px; border-radius:8px; object-fit:cover;">
             <span
-                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">ABC
-                Auditorium</span>
+                style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">
+                {% if current_auditorium %}{{ current_auditorium.name }}{% else %}Auditorium{% endif %}
+            </span>
         </div>
         <div class="d-flex align-items-center gap-2" style="cursor: pointer;" data-bs-toggle="modal"
             data-bs-target="#accountDetailsModal">
@@ -1037,26 +1134,35 @@
     <!-- DESKTOP SIDEBAR -->
     <aside class="app-sidebar">
         <div class="sidebar-brand">
-            <img src="{% static 'favicon.png' %}" alt="ABC Auditorium Logo"
+            <img src="{% static 'favicon.png' %}" alt="Auditorium Logo"
                 style="width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 10px rgba(255, 122, 0, 0.3);">
             <span
-                style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">ABC
-                Auditorium</span>
+                style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">
+                {% if current_auditorium %}{{ current_auditorium.name }}{% else %}Auditorium{% endif %}
+            </span>
         </div>
         <nav class="flex-column mb-auto">
-            {% if request.user.is_superuser %}
+            {% if is_master_owner %}
+            <a href="{% url 'owner_portal_dashboard' %}"
+                class="sidebar-link {% if 'owner_portal' in request.resolver_match.url_name %}active{% endif %}" style="color: #7C3AED;">
+                <i class="bi bi-building-gear"></i>
+                <span>Owner Portal</span>
+            </a>
+            {% endif %}
+            {% if request.user.is_superuser and current_auditorium %}
             <a href="{% url 'dashboard' %}"
-                class="sidebar-link {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+                class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
                 <i class="bi bi-grid-fill"></i>
                 <span>Dashboard</span>
             </a>
             {% endif %}
+            {% if current_auditorium %}
             <a href="{% url 'calendar' %}"
                 class="sidebar-link {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
                 <i class="bi bi-calendar3-event-fill"></i>
                 <span>Calendar</span>
             </a>
-            {% if not request.user.profile.is_auditorium_staff %}
+            {% if not request.user.profile.is_staff2 %}
             <a href="{% url 'booking_list' %}"
                 class="sidebar-link {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-journal-text"></i>
@@ -1064,9 +1170,15 @@
             </a>
             {% if user.is_staff %}
             <a href="{% url 'admin_list' %}"
-                class="sidebar-link {% if 'admin' in request.resolver_match.url_name %}active{% endif %}">
+                class="sidebar-link {% if 'admin' in request.resolver_match.url_name and 'owner_portal' not in request.resolver_match.url_name %}active{% endif %}">
                 <i class="bi bi-shield-lock-fill"></i>
-                <span>Admins</span>
+                <span>Staff & Admins</span>
+            </a>
+            {% endif %}
+            <a href="{% url 'expense_list' %}"
+                class="sidebar-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="bi bi-wallet2"></i>
+                <span>Expenses</span>
             </a>
             {% endif %}
             {% endif %}
@@ -1096,11 +1208,18 @@
 
     <!-- MOBILE BOTTOM NAV -->
     <nav class="bottom-nav">
-        {% if request.user.is_superuser %}
+        {% if is_master_owner %}
+        <a href="{% url 'owner_portal_dashboard' %}"
+            class="nav-link-app {% if 'owner_portal' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-building-gear"></i>
+            <span>Owner</span>
+        </a>
+        {% endif %}
+        {% if request.user.is_superuser and current_auditorium %}
         <a href="{% url 'dashboard' %}"
-            class="nav-link-app {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">
+            class="nav-link-app {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
             <i class="bi bi-house-door-fill"></i>
-            <span>Home</span>
+            <span>Dashboard</span>
         </a>
         {% endif %}
         <a href="{% url 'calendar' %}"
@@ -1110,7 +1229,7 @@
         </a>
 
 
-        {% if not request.user.profile.is_auditorium_staff %}
+        {% if not request.user.profile.is_staff2 %}
         <a href="{% url 'booking_list' %}"
             class="nav-link-app {% if 'booking_list' in request.resolver_match.url_name %}active{% endif %}">
             <i class="bi bi-card-list"></i>
@@ -1121,6 +1240,11 @@
             <i class="bi bi-people-fill"></i>
             <span>Team</span>
         </a>
+        <a href="{% url 'expense_list' %}"
+            class="nav-link-app {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
+            <i class="bi bi-wallet2"></i>
+            <span>Expenses</span>
+        </a>
         {% endif %}
     </nav>
 
@@ -1130,16 +1254,16 @@
         <footer style="text-align: center; padding: 40px 20px 140px; width: 100%; opacity: 0.8;">
             <div class="d-flex flex-column align-items-center gap-2">
                 <div style="display:flex; align-items:center; justify-content:center; gap:6px;">
-                    <img src="https://i.ibb.co/jkWVgb8y/IMG-0339-Original.jpg" alt="Fanish"
+                    <img src="{% static 'vendor/fonts/developer.jpg' %}" alt="Fanish"
                          style="width:20px; height:20px; border-radius:50%; object-fit:cover; border:1.5px solid #FF7A00;">
                     <span style="font-size: 0.62rem; font-weight: 600; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">
                         Developed by <span style="font-weight: 800; color: #64748B;">Fanish</span>
                     </span>
                 </div>
                 <div class="d-flex align-items-center justify-content-center gap-2 flex-wrap">
-                    <a href="https://instagram.com/f4ni.___" target="_blank"
+                    <a href="https://instagram.com/f4ni.__" target="_blank"
                         style="text-decoration: none; color: #BE185D; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #FCE7F3;">
-                        <i class="bi bi-instagram"></i> @f4ni.___
+                        <i class="bi bi-instagram"></i> @f4ni.__
                     </a>
                     <a href="tel:8848112104"
                         style="text-decoration: none; color: #1D4ED8; padding: 4px 12px; border-radius: 100px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid #EFF6FF;">
@@ -1212,17 +1336,6 @@
                             <label class="form-label">Advance Payment (Optional)</label>
                             <input type="number" id="id_advance" name="advance_received" class="form-control-premium"
                                 placeholder="0.00" step="0.01" min="0">
-                        </div>
-                        <div class="mb-3">
-                            <div class="form-check" style="background: #F0FDF4; padding: 12px 16px; border-radius: 12px; border: 1.5px solid #BBF7D0;">
-                                <input class="form-check-input" type="checkbox" id="id_payment_complete" style="width: 20px; height: 20px; cursor: pointer;">
-                                <label class="form-check-label" for="id_payment_complete" style="font-weight: 700; color: #166534; margin-left: 8px; cursor: pointer;">
-                                    ✓ Payment Fully Completed
-                                </label>
-                                <div style="font-size: 0.7rem; color: #15803D; margin-left: 28px; margin-top: 4px;">
-                                    Check this to automatically set advance = total amount
-                                </div>
-                            </div>
                         </div>
                         <input type="hidden" id="modal_date_base">
                         <input type="hidden" id="modal_booking_id" value="">
@@ -1534,7 +1647,7 @@
                         <i class="bi bi-box-arrow-right fs-1"></i>
                     </div>
                     <h5 class="fw-800 text-dark mb-2" style="font-size: 1.2rem;">Sign Out Account?</h5>
-                    <p class="text-muted fw-medium mb-4">Are you sure you want to log out of the ABC Auditorium portal?
+                    <p class="text-muted fw-medium mb-4">Are you sure you want to log out of the Audy?
                     </p>
 
                     <div class="d-flex flex-column gap-2 w-100">
@@ -1630,7 +1743,9 @@
     </script>
     <script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script>
-        const USER_CAN_BOOK = {% if request.user.is_superuser %}true{% elif request.user.profile.is_auditorium_staff %} false{% elif request.user.profile.is_bookable %} true{% else %} false{% endif %};
+        const USER_CAN_BOOK = {% if request.user.is_superuser %}true{% elif request.user.profile.is_staff2 %} false{% elif request.user.profile.is_bookable %} true{% else %} false{% endif %};
+        const CURRENT_USER_ID = {{ request.user.pk }};
+        const IS_SUPERUSER = {% if request.user.is_superuser %}true{% else %}false{% endif %};
         let selectedStartTime = null; let selectedEndTime = null;
         function generateTimeOptions() {
             const startList = document.getElementById('startTimeSuggestions'); if (!startList) return;
@@ -1842,7 +1957,9 @@
 
             const editBtn = document.getElementById('dvEditBtn');
             const deleteBtn = document.getElementById('dvDeleteBtn');
-            if (!USER_CAN_BOOK) {
+            const isOwner = IS_SUPERUSER || (event.extendedProps.created_by_id === CURRENT_USER_ID);
+
+            if (!USER_CAN_BOOK || !isOwner) {
                 editBtn.style.display = 'none';
                 if (deleteBtn) deleteBtn.style.display = 'none';
             } else {
@@ -2042,34 +2159,65 @@
         document.addEventListener('DOMContentLoaded', () => {
             generateTimeOptions();
             
-            // Payment completion toggle handler
-            const paymentCompleteCheckbox = document.getElementById('id_payment_complete');
-            const totalAmountInput = document.getElementById('id_total_amount');
-            const advanceInput = document.getElementById('id_advance');
-            
-            if (paymentCompleteCheckbox && totalAmountInput && advanceInput) {
-                paymentCompleteCheckbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        const totalAmount = parseFloat(totalAmountInput.value) || 0;
-                        advanceInput.value = totalAmount;
-                        advanceInput.readOnly = true;
-                        advanceInput.style.backgroundColor = '#F0FDF4';
-                    } else {
-                        advanceInput.readOnly = false;
-                        advanceInput.style.backgroundColor = '';
-                    }
-                });
-                
-                // Also update advance when total amount changes while checkbox is checked
-                totalAmountInput.addEventListener('input', function() {
-                    if (paymentCompleteCheckbox.checked) {
-                        advanceInput.value = this.value;
-                    }
-                });
-            }
         });
     </script>
     <script>
+        // ---- PWA INSTALL LOGIC ----
+        (function () {
+            const DISMISS_KEY = 'audy_pwa_dismissed';
+            const dismissed = localStorage.getItem(DISMISS_KEY);
+
+            // Detect iOS (iPhone / iPad)
+            const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+            const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches
+                || window.navigator.standalone === true;
+
+            if (!isInStandaloneMode && !dismissed) {
+                if (isIos) {
+                    const banner = document.getElementById('pwa-ios-banner');
+                    if (banner) {
+                        banner.style.display = 'flex';
+                        document.getElementById('pwa-ios-dismiss').addEventListener('click', function () {
+                            banner.style.display = 'none';
+                            localStorage.setItem(DISMISS_KEY, '1');
+                        });
+                    }
+                }
+            }
+
+            // Android / Chrome: capture the beforeinstallprompt event
+            let deferredPrompt = null;
+            window.addEventListener('beforeinstallprompt', function (e) {
+                e.preventDefault();
+                deferredPrompt = e;
+                if (dismissed || isInStandaloneMode) return;
+                const banner = document.getElementById('pwa-android-banner');
+                if (banner) banner.style.display = 'flex';
+            });
+
+            document.getElementById('pwa-install-btn').addEventListener('click', async function () {
+                if (!deferredPrompt) return;
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                document.getElementById('pwa-android-banner').style.display = 'none';
+                if (outcome === 'accepted') localStorage.setItem(DISMISS_KEY, '1');
+            });
+
+            document.getElementById('pwa-android-dismiss').addEventListener('click', function () {
+                document.getElementById('pwa-android-banner').style.display = 'none';
+                localStorage.setItem(DISMISS_KEY, '1');
+            });
+
+            // Hide banners once actually installed
+            window.addEventListener('appinstalled', function () {
+                document.getElementById('pwa-android-banner').style.display = 'none';
+                document.getElementById('pwa-ios-banner').style.display = 'none';
+                localStorage.setItem(DISMISS_KEY, '1');
+            });
+        })();
+
+        // ---- SERVICE WORKER ----
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('{% url "sw_js" %}').catch(err => console.log('SW registration failed:', err));

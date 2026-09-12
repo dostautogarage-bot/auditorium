@@ -1,0 +1,268 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}{{ auditorium.name }} - Users & Access Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Navigation Back -->
+    <div class="mb-3">
+        <a href="{% url 'owner_portal_dashboard' %}" class="btn btn-sm btn-light fw-bold text-muted">
+            <i class="bi bi-arrow-left"></i> Back to Total Auditoriums
+        </a>
+    </div>
+
+    <!-- Auditorium Header & Overall Block Control -->
+    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: var(--radius-2xl); background: #FFFFFF;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
+                     style="width: 52px; height: 52px; font-size: 1.3rem; background: {% if auditorium.is_active %}linear-gradient(135deg, #10B981, #059669){% else %}linear-gradient(135deg, #EF4444, #DC2626){% endif %};">
+                    {{ auditorium.name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h1 class="fw-black mb-0 fs-4" style="color: var(--ink);">{{ auditorium.name }}</h1>
+                        {% if auditorium.is_active %}
+                        <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3 py-1 fw-bold">
+                            <i class="bi bi-check-circle-fill me-1"></i> Active (Allowed)
+                        </span>
+                        {% else %}
+                        <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3 py-1 fw-bold">
+                            <i class="bi bi-slash-circle-fill me-1"></i> BLOCKED / SUSPENDED
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="text-muted small mt-1">
+                        {{ all_users|length }} Users registered (Superuser & Staff)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Block / Unblock Entire Auditorium & Delete Auditorium -->
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <form method="POST" action="{% url 'owner_portal_toggle_auditorium' pk=auditorium.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    {% if auditorium.is_active %}
+                    <button type="submit" class="btn btn-danger fw-bold px-4 shadow-sm">
+                        <i class="bi bi-lock-fill"></i> Block Entire Auditorium Login
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn btn-success fw-bold px-4 text-white shadow-sm">
+                        <i class="bi bi-unlock-fill"></i> Unblock Entire Auditorium Login
+                    </button>
+                    {% endif %}
+                </form>
+                <button type="button" class="btn btn-outline-danger fw-bold px-3 shadow-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#confirmDeleteAuditoriumDetailModal">
+                    <i class="bi bi-trash3-fill"></i> Delete Auditorium
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile App Native Card View for Users (Visible on Mobile) -->
+    <div class="d-block d-md-none">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-black mb-0 fs-6" style="color: var(--ink);">Users & Credentials ({{ all_users|length }})</h2>
+        </div>
+        {% for u in all_users %}
+        <div class="card border-0 shadow-sm p-3 mb-3" style="border-radius: 24px; background: #FFFFFF; border: 1px solid rgba(0,0,0,0.04);">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm"
+                         style="width: 40px; height: 40px; font-size: 1rem; background: {% if u == auditorium.owner or u.is_superuser %}linear-gradient(135deg, #7C3AED, #6D28D9){% else %}#64748B{% endif %};">
+                        {{ u.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <div class="fw-black fs-6" style="color: var(--ink);">{{ u.username }}</div>
+                        <div>
+                            {% if u == auditorium.owner or u.is_superuser %}
+                            <span class="badge" style="background: rgba(124, 58, 237, 0.1); color: #7C3AED; font-size: 0.68rem; font-weight: 800; padding: 4px 8px; border-radius: 6px;">
+                                Superuser (Admin)
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.68rem; font-weight: 800; padding: 4px 8px; border-radius: 6px;">
+                                Staff User
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    {% if not auditorium.is_active %}
+                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-2 py-1" style="font-size:0.7rem;">
+                        Auditorium Blocked
+                    </span>
+                    {% elif u.is_active %}
+                    <span class="badge rounded-pill bg-success-subtle text-success border border-success px-2 py-1" style="font-size:0.7rem;">
+                        Active
+                    </span>
+                    {% else %}
+                    <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-2 py-1" style="font-size:0.7rem;">
+                        Blocked
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Password Card Row for Mobile -->
+            <div class="p-2 mb-3 rounded-3 d-flex align-items-center justify-content-between" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                <div>
+                    <div class="text-muted fw-bold" style="font-size: 0.65rem; text-transform: uppercase;">Password</div>
+                    <span class="fw-bold fs-6 text-primary">
+                        {% if u.profile.raw_password %}
+                            {{ u.profile.raw_password }}
+                        {% else %}
+                            <span class="text-muted fw-normal fst-italic" style="font-size:0.8rem;">Not recorded</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if u.profile.raw_password %}
+                <button type="button" class="btn btn-sm btn-light border fw-bold px-3 py-1" style="border-radius: 10px;" onclick="navigator.clipboard.writeText('{{ u.profile.raw_password }}'); this.innerText='Copied!';" title="Copy Password">
+                    <i class="bi bi-copy"></i> Copy
+                </button>
+                {% endif %}
+            </div>
+
+            <!-- Block Action for Mobile -->
+            <form method="POST" action="{% url 'owner_portal_toggle_user' user_id=u.pk %}">
+                {% csrf_token %}
+                {% if u.is_active %}
+                <button type="submit" class="btn btn-sm w-100 btn-outline-danger fw-bold py-2" style="border-radius: 14px;">
+                    <i class="bi bi-lock-fill"></i> Block User Login
+                </button>
+                {% else %}
+                <button type="submit" class="btn btn-sm w-100 btn-outline-success fw-bold py-2" style="border-radius: 14px;">
+                    <i class="bi bi-unlock-fill"></i> Unblock Login
+                </button>
+                {% endif %}
+            </form>
+        </div>
+        {% empty %}
+        <div class="card border-0 shadow-sm p-4 text-center text-muted" style="border-radius: 24px; background: #FFFFFF;">
+            No users found for this auditorium.
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Desktop Table (Visible on tablet/desktop) -->
+    <div class="card border-0 shadow-sm d-none d-md-block" style="border-radius: var(--radius-2xl); background: #FFFFFF; overflow: hidden;">
+        <div class="p-4 border-bottom">
+            <h2 class="fw-black mb-0 fs-5" style="color: var(--ink);">Users & Login Credentials</h2>
+            <div class="text-muted small">List of all users including Superuser and Staff with passwords & login block toggle.</div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: #F8FAFC; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748B;">
+                    <tr>
+                        <th class="ps-4 py-3">Role</th>
+                        <th class="py-3">Username</th>
+                        <th class="py-3">Password</th>
+                        <th class="py-3">Login Status</th>
+                        <th class="pe-4 py-3 text-end">Block Login Option</th>
+                    </tr>
+                </thead>
+                <tbody style="font-size: 0.95rem;">
+                    {% for u in all_users %}
+                    <tr>
+                        <td class="ps-4 py-3">
+                            {% if u == auditorium.owner or u.is_superuser %}
+                            <span class="badge" style="background: #7C3AED; color: white; font-weight: 700; font-size: 0.8rem; padding: 6px 12px; border-radius: 8px;">
+                                <i class="bi bi-shield-lock-fill me-1"></i> Superuser (Admin)
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary" style="font-weight: 700; font-size: 0.8rem; padding: 6px 12px; border-radius: 8px;">
+                                <i class="bi bi-person me-1"></i> Staff User
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3">
+                            <span class="fw-bold fs-6" style="color: var(--ink);">{{ u.username }}</span>
+                        </td>
+                        <td class="py-3">
+                            <div class="d-inline-flex align-items-center gap-2 p-2 rounded-2" style="background: #F8FAFC; border: 1px solid #E2E8F0;">
+                                <span class="fw-bold fs-6 text-primary" id="pwd-{{ u.pk }}">
+                                    {% if u.profile.raw_password %}
+                                        {{ u.profile.raw_password }}
+                                    {% else %}
+                                        <span class="text-muted fw-normal fst-italic">Not recorded (reset to view)</span>
+                                    {% endif %}
+                                </span>
+                                {% if u.profile.raw_password %}
+                                <button type="button" class="btn btn-sm btn-light border py-0 px-2 text-dark" onclick="navigator.clipboard.writeText('{{ u.profile.raw_password }}'); this.innerText='Copied!';" title="Copy Password">
+                                    <i class="bi bi-copy"></i> Copy
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="py-3">
+                            {% if not auditorium.is_active %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">
+                                <i class="bi bi-x-circle-fill me-1"></i> Auditorium Blocked
+                            </span>
+                            {% elif u.is_active %}
+                            <span class="badge bg-success-subtle text-success border border-success px-2 py-1">
+                                <i class="bi bi-check-circle-fill me-1"></i> Active (Allowed)
+                            </span>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">
+                                <i class="bi bi-x-circle-fill me-1"></i> User Blocked
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="pe-4 py-3 text-end">
+                            <form method="POST" action="{% url 'owner_portal_toggle_user' user_id=u.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                {% if u.is_active %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger fw-bold px-3">
+                                    <i class="bi bi-lock-fill"></i> Block User Login
+                                </button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-success fw-bold px-3">
+                                    <i class="bi bi-unlock-fill"></i> Unblock Login
+                                </button>
+                                {% endif %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No users found for this auditorium.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Existing Delete Confirmation Modal Structure -->
+<div class="modal fade" id="confirmDeleteAuditoriumDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-premium">
+            <div class="modal-header-premium">
+                <h5 style="font-weight:900;font-size:1.15rem;margin:0;">Delete Auditorium?</h5>
+            </div>
+            <div class="modal-body-premium" style="padding-top:4px;">
+                <p style="color:var(--ink-muted);font-size:0.9rem;margin:0;">
+                    <strong style="color:var(--ink);">{{ auditorium.name }}</strong> and all its corresponding <strong>users, bookings, expenses, and data</strong> will be permanently deleted.
+                    This cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer-premium d-flex gap-2">
+                <button type="button" class="btn-app btn-app-ghost flex-grow-1" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'owner_portal_auditorium_delete' pk=auditorium.pk %}" style="flex:1;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-app w-100" style="background:#FEF2F2;color:#DC2626;font-weight:900;">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

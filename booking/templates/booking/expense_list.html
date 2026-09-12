@@ -1,0 +1,210 @@
+{% extends 'booking/base.html' %}
+{% block title %}Expenses — {{ current_auditorium.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-pill {
+        background: #F1F5F9;
+        color: #475569;
+        padding: 2px 9px;
+        border-radius: 100px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: capitalize;
+        white-space: nowrap;
+    }
+
+    .filter-chip {
+        padding: 6px 13px;
+        border-radius: 100px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        border: 1.5px solid #E2E8F0;
+        background: #F8FAFC;
+        color: #475569;
+        text-decoration: none;
+        transition: .2s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .filter-chip.active, .filter-chip:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+
+    .expense-card-title {
+        font-weight: 800;
+        font-size: 0.88rem;
+        color: #1E293B;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 160px;
+    }
+    @media (min-width: 400px) { .expense-card-title { max-width: 200px; } }
+    @media (min-width: 576px) { .expense-card-title { max-width: 100%; } }
+
+    /* Make modal bottom-sheet on mobile */
+    @media (max-width: 575px) {
+        #addExpenseModal .modal-dialog {
+            margin: 0 !important;
+            align-items: flex-end !important;
+        }
+        #addExpenseModal .modal-content {
+            border-radius: 24px 24px 0 0 !important;
+            max-height: 92vh;
+        }
+    }
+
+    .filter-scroll {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-wrapper fade-in">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+        <div>
+            <h1 style="font-weight:900; letter-spacing:-0.04em; margin-bottom:2px;">Expenses</h1>
+            <div style="font-size:0.8rem; color:#94A3B8; font-weight:600;">Cash spend log for {{ current_auditorium.name }}</div>
+        </div>
+        <button class="btn-app btn-app-primary"
+                data-bs-toggle="modal" data-bs-target="#addExpenseModal"
+                style="border-radius: 100px; padding: 12px 22px; font-size: 0.85rem;">
+            <i class="bi bi-plus-lg"></i> Add Expense
+        </button>
+    </div>
+
+    <!-- Total spent card -->
+    <div class="app-card mb-4" style="background: var(--primary-gradient); color: white; border: none;">
+        <div style="font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; opacity:.85; margin-bottom:6px;">
+            Total Spent (All Time)
+        </div>
+        <div style="font-size:2rem; font-weight:900; letter-spacing:-0.04em;">₹{{ total_spent|floatformat:0 }}</div>
+    </div>
+
+    <!-- Category filters — horizontally scrollable on mobile -->
+    <div class="filter-scroll mb-3">
+        <a href="{% url 'expense_list' %}" class="filter-chip {% if not category_filter %}active{% endif %}">All</a>
+        {% for val, label in category_choices %}
+        <a href="?category={{ val }}" class="filter-chip {% if category_filter == val %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    <!-- Expense cards -->
+    {% if expenses %}
+    <div style="display:flex; flex-direction:column; gap:10px;">
+        {% for expense in expenses %}
+        <div class="app-card" style="padding:13px 14px;">
+            <div class="d-flex align-items-center gap-3">
+                <!-- Icon -->
+                <div style="width:40px; height:40px; border-radius:12px; background:#FFF7ED; color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem;">
+                    <i class="bi
+                        {% if expense.category == 'maintenance' %}bi-tools
+                        {% elif expense.category == 'salary' %}bi-person-badge-fill
+                        {% else %}bi-receipt{% endif %}
+                    "></i>
+                </div>
+                <!-- Info -->
+                <div style="flex:1; min-width:0;">
+                    <div class="expense-card-title">{{ expense.title }}</div>
+                    <div style="font-size:0.68rem; color:#94A3B8; font-weight:600; margin-top:3px; display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+                        <span class="category-pill">{{ expense.get_category_display }}</span>
+                        <span>{{ expense.date|date:"d M Y" }}</span>
+                        <span style="color:#CBD5E1;">•</span>
+                        <span>{{ expense.submitted_by.username }}</span>
+                    </div>
+                    {% if expense.description %}
+                    <div style="font-size:0.72rem; color:#64748B; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ expense.description }}</div>
+                    {% endif %}
+                </div>
+                <!-- Amount + delete -->
+                <div style="text-align:right; flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+                    <div style="font-weight:900; font-size:0.95rem; color:var(--primary);">₹{{ expense.amount|floatformat:0 }}</div>
+                    {% if request.user.is_superuser or expense.submitted_by == request.user %}
+                    <button
+                        onclick="triggerDeleteModal('{{ expense.pk }}', '{{ expense.title|escapejs }}', '{% url 'expense_delete' expense.pk %}', 'Delete this expense entry?')"
+                        style="background:none; border:none; color:#CBD5E1; font-size:0.9rem; cursor:pointer; padding:4px; line-height:1; border-radius:8px; transition:color .15s, background .15s;"
+                        onmouseenter="this.style.color='#EF4444';this.style.background='#FEF2F2'"
+                        onmouseleave="this.style.color='#CBD5E1';this.style.background='none'"
+                        title="Delete expense">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="app-card text-center py-5">
+        <i class="bi bi-receipt" style="font-size:2.5rem; color:#CBD5E1;"></i>
+        <div style="font-size:1rem; font-weight:700; color:#94A3B8; margin-top:12px;">No expenses logged yet</div>
+        <div style="font-size:0.8rem; color:#CBD5E1; margin-top:4px;">Tap "Add Expense" to record your first spend</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-content-premium">
+            <div class="modal-header modal-header-premium">
+                <h5 class="fw-800 mb-0"><i class="bi bi-receipt me-2" style="color:var(--primary)"></i>Log Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body modal-body-premium">
+                <form id="expenseForm" method="POST" action="{% url 'expense_create' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">Amount (₹)</label>
+                            {{ form.amount }}
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Category</label>
+                            {{ form.category }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes (optional)</label>
+                        {{ form.description }}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer modal-footer-premium">
+                <button type="submit" form="expenseForm" class="btn-app btn-app-primary w-100">
+                    <i class="bi bi-plus-circle me-1"></i> Save Expense
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dateField = document.querySelector('#addExpenseModal input[type="date"]');
+    if (dateField && !dateField.value) {
+        dateField.value = new Date().toISOString().split('T')[0];
+    }
+});
+</script>
+{% endblock %}

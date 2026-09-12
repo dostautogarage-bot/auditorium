@@ -1,0 +1,90 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Edit {{ auditorium.name }} - Platform Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0" style="max-width: 800px; margin: 0 auto;">
+    <!-- Navigation Back -->
+    <div class="mb-3">
+        <a href="{% url 'owner_portal_auditorium_detail' pk=auditorium.pk %}" class="btn btn-sm btn-light fw-bold text-muted">
+            <i class="bi bi-arrow-left"></i> Back to {{ auditorium.name }} Details
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: var(--radius-2xl); background: #FFFFFF;">
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="p-3 rounded-circle text-white shadow-sm" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
+                <i class="bi bi-pencil-square fs-3"></i>
+            </div>
+            <div>
+                <h1 class="fw-black mb-1 fs-3" style="color: var(--ink);">Edit Auditorium Details & Status</h1>
+                <p class="text-muted mb-0 small">Update name, monthly subscription fee, client contacts, and access lock.</p>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if form.errors %}
+            <div class="alert alert-danger mb-4" style="border-radius: var(--radius-lg);">
+                <div class="fw-bold mb-1"><i class="bi bi-exclamation-octagon-fill me-1"></i> Please fix the errors:</div>
+                <ul class="mb-0 ps-3 small">
+                    {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                    <li><strong>{{ field|title }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-8">
+                    <label class="form-label">Auditorium Name *</label>
+                    {{ form.name }}
+                </div>
+                <div class="col-12 col-md-4">
+                    <label class="form-label">Monthly Subscription (₹)</label>
+                    {{ form.monthly_fee }}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Contact Phone</label>
+                    {{ form.contact_phone }}
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label">Contact Email</label>
+                    {{ form.contact_email }}
+                </div>
+
+                <div class="col-12">
+                    <div class="p-3 rounded-3 bg-light border mb-2">
+                        <div class="form-check form-switch mb-2">
+                            {{ form.is_active }}
+                            <label class="form-check-label fw-bold ms-2" for="{{ form.is_active.id_for_label }}">
+                                Active & Allowed Login (Uncheck to suspend & lock out all users)
+                            </label>
+                        </div>
+                        <div>
+                            <label class="form-label text-danger">Suspension Reason (displayed if deactivated):</label>
+                            {{ form.suspension_reason }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Private Owner Notes (Internal use):</label>
+                    {{ form.notes }}
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <a href="{% url 'owner_portal_auditorium_detail' pk=auditorium.pk %}" class="btn btn-light px-4 fw-bold">Cancel</a>
+                <button type="submit" class="btn btn-app btn-app-primary px-5 shadow">
+                    <i class="bi bi-check2"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

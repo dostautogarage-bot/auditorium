@@ -1,5 +1,6 @@
 {% extends 'booking/base.html' %}
-{% block title %}Dashboard — ABC Auditorium{% endblock %}
+{% load static %}
+{% block title %}Dashboard — Audy{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -35,6 +36,7 @@
         letter-spacing: 0.02em;
     }
 
+    /* ── Unified stat grid ── */
     .dg-stat-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -42,65 +44,96 @@
         margin-bottom: 20px;
     }
 
-    @media (min-width: 576px) {
-        .dg-stat-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
+    @media (min-width: 768px) {
+        .dg-stat-grid { gap: 14px; }
     }
 
     @media (min-width: 992px) {
         .dg-stat-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+    }
+
+    /* First box (Booking Count) spans full width on mobile, normal on desktop */
+    .dg-stat-box-full {
+        grid-column: 1 / -1;
+    }
+
+    @media (min-width: 992px) {
+        .dg-stat-box-full {
+            grid-column: auto;
         }
     }
 
     .dg-stat-box {
-        border-radius: 16px;
-        padding: 16px;
+        border-radius: 18px;
+        padding: 16px 18px;
         color: white;
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        min-height: 100px;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04);
+        justify-content: space-between;
+        min-height: 90px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
         position: relative;
         overflow: hidden;
+        transition: transform .2s ease, box-shadow .2s ease;
     }
 
-    @media (min-width: 768px) {
+    .dg-stat-box:active { transform: scale(0.97); }
+
+    @media (min-width: 992px) {
         .dg-stat-box {
-            padding: 24px;
-            min-height: 160px;
+            padding: 22px 24px;
+            min-height: 120px;
         }
     }
 
+    /* Decorative circle */
     .dg-stat-box::after {
         content: '';
         position: absolute;
-        right: -20px;
-        bottom: -20px;
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.1);
+        right: -18px;
+        bottom: -18px;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.12);
         border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .dg-stat-box::before {
+        content: '';
+        position: absolute;
+        right: 20px;
+        top: -30px;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 50%;
+        pointer-events: none;
     }
 
     .dg-stat-label {
-        font-size: 0.72rem;
+        font-size: 0.65rem;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 12px;
-        opacity: 0.95;
-        line-height: 1.2;
+        letter-spacing: 0.07em;
+        opacity: 0.9;
+        line-height: 1.3;
+        margin-bottom: 0;
     }
 
     .dg-stat-value {
-        font-size: 1.8rem;
+        font-size: 1.45rem;
         font-weight: 900;
         letter-spacing: -0.04em;
+        line-height: 1;
+        margin-top: 10px;
+    }
+
+    @media (min-width: 992px) {
+        .dg-stat-value { font-size: 1.7rem; }
     }
 
     .dg-box-blue {
@@ -199,28 +232,33 @@
         }
     </script>
 
-    <!-- Multi-Color Stat Boxes -->
-    <div class="dg-stat-grid">
-        <div class="dg-stat-box dg-box-blue">
-            <div class="dg-stat-label">Filtered<br>Booking Count</div>
-            <div class="dg-stat-value" style="font-size: 1.5rem;">{{ stats.filtered_count }}</div>
-        </div>
-    </div>
+    <!-- ── All stat boxes in ONE unified grid ── -->
+    <div class="dg-stat-grid mb-4">
 
-    <!-- Financial Overview Stat Boxes -->
-    <div class="dg-stat-grid">
+        <!-- Booking count — full width on mobile, 1 col on desktop -->
+        <div class="dg-stat-box dg-box-blue dg-stat-box-full">
+            <div class="dg-stat-label">Filtered Bookings</div>
+            <div class="dg-stat-value">{{ stats.filtered_count }}</div>
+        </div>
+
+        <!-- Financial boxes — 2 per row on mobile, 1 col each on desktop -->
         <div class="dg-stat-box dg-box-deep-blue">
-            <div class="dg-stat-label">💵 Total Booking<br>Amount</div>
-            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.total_amount|default:"0"|floatformat:0 }}</div>
+            <div class="dg-stat-label">Total Booking Amount</div>
+            <div class="dg-stat-value">₹{{ stats.total_amount|default:"0"|floatformat:0 }}</div>
         </div>
         <div class="dg-stat-box dg-box-green">
-            <div class="dg-stat-label">💰 Advance<br>Received</div>
-            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.total_advance|default:"0"|floatformat:0 }}</div>
+            <div class="dg-stat-label">Advance Received</div>
+            <div class="dg-stat-value">₹{{ stats.total_advance|default:"0"|floatformat:0 }}</div>
         </div>
         <div class="dg-stat-box dg-box-red">
-            <div class="dg-stat-label">⏳ Pending<br>Amount</div>
-            <div class="dg-stat-value" style="font-size: 1.5rem;">₹{{ stats.pending_amount|default:"0"|floatformat:0 }}</div>
+            <div class="dg-stat-label">Pending Amount</div>
+            <div class="dg-stat-value">₹{{ stats.pending_amount|default:"0"|floatformat:0 }}</div>
         </div>
+        <div class="dg-stat-box dg-box-orange">
+            <div class="dg-stat-label">Total Expenses</div>
+            <div class="dg-stat-value">₹{{ expense_total_spent|default:"0"|floatformat:0 }}</div>
+        </div>
+
     </div>
 
     <!-- Visual Insights Section -->
@@ -287,10 +325,61 @@
             </table>
         </div>
     </div>
+
+    <!-- ===== EXPENSE OVERVIEW ===== -->
+    <div class="dg-section-card mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 style="font-size:1rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#1E293B; margin:0;">
+                <i class="bi bi-wallet2 me-2" style="color:var(--primary);"></i>Expenses
+            </h2>
+            <a href="{% url 'expense_list' %}" style="font-size:0.75rem; font-weight:800; color:var(--primary); text-decoration:none;">
+                View All <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <!-- Total spent -->
+        <div style="background:#FFF7ED; border-radius:14px; padding:14px 18px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="font-size:0.7rem; font-weight:800; color:#D97706; text-transform:uppercase; letter-spacing:.06em;">Total Spent</div>
+            <div style="font-size:1.4rem; font-weight:900; color:var(--primary); letter-spacing:-0.03em;">₹{{ expense_total_spent|floatformat:0 }}</div>
+        </div>
+
+        <!-- Recent expenses -->
+        {% if recent_expenses %}
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            {% for expense in recent_expenses %}
+            <div style="display:flex; align-items:center; gap:12px; padding:10px 14px; background:#F8FAFC; border-radius:13px; border:1px solid #F1F5F9;">
+                <div style="width:36px; height:36px; border-radius:11px; background:#FFF7ED; color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="bi
+                        {% if expense.category == 'maintenance' %}bi-tools
+                        {% elif expense.category == 'utilities' %}bi-lightning-charge-fill
+                        {% elif expense.category == 'supplies' %}bi-box-seam-fill
+                        {% elif expense.category == 'salary' %}bi-person-badge-fill
+                        {% elif expense.category == 'marketing' %}bi-megaphone-fill
+                        {% else %}bi-receipt{% endif %}
+                    " style="font-size:0.95rem;"></i>
+                </div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:800; font-size:0.85rem; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ expense.title }}</div>
+                    <div style="font-size:0.7rem; color:#94A3B8; font-weight:600; margin-top:1px;">
+                        {{ expense.get_category_display }} &bull; {{ expense.submitted_by.username }} &bull; {{ expense.date|date:"d M" }}
+                    </div>
+                </div>
+                <div style="font-weight:900; font-size:0.9rem; color:var(--primary); flex-shrink:0;">₹{{ expense.amount|floatformat:0 }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align:center; padding:20px 0; color:#CBD5E1;">
+            <i class="bi bi-receipt" style="font-size:1.8rem;"></i>
+            <div style="font-size:0.8rem; font-weight:700; margin-top:8px;">No expenses yet</div>
+        </div>
+        {% endif %}
+    </div>
+
 </div>
 {% endblock %}
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('paymentChart').getContext('2d');

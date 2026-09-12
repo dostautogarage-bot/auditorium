@@ -47,7 +47,7 @@ INSTALLED_APPS = [
 ]
 
 LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'booking_list'
+LOGIN_REDIRECT_URL = '/after-login/'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'booking.middleware.AuditoriumAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -71,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'booking.context_processors.auditorium_context',
             ],
         },
     },

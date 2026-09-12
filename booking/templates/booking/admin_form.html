@@ -1,93 +1,286 @@
 {% extends 'booking/base.html' %}
-{% block title %}{{ title }} - ABC Auditorium{% endblock %}
+{% block title %}{{ title }} — {{ current_auditorium.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-page-wrap {
+        max-width: 480px;
+        margin: 0 auto;
+        padding-bottom: 32px;
+    }
+
+    /* Section card */
+    .form-section {
+        background: var(--card);
+        border-radius: 28px;
+        padding: 24px;
+        margin-bottom: 16px;
+        border: 1px solid rgba(0,0,0,0.04);
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+
+    .section-title {
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #CBD5E1;
+        margin-bottom: 16px;
+    }
+
+    /* Input group */
+    .input-group-app { margin-bottom: 18px; }
+    .input-group-app:last-child { margin-bottom: 0; }
+    .input-group-app .form-label {
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-muted);
+        margin-bottom: 7px;
+        margin-left: 2px;
+        display: block;
+    }
+    .input-group-app .form-control-premium {
+        width: 100%;
+        display: block;
+    }
+    .field-error {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #DC2626;
+        margin-top: 5px;
+        margin-left: 2px;
+    }
+
+    /* Toggle row */
+    .perm-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .perm-toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .perm-toggle-row:first-child { padding-top: 0; }
+
+    .perm-toggle-info { flex: 1; padding-right: 16px; }
+    .perm-toggle-info strong {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: var(--ink);
+        margin-bottom: 1px;
+    }
+    .perm-toggle-info small {
+        font-size: 0.72rem;
+        color: var(--ink-muted);
+        font-weight: 500;
+        line-height: 1.3;
+    }
+
+    /* iOS-style toggle switch */
+    .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 28px;
+        flex-shrink: 0;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-track {
+        position: absolute; inset: 0;
+        background: #E2E8F0;
+        border-radius: 100px;
+        cursor: pointer;
+        transition: background 0.25s cubic-bezier(0.2,0.8,0.2,1);
+        -webkit-tap-highlight-color: transparent;
+    }
+    .toggle-track::after {
+        content: '';
+        position: absolute;
+        width: 22px; height: 22px;
+        top: 3px; left: 3px;
+        background: white;
+        border-radius: 50%;
+        transition: transform 0.25s cubic-bezier(0.2,0.8,0.2,1);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .toggle-switch input:checked + .toggle-track { background: var(--primary); }
+    .toggle-switch input:checked + .toggle-track::after { transform: translateX(22px); }
+
+    /* Override base modal on mobile: bottom sheet */
+    @media (max-width: 575px) {
+        .form-section { border-radius: 24px; padding: 20px; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="fade-in" style="max-width: 500px; margin: 0 auto; padding-bottom: 40px;">
-    <div class="d-flex align-items-center mb-5">
-        <a href="{% url 'admin_list' %}" class="btn-app btn-app-ghost p-0 me-3 shadow-none" style="width: 42px; height: 42px; border-radius: 14px;">
-            <i class="bi bi-chevron-left"></i>
+<div class="form-page-wrap fade-in">
+
+    <!-- Back + title -->
+    <div class="d-flex align-items-center mb-4 gap-3">
+        <a href="{% url 'admin_list' %}"
+           style="width:42px;height:42px;border-radius:14px;background:var(--card);
+                  display:flex;align-items:center;justify-content:center;
+                  border:1px solid rgba(0,0,0,0.05);text-decoration:none;
+                  color:var(--ink);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.04);
+                  -webkit-tap-highlight-color:transparent;">
+            <i class="bi bi-chevron-left" style="font-size:1rem;"></i>
         </a>
-        <h1 style="font-size: 1.6rem; font-weight: 800; margin: 0; letter-spacing: -0.04em;">{{ title }}</h1>
+        <div>
+            <h1 style="font-size:1.45rem;font-weight:900;letter-spacing:-0.04em;margin:0;">{{ title }}</h1>
+        </div>
     </div>
 
-    <div style="background: var(--card); border-radius: 32px; padding: 32px; border: 1px solid rgba(0,0,0,0.03); box-shadow: var(--shadow);">
-        <form method="POST">
-            {% csrf_token %}
-            
-            <div class="mb-4">
+    <form method="POST" autocomplete="off">
+        {% csrf_token %}
+
+        <!-- ── Account details ── -->
+        <div class="form-section">
+            <div class="section-title">Account Details</div>
+
+            <div class="input-group-app">
                 <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control-premium" 
-                       placeholder="admin_id" 
-                       value="{{ form.username.value|default:'' }}" required>
-                {% if form.username.errors %}<div class="text-danger small fw-bold mt-2">{{ form.username.errors.0 }}</div>{% endif %}
+                <input type="text" name="username" class="form-control-premium"
+                       placeholder="e.g. john_staff"
+                       value="{{ form.username.value|default:'' }}" required autocomplete="off">
+                {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
             </div>
 
-            <div class="mb-4">
-                <label class="form-label">Email Address</label>
-                <input type="email" name="email" class="form-control-premium" 
-                       placeholder="email@example.com" 
-                       value="{{ form.email.value|default:'' }}" required>
+            <div class="input-group-app">
+                <label class="form-label">Email <span style="opacity:0.4;font-weight:600;text-transform:none;letter-spacing:0;">(optional)</span></label>
+                <input type="email" name="email" class="form-control-premium"
+                       placeholder="email@example.com"
+                       value="{{ form.email.value|default:'' }}" autocomplete="off">
+                {% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}
             </div>
 
-            {% if form.password %}
-            <div class="mb-4">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control-premium" 
-                       placeholder="Enter strong password" required>
-                {% if form.password.errors %}<div class="text-danger small fw-bold mt-2">{{ form.password.errors.0 }}</div>{% endif %}
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Confirm Password</label>
-                <input type="password" name="confirm_password" class="form-control-premium" 
-                       placeholder="Repeat password" required>
-                {% if form.confirm_password.errors %}<div class="text-danger small fw-bold mt-2">{{ form.confirm_password.errors.0 }}</div>{% endif %}
-            </div>
-            {% endif %}
-
-            <div class="row g-2 mb-4">
-                <div class="col-6">
-                    <label class="form-label">First Name</label>
-                    <input type="text" name="first_name" class="form-control-premium" 
+            <div class="d-flex gap-3">
+                <div class="input-group-app" style="flex:1;">
+                    <label class="form-label">First name</label>
+                    <input type="text" name="first_name" class="form-control-premium"
+                           placeholder="First"
                            value="{{ form.first_name.value|default:'' }}">
                 </div>
-                <div class="col-6">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" name="last_name" class="form-control-premium" 
+                <div class="input-group-app" style="flex:1;">
+                    <label class="form-label">Last name</label>
+                    <input type="text" name="last_name" class="form-control-premium"
+                           placeholder="Last"
                            value="{{ form.last_name.value|default:'' }}">
                 </div>
             </div>
+        </div>
 
-            <div class="mb-5">
-                <label class="form-label">Permissions & Status</label>
-                <div class="d-flex flex-column gap-2 p-3" style="background: var(--bg); border-radius: 20px;">
-                    <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
-                        <label class="fw-700 small mb-0" style="color: var(--ink-2);">Account Active</label>
-                        <input class="form-check-input ms-0" type="checkbox" name="is_active" 
-                               style="width: 44px; height: 22px; cursor: pointer; background-color: #E2E8F0; border: none;"
-                               {% if form.is_active.value %}checked{% endif %}>
-                    </div>
-                    <div class="form-check form-switch d-flex align-items-center justify-content-between p-0" style="border-top: 1px solid rgba(0,0,0,0.05); padding-top: 12px; margin-top: 8px;">
-                        <div>
-                            <label class="fw-700 small mb-0" style="color: var(--ink-2);">Allow Bookings</label>
-                            <small style="color: var(--ink-3); display: block; margin-top: 2px;">If disabled, this admin can only view calendar (read-only mode)</small>
-                        </div>
-                        <input class="form-check-input ms-0" type="checkbox" name="is_bookable" 
-                               style="width: 44px; height: 22px; cursor: pointer; background-color: #E2E8F0; border: none;"
-                               {% if form.is_bookable.value %}checked{% endif %}>
-                    </div>
+        <!-- ── Password (create only) ── -->
+        {% if form.password %}
+        <div class="form-section">
+            <div class="section-title">Set Password</div>
+
+            <div class="input-group-app">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control-premium"
+                       placeholder="Strong password" required autocomplete="new-password">
+                {% if form.password.errors %}<div class="field-error">{{ form.password.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="input-group-app">
+                <label class="form-label">Confirm password</label>
+                <input type="password" name="confirm_password" class="form-control-premium"
+                       placeholder="Repeat password" required autocomplete="new-password">
+                {% if form.confirm_password.errors %}<div class="field-error">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ── Permissions ── -->
+        <div class="form-section">
+            <div class="section-title">Permissions & Access</div>
+
+            {% if form.is_active %}
+            <div class="perm-toggle-row">
+                <div class="perm-toggle-info">
+                    <strong>Login access</strong>
+                    <small>Allow this user to sign in to the portal</small>
                 </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="is_active" {% if form.is_active.value %}checked{% endif %}>
+                    <span class="toggle-track"></span>
+                </label>
+            </div>
+            {% endif %}
+
+            <div class="perm-toggle-row">
+                <div class="perm-toggle-info">
+                    <strong>Create bookings</strong>
+                    <small>Can add and manage booking entries</small>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="is_bookable" {% if form.is_bookable.value %}checked{% endif %}>
+                    <span class="toggle-track"></span>
+                </label>
             </div>
 
-            <div class="d-flex flex-column gap-3">
-                <button type="submit" class="btn-app btn-app-primary w-100 py-3">
-                    Save Admin Details
-                </button>
-                <a href="{% url 'admin_list' %}" class="btn-app btn-app-ghost w-100 text-center" style="text-decoration: none;">
-                    Discard Changes
-                </a>
+            <div class="perm-toggle-row">
+                <div class="perm-toggle-info">
+                    <strong>Staff mode</strong>
+                    <small>Calendar view only — no booking details, no data access</small>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="is_staff2" {% if form.is_staff2.value %}checked{% endif %}>
+                    <span class="toggle-track"></span>
+                </label>
             </div>
-        </form>
-    </div>
+
+            <div class="perm-toggle-row">
+                <div class="perm-toggle-info">
+                    <strong>Log expenses</strong>
+                    <small>Can add cash expense entries</small>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="expense_enabled"
+                        {% if form.instance.pk %}
+                            {% if form.instance.profile.expense_enabled %}checked{% endif %}
+                        {% endif %}>
+                    <span class="toggle-track"></span>
+                </label>
+            </div>
+
+            <div class="perm-toggle-row">
+                <div class="perm-toggle-info">
+                    <strong>Export data</strong>
+                    <small>Can download bookings as PDF or Excel</small>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" name="export_enabled"
+                        {% if form.instance.pk %}
+                            {% if form.instance.profile.export_enabled %}checked{% endif %}
+                        {% endif %}>
+                    <span class="toggle-track"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- ── Non-field errors ── -->
+        {% if form.non_field_errors %}
+        <div style="background:#FEF2F2;border-radius:16px;padding:14px 16px;margin-bottom:16px;">
+            <p style="color:#DC2626;font-size:0.82rem;font-weight:700;margin:0;">
+                {{ form.non_field_errors.0 }}
+            </p>
+        </div>
+        {% endif %}
+
+        <!-- ── Actions ── -->
+        <div class="d-flex flex-column gap-3">
+            <button type="submit" class="btn-app btn-app-primary w-100 py-3" style="font-size:0.95rem;">
+                {{ submit_text }}
+            </button>
+            <a href="{% url 'admin_list' %}" class="btn-app btn-app-ghost w-100 text-center"
+               style="text-decoration:none;font-size:0.9rem;">
+                Cancel
+            </a>
+        </div>
+
+    </form>
 </div>
 {% endblock %}

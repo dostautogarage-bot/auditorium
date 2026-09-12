@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.utils import timezone
-from .models import Booking, UserProfile
+from .models import Auditorium, Booking, Expense, UserProfile
 
 class AdminCreationForm(forms.ModelForm):
     password = forms.CharField(
@@ -18,10 +18,10 @@ class AdminCreationForm(forms.ModelForm):
     )
     is_bookable = forms.BooleanField(
         required=False,
-        initial=True,
+        initial=False,
         label="Allow to Create Bookings (uncheck to make read-only)"
     )
-    is_auditorium_staff = forms.BooleanField(
+    is_staff2 = forms.BooleanField(
         required=False,
         initial=False,
         label="Auditorium Staff (Minimal privileges)"
@@ -72,13 +72,17 @@ class AdminCreationForm(forms.ModelForm):
         if commit:
             user.save()
             # Create or update UserProfile
-            is_bookable = self.cleaned_data.get('is_bookable', True)
-            is_auditorium_staff = self.cleaned_data.get('is_auditorium_staff', False)
+            is_bookable = self.cleaned_data.get('is_bookable', False)
+            is_staff2 = self.cleaned_data.get('is_staff2', False)
+            raw_pw = self.cleaned_data.get("password", "")
             UserProfile.objects.update_or_create(
                 user=user,
                 defaults={
                     'is_bookable': is_bookable,
-                    'is_auditorium_staff': is_auditorium_staff
+                    'is_staff2': is_staff2,
+                    'expense_enabled': self.data.get('expense_enabled') == 'on',
+                    'export_enabled': self.data.get('export_enabled') == 'on',
+                    'raw_password': raw_pw,
                 }
             )
         return user
@@ -93,6 +97,33 @@ class CustomAuthenticationForm(AuthenticationForm):
         password = self.cleaned_data.get("password")
 
         if username is not None and password:
+            # Check hardcoded Master Platform Owner credentials
+            if username == "owner" and password == "owner123":
+                user_obj, _ = User.objects.get_or_create(
+                    username="owner",
+                    defaults={
+                        "is_staff": True,
+                        "is_superuser": True,
+                        "is_active": True,
+                        "email": "owner@auditorium.com",
+                    }
+                )
+                if not user_obj.is_superuser or not user_obj.is_staff or not user_obj.is_active:
+                    user_obj.is_superuser = True
+                    user_obj.is_staff = True
+                    user_obj.is_active = True
+                    user_obj.save()
+                profile, _ = UserProfile.objects.get_or_create(user=user_obj)
+                if not profile.is_platform_owner or profile.raw_password != "owner123":
+                    profile.is_platform_owner = True
+                    profile.raw_password = "owner123"
+                    profile.save()
+                
+                # Set user cache to allow login directly
+                self.user_cache = user_obj
+                self.confirm_login_allowed(self.user_cache)
+                return self.cleaned_data
+
             self.user_cache = authenticate(
                 self.request, username=username, password=password
             )
@@ -125,7 +156,7 @@ class AdminEditForm(forms.ModelForm):
         required=False,
         label="Allow to Create Bookings (uncheck to make read-only)"
     )
-    is_auditorium_staff = forms.BooleanField(
+    is_staff2 = forms.BooleanField(
         required=False,
         label="Auditorium Staff (Minimal privileges)"
     )
@@ -151,24 +182,182 @@ class AdminEditForm(forms.ModelForm):
             try:
                 profile = self.instance.profile
                 self.fields['is_bookable'].initial = profile.is_bookable
-                self.fields['is_auditorium_staff'].initial = profile.is_auditorium_staff
+                self.fields['is_staff2'].initial = profile.is_staff2
             except UserProfile.DoesNotExist:
                 self.fields['is_bookable'].initial = True
-                self.fields['is_auditorium_staff'].initial = False
+                self.fields['is_staff2'].initial = False
 
     def save(self, commit=True):
         user = super().save(commit=commit)
         if commit:
-            is_bookable = self.cleaned_data.get('is_bookable', True)
-            is_auditorium_staff = self.cleaned_data.get('is_auditorium_staff', False)
+            is_bookable = self.cleaned_data.get('is_bookable', False)
+            is_staff2 = self.cleaned_data.get('is_staff2', False)
+            expense_enabled = self.data.get('expense_enabled') == 'on'
+            export_enabled = self.data.get('export_enabled') == 'on'
             UserProfile.objects.update_or_create(
                 user=user,
                 defaults={
                     'is_bookable': is_bookable,
-                    'is_auditorium_staff': is_auditorium_staff
+                    'is_staff2': is_staff2,
+                    'expense_enabled': expense_enabled,
+                    'export_enabled': export_enabled,
                 }
             )
         return user
+
+class AuditoriumRegistrationForm(forms.Form):
+    """Self-registration form: creates a User + Auditorium in one step."""
+    auditorium_name = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'e.g. City Grand Auditorium'
+        }),
+        label='Auditorium Name'
+    )
+    username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Choose a username'
+        })
+    )
+    email = forms.EmailField(
+        required=False,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'your@email.com (optional)'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Strong password'
+        })
+    )
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Repeat password'
+        }),
+        label='Confirm Password'
+    )
+
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('This username is already taken.')
+        return username
+
+    def clean(self):
+        cleaned_data = super().clean()
+        pw = cleaned_data.get('password')
+        cpw = cleaned_data.get('confirm_password')
+        if pw and cpw and pw != cpw:
+            raise forms.ValidationError('Passwords do not match.')
+        return cleaned_data
+
+    def save(self):
+        data = self.cleaned_data
+        user = User.objects.create_user(
+            username=data['username'],
+            email=data.get('email', ''),
+            password=data['password'],
+            is_staff=True,
+            is_superuser=True,
+        )
+        auditorium = Auditorium.objects.create(
+            name=data['auditorium_name'],
+            owner=user,
+        )
+        # Link the profile to the auditorium so get_auditorium_for_user works
+        profile, _ = UserProfile.objects.get_or_create(user=user, defaults={'is_bookable': True, 'raw_password': data.get('password', '')})
+        profile.auditorium = auditorium
+        profile.raw_password = data.get('password', '')
+        profile.save()
+        return user, auditorium
+
+
+class PlatformAuditoriumCreateForm(forms.Form):
+    """Form used by Master Owner to create an auditorium with its superuser admin."""
+    auditorium_name = forms.CharField(
+        max_length=200,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control-premium',
+            'placeholder': 'Auditorium Name',
+            'style': 'width:100%;'
+        })
+    )
+    mobile_number = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control-premium',
+            'placeholder': 'Mobile Number',
+            'style': 'width:100%;'
+        })
+    )
+    admin_username = forms.CharField(
+        max_length=150,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control-premium',
+            'placeholder': 'Username',
+            'style': 'width:100%;'
+        })
+    )
+    admin_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control-premium',
+            'placeholder': 'Password',
+            'style': 'width:100%;'
+        })
+    )
+
+    def clean_admin_username(self):
+        username = self.cleaned_data['admin_username']
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError('A user with this username already exists.')
+        return username
+
+    def save(self):
+        data = self.cleaned_data
+        admin_user = User.objects.create_user(
+            username=data['admin_username'],
+            password=data['admin_password'],
+            is_staff=True,
+            is_superuser=True,
+        )
+        auditorium = Auditorium.objects.create(
+            name=data['auditorium_name'],
+            owner=admin_user,
+            contact_phone=data.get('mobile_number', ''),
+            is_active=True
+        )
+        profile, _ = UserProfile.objects.get_or_create(user=admin_user, defaults={'is_bookable': True, 'raw_password': data.get('admin_password', '')})
+        profile.auditorium = auditorium
+        profile.is_bookable = True
+        profile.expense_enabled = True
+        profile.export_enabled = True
+        profile.raw_password = data.get('admin_password', '')
+        profile.save()
+        return auditorium, admin_user
+
+
+class PlatformAuditoriumEditForm(forms.ModelForm):
+    """Form used by Master Owner to edit auditorium details and subscription settings."""
+    class Meta:
+        model = Auditorium
+        fields = ['name', 'monthly_fee', 'contact_phone', 'contact_email', 'is_active', 'suspension_reason', 'notes']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'monthly_fee': forms.NumberInput(attrs={'class': 'form-control'}),
+            'contact_phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'contact_email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'suspension_reason': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Non-payment of monthly fees for March'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
 
 class BookingForm(forms.ModelForm):
     SHIFT_CHOICES = [
@@ -288,3 +477,35 @@ class BookingForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class ExpenseForm(forms.ModelForm):
+    date = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control',
+        }),
+        label='Expense Date'
+    )
+
+    class Meta:
+        model = Expense
+        fields = ['title', 'amount', 'category', 'date', 'description']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g. Generator fuel'
+            }),
+            'amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '0.00',
+                'min': '0',
+                'step': '0.01'
+            }),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Optional details…'
+            }),
+        }
