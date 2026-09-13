@@ -69,73 +69,82 @@
         :root {
             --primary: #FF7A00;
             --primary-dark: #E66E00;
-            --primary-soft: rgba(255, 122, 0, 0.08);
+            --primary-soft: rgba(255, 122, 0, 0.09);
             --primary-gradient: linear-gradient(135deg, #FF9533 0%, #FF7A00 100%);
             --accent: #FF4D4D;
             --accent-gradient: linear-gradient(135deg, #FF6B6B 0%, #FF4D4D 100%);
             --blue-gradient: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
             --teal-gradient: linear-gradient(135deg, #2EC4B6 0%, #20A396 100%);
             --danger-gradient: linear-gradient(135deg, #FF5E5E 0%, #FF4D4D 100%);
-            --glass: rgba(255, 255, 255, 0.9);
-            --glass-thick: rgba(255, 255, 255, 0.98);
-            --glass-border: rgba(0, 0, 0, 0.05);
-            --bg: #F8F9FA;
-            --ink: #1A1A1A;
-            --ink-dim: #4D4D4D;
-            --ink-muted: #808080;
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-thick: rgba(255, 255, 255, 0.96);
+            --glass-border: rgba(0, 0, 0, 0.04);
+            --bg: #F2F2F7; /* Apple iOS System Gray 6 Background */
+            --ink: #1C1C1E; /* Apple iOS Primary Label */
+            --ink-dim: #3A3A3C;
+            --ink-3: #8E8E93;
+            --ink-muted: #8E8E93; /* Apple iOS Secondary/Tertiary Label */
             --card: #FFFFFF;
-            --radius-3xl: 40px;
-            --radius-2xl: 32px;
-            --radius-xl: 24px;
-            --radius-lg: 18px;
-            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.02);
-            --shadow-md: 0 12px 30px rgba(0, 0, 0, 0.06);
-            --shadow-xl: 0 25px 60px rgba(0, 0, 0, 0.1);
-            --safe-bottom: env(safe-area-inset-bottom);
+            --radius-3xl: 32px;
+            --radius-2xl: 24px;
+            --radius-xl: 18px;
+            --radius-lg: 14px;
+            --shadow-subtle: 0 2px 10px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.08);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-top: env(safe-area-inset-top, 0px);
         }
 
         *,
         *::before,
         *::after {
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Outfit', sans-serif;
             background-color: var(--bg);
             color: var(--ink);
             margin: 0;
             padding: 0;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.015em;
             font-size: 14px;
             overflow-x: hidden;
-            padding-bottom: calc(90px + var(--safe-bottom));
-            padding-top: calc(85px + env(safe-area-inset-top));
+            padding-bottom: calc(85px + var(--safe-bottom));
+            padding-top: calc(70px + var(--safe-top));
             min-height: 100vh;
             position: relative;
             scroll-behavior: smooth;
-            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* Mobile app card */
+        /* Allow text selection in inputs and content */
+        input, textarea, [contenteditable="true"], .selectable {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* iOS Grouped List Style / App Card */
         .app-card {
-            background: rgba(255, 255, 255, 0.72);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1.5px solid rgba(255, 255, 255, 0.45);
-            border-radius: 20px;
+            background: #FFFFFF;
+            border-radius: 18px;
             padding: 16px;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), background-color 0.15s ease;
             position: relative;
             z-index: 1;
         }
 
         .app-card:active {
-            transform: scale(0.98);
+            transform: scale(0.985);
+            background: #F9F9FB;
         }
 
         /* Shimmer loading effect */
@@ -171,30 +180,93 @@
             display: inline-block;
         }
 
-        /* MODAL WRAPPER FIX - MOBILE CARD STYLE */
+        /* UNIFIED STANDARD MODAL STYLING */
+        .modal-dialog {
+            max-width: 440px;
+            margin: 1.75rem auto;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-content-premium {
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            border-radius: 28px;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            max-height: 90vh;
+        }
+
+        .modal-header-premium {
+            padding: 24px 28px 14px;
+            border: none;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header-premium h4,
+        .modal-header-premium h5 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--ink);
+            margin: 0;
+        }
+
+        .modal-body-premium {
+            padding: 4px 28px 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .modal-body-premium::-webkit-scrollbar {
+            display: none;
+        }
+
+        .modal-footer-premium {
+            padding: 14px 28px 24px;
+            border: none;
+            flex-shrink: 0;
+            background: transparent;
+        }
+
+        /* Mobile Standard Modal Optimization (Centered & Responsive) */
         @media (max-width: 576px) {
             .modal-dialog {
-                margin: 20px;
+                margin: 16px auto;
+                max-width: calc(100vw - 32px);
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                min-height: calc(100% - 32px);
             }
 
-            .modal-content {
+            .modal-content-premium {
                 width: 100% !important;
                 max-height: 85vh !important;
-                border-radius: var(--radius-2xl) !important;
+                border-radius: 24px !important;
+            }
+
+            .modal-header-premium {
+                padding: 20px 20px 10px !important;
+            }
+
+            .modal-body-premium {
+                padding: 4px 20px 16px !important;
+            }
+
+            .modal-footer-premium {
+                padding: 10px 20px 20px !important;
             }
 
             /* Event Detail Modal Mobile Enhancement */
-            #eventDetailModal .modal-body-premium {
-                padding: 16px 20px 20px;
-                max-height: 60vh;
-                overflow-y: auto;
-            }
-
             #eventDetailModal #dvTitle {
-                font-size: 1.25rem !important;
+                font-size: 1.2rem !important;
             }
 
             #eventDetailModal #detailView>div {
@@ -203,117 +275,248 @@
                 border-radius: 14px !important;
                 margin-bottom: 10px !important;
             }
-
-            #eventDetailModal .form-label {
-                font-size: 0.75rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                margin-bottom: 4px;
-            }
-
-            #eventDetailModal .modal-footer-premium {
-                padding: 0 20px 20px;
-                gap: 8px !important;
-            }
-
-            #eventDetailModal .btn-app {
-                padding: 12px 16px !important;
-                font-size: 0.9rem !important;
-            }
-        }
-
-        .modal-content-premium {
-            background: var(--glass-thick);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-2xl);
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
         }
 
         @media (min-width: 576px) {
             .modal-dialog-message {
                 max-width: 440px !important;
-                margin: 1.75rem auto;
             }
         }
 
-
-        .modal-header-premium {
-            border: none;
-            padding: 24px 28px 12px;
-        }
-
-        .modal-body-premium {
-            padding: 12px 28px 28px;
-        }
-
-        .modal-footer-premium {
-            border: none;
-            padding: 0 28px 28px;
-        }
-
-        /* PREMIUM BUTTONS */
+        /* iOS STYLE NATIVE BUTTONS */
         .btn-app {
             border: none;
-            border-radius: var(--radius-lg);
-            font-weight: 800;
-            padding: 14px 24px;
-            font-size: 0.95rem;
+            border-radius: 14px;
+            font-weight: 700;
+            padding: 12px 20px;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            font-family: 'Outfit', sans-serif;
+            gap: 8px;
+            transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+            font-family: inherit;
+            letter-spacing: -0.01em;
+        }
+
+        .btn-app:active {
+            transform: scale(0.97);
+            filter: brightness(0.95);
         }
 
         .btn-app-primary {
             background: var(--primary-gradient);
             color: white;
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 14px rgba(255, 122, 0, 0.28);
         }
 
         .btn-app-secondary {
             background: var(--accent-gradient);
             color: white;
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.25);
+            box-shadow: 0 4px 14px rgba(255, 77, 77, 0.25);
         }
 
         .btn-app-ghost {
-            background: rgba(0, 0, 0, 0.03);
-            color: var(--ink-dim);
+            background: rgba(142, 142, 147, 0.12);
+            color: var(--ink);
         }
 
-        /* PREMIUM INPUTS */
+        /* iOS SYSTEM FORM INPUTS */
         .form-control-premium {
-            background: #F1F5F9;
-            border: 1.5px solid transparent;
-            border-radius: var(--radius-lg);
-            padding: 16px 20px;
+            background: #E5E5EA;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            padding: 12px 16px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: var(--ink);
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            font-family: inherit;
         }
 
         .form-control-premium:focus {
-            background: white;
+            background: #FFFFFF;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            box-shadow: 0 0 0 3px rgba(255, 122, 0, 0.18);
             outline: none;
         }
 
         .form-label {
-            font-size: 0.78rem;
-            font-weight: 800;
+            font-size: 0.72rem;
+            font-weight: 700;
             color: var(--ink-muted);
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 8px;
-            margin-left: 4px;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+            margin-left: 2px;
+        }
+
+        /* iOS SEGMENTED CONTROL */
+        .ios-segmented-control {
+            display: flex;
+            background: #E5E5EA;
+            padding: 3px;
+            border-radius: 10px;
+            position: relative;
+            user-select: none;
+            gap: 2px;
+        }
+
+        .ios-segment-item {
+            flex: 1;
+            text-align: center;
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--ink);
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+            white-space: nowrap;
+            border: none;
+            background: transparent;
+        }
+
+        .ios-segment-item.active {
+            background: #FFFFFF;
+            font-weight: 700;
+            color: var(--ink);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .ios-segment-item:active {
+            transform: scale(0.97);
+        }
+
+        /* iOS INSET GROUPED LIST */
+        .ios-inset-list {
+            background: #FFFFFF;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 0.5px solid rgba(0, 0, 0, 0.08);
+            margin-bottom: 14px;
+        }
+
+        .ios-list-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 16px;
+            border-bottom: 0.5px solid rgba(60, 60, 67, 0.12);
+            font-size: 0.88rem;
+        }
+
+        .ios-list-row:last-child {
+            border-bottom: none;
+        }
+
+        /* iOS SWITCH TOGGLE */
+        .ios-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 30px;
+            flex-shrink: 0;
+        }
+
+        .ios-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .ios-switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #E5E5EA;
+            transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-radius: 30px;
+        }
+
+        .ios-switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .ios-switch input:checked + .ios-switch-slider {
+            background-color: #34C759;
+        }
+
+        .ios-switch input:checked + .ios-switch-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* iOS ACTION SHEET MODAL */
+        .ios-action-sheet .modal-dialog {
+            margin: 0 auto;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-width: 500px;
+            padding: 10px 10px calc(10px + var(--safe-bottom));
+        }
+
+        .ios-action-sheet .modal-content {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            gap: 8px;
+        }
+
+        .ios-action-group {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .ios-action-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            background: transparent;
+            color: #007AFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-bottom: 0.5px solid rgba(60, 60, 67, 0.15);
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+
+        .ios-action-btn:last-child {
+            border-bottom: none;
+        }
+
+        .ios-action-btn:active {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .ios-action-btn.destructive {
+            color: #FF3B30;
+        }
+
+        .ios-action-btn.cancel {
+            font-weight: 700;
+            background: #FFFFFF;
+            border-radius: 14px;
+            color: #007AFF;
         }
 
         /* NATIVE APP-LIKE TRANSITION */
@@ -445,20 +648,22 @@
             }
         }
 
-        /* PREMIUM GRADIENT TOP BAR */
+        /* iOS BLURRED NAVIGATION TOP BAR */
         .app-header {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: calc(80px + env(safe-area-inset-top));
-            background: #FFFFFF;
+            height: calc(64px + var(--safe-top));
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             z-index: 1000;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: env(safe-area-inset-top) 20px 0;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            padding: var(--safe-top) 16px 0;
+            border-bottom: 0.5px solid rgba(0, 0, 0, 0.12);
         }
 
         @media (min-width: 992px) {
@@ -467,23 +672,22 @@
             }
         }
 
-        /* NATIVE BOTTOM NAVIGATION */
+        /* iOS BLURRED BOTTOM TAB BAR */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: calc(75px + var(--safe-bottom));
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            height: calc(60px + var(--safe-bottom));
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
             display: flex;
             align-items: center;
             justify-content: space-around;
-            padding: 0 10px calc(5px + var(--safe-bottom));
+            padding: 4px 6px calc(4px + var(--safe-bottom));
             z-index: 1100;
-            box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.04);
-            border-top: 1px solid rgba(0, 0, 0, 0.02);
+            border-top: 0.5px solid rgba(0, 0, 0, 0.15);
         }
 
         .nav-link-app {
@@ -491,21 +695,23 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #A1A1AA;
+            color: #8E8E93;
             text-decoration: none;
             font-size: 0.65rem;
-            font-weight: 700;
-            gap: 4px;
-            transition: 0.3s;
-            width: 70px;
+            font-weight: 600;
+            gap: 3px;
+            transition: all 0.15s ease;
+            width: 64px;
         }
 
         .nav-link-app i {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
+            line-height: 1;
         }
 
         .nav-link-app.active {
             color: var(--primary) !important;
+            font-weight: 700;
         }
 
         .fab-center {
@@ -629,56 +835,6 @@
             }
         }
 
-        /* MODALS */
-        .modal-dialog {
-            max-width: 420px;
-            margin: 1.5rem auto;
-        }
-
-        .modal-content-premium {
-            border-radius: 32px;
-            border: none;
-            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.14);
-            background: #FFFFFF;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .modal-header-premium {
-            padding: 28px 28px 10px;
-            border: none;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-header-premium h4,
-        .modal-header-premium h5 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.05rem;
-            font-weight: 800;
-            margin: 0;
-        }
-
-        .modal-body-premium {
-            padding: 8px 28px 4px;
-            flex-grow: 1;
-            overflow-y: auto;
-            scrollbar-width: none;
-        }
-
-        .modal-body-premium::-webkit-scrollbar {
-            display: none;
-        }
-
-        .modal-footer-premium {
-            padding: 16px 28px 28px;
-            border: none;
-            flex-shrink: 0;
-        }
 
         .btn-app {
             border-radius: var(--r-md);
@@ -1195,7 +1351,7 @@
                         style="font-size: 1rem; font-weight: 800; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         {{ user.username }}</div>
                     <div style="font-size: 0.75rem; font-weight: 700; color: #94A3B8; text-transform: uppercase;">
-                        Administrator</div>
+                        {% if is_master_owner %}Platform Owner{% elif user.is_superuser %}Super Administrator{% else %}Auditorium Admin{% endif %}</div>
                 </div>
             </div>
             <button type="button" data-bs-toggle="modal" data-bs-target="#logoutConfirmModal"
@@ -1588,7 +1744,7 @@
                     {{ user.username|slice:":1"|upper }}</div>
                 <div>
                     <h4 class="fw-800 mb-1">{{ user.username }}</h4>
-                    <p class="text-muted mb-0">Administrator</p>
+                    <p class="text-muted mb-0">{% if is_master_owner %}Platform Owner{% elif user.is_superuser %}Super Administrator{% else %}Auditorium Admin{% endif %}</p>
                 </div>
             </div>
             <div class="d-grid gap-3">
@@ -1614,17 +1770,17 @@
                     <h5 class="fw-800 text-dark mb-1" style="font-size: 1.2rem;">{{ user.username }}</h5>
                     <p
                         style="font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: var(--primary); margin-bottom: 24px;">
-                        {% if user.is_superuser %}Super Administrator{% else %}Auditorium Admin{% endif %}
+                        {% if is_master_owner %}Master Platform Owner{% elif user.is_superuser %}Super Administrator{% else %}Auditorium Admin{% endif %}
                     </p>
 
-                    <div class="w-100 text-start d-flex flex-column gap-3 mb-4">
-                        <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
-                            <div class="form-label" style="margin-left: 0;">Full Name</div>
-                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="ios-inset-list w-100 text-start mb-4">
+                        <div class="ios-list-row">
+                            <span style="font-weight: 600; color: var(--ink-muted);">Full Name</span>
+                            <span style="font-weight: 700; color: var(--ink);">{{ user.get_full_name|default:user.username }}</span>
                         </div>
-                        <div style="background: var(--bg); padding: 14px 18px; border-radius: 18px;">
-                            <div class="form-label" style="margin-left: 0;">Email Address</div>
-                            <div style="font-weight: 700; color: var(--ink); font-size: 0.95rem;">{{ user.email|default:"No email provided" }}</div>
+                        <div class="ios-list-row">
+                            <span style="font-weight: 600; color: var(--ink-muted);">Email</span>
+                            <span style="font-weight: 600; color: var(--ink);">{{ user.email|default:"Not set" }}</span>
                         </div>
                     </div>
 

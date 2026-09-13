@@ -6,14 +6,14 @@
 {% block content %}
 <div class="container-fluid px-0">
     <!-- Header -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center gap-2 mb-3">
         <div>
-            <h1 class="fw-black mb-1" style="color: var(--ink); letter-spacing: -0.03em;">Master Owner Portal</h1>
-            <p class="text-muted mb-0" style="font-size: 0.95rem;">Select an auditorium to view all users, credentials, and manage login access.</p>
+            <h1 style="font-weight: 800; font-size: 1.35rem; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 2px;">Master Owner Portal</h1>
+            <p class="text-muted mb-0" style="font-size: 0.8rem;">Select auditorium to view credentials & manage access</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-app btn-app-primary shadow-sm" style="background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);" data-bs-toggle="modal" data-bs-target="#createAuditoriumModal">
-                <i class="bi bi-plus-circle-fill"></i> Add New Auditorium
+            <button type="button" class="btn-app btn-app-primary" style="background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%); padding: 8px 14px; font-size: 0.82rem;" data-bs-toggle="modal" data-bs-target="#createAuditoriumModal">
+                <i class="bi bi-plus-lg"></i> Add New
             </button>
         </div>
     </div>
@@ -164,14 +164,17 @@
 <div class="modal fade" id="createAuditoriumModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-content-premium">
-            <div class="modal-header-premium d-flex align-items-center gap-2">
-                <div style="width:36px;height:36px;border-radius:12px;background:rgba(124, 58, 237, 0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="bi bi-building-add" style="color:#7C3AED;font-size:1.1rem;"></i>
+            <div class="modal-header-premium">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:36px;height:36px;border-radius:12px;background:rgba(124, 58, 237, 0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-building-add" style="color:#7C3AED;font-size:1.1rem;"></i>
+                    </div>
+                    <div>
+                        <h5 style="font-weight:900;font-size:1.15rem;margin:0;">Create Auditorium</h5>
+                        <div style="font-size:0.75rem;color:var(--ink-muted);font-weight:600;">Add customer & superuser credentials</div>
+                    </div>
                 </div>
-                <div>
-                    <h5 style="font-weight:900;font-size:1.15rem;margin:0;">Create Auditorium</h5>
-                    <div style="font-size:0.75rem;color:var(--ink-muted);font-weight:600;">Add customer & superuser credentials</div>
-                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{% url 'owner_portal_auditorium_create' %}">
                 {% csrf_token %}
@@ -210,6 +213,7 @@
         <div class="modal-content modal-content-premium">
             <div class="modal-header-premium">
                 <h5 style="font-weight:900;font-size:1.15rem;margin:0;">Delete Auditorium?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body-premium" style="padding-top:4px;">
                 <p style="color:var(--ink-muted);font-size:0.9rem;margin:0;">

@@ -136,18 +136,15 @@
 <div class="fade-in">
 
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-start mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h1 style="font-weight:900; font-size:1.85rem; letter-spacing:-0.05em; margin:0 0 2px;">Directory</h1>
-            <p style="color:var(--ink-muted); font-weight:600; font-size:0.82rem; margin:0;">Team & access control</p>
+            <h1 style="font-weight:800; font-size:1.35rem; letter-spacing:-0.02em; margin:0 0 2px;">Directory</h1>
+            <p style="color:var(--ink-muted); font-weight:600; font-size:0.8rem; margin:0;">Team & access control</p>
         </div>
         {% if request.user.is_superuser %}
-        <button data-bs-toggle="modal" data-bs-target="#createAdminModal"
-            style="width:48px;height:48px;border-radius:50%;background:#111;color:#fff;border:none;
-                   display:flex;align-items:center;justify-content:center;font-size:1.3rem;
-                   box-shadow:0 8px 20px rgba(0,0,0,0.18);flex-shrink:0;
-                   -webkit-tap-highlight-color:transparent;">
-            <i class="bi bi-plus-lg"></i>
+        <button class="btn-app btn-app-primary" data-bs-toggle="modal" data-bs-target="#createAdminModal"
+            style="padding: 8px 16px; font-size: 0.82rem;">
+            <i class="bi bi-plus-lg"></i> Add Admin
         </button>
         {% endif %}
     </div>
@@ -232,32 +229,41 @@
                 </button>
             </div>
 
-            <div class="perm-section-label">Roles & Features</div>
-            <div class="perm-row">
-                <button class="perm-btn {% if admin.profile.is_staff2 %}perm-on-orange{% else %}perm-off{% endif %}"
-                        onclick="toggleStatus(this, '{{ admin.pk }}', 'staff')">
+            <div class="perm-section-label">Roles & Permissions</div>
+            <div class="ios-inset-list mb-2">
+                <div class="ios-list-row">
                     <div>
-                        <div class="perm-label">Staff mode</div>
-                        <div class="perm-state">{{ admin.profile.is_staff2|yesno:"ON,OFF" }}</div>
+                        <div style="font-weight: 700; color: var(--ink);">Staff Mode</div>
+                        <div style="font-size: 0.72rem; color: var(--ink-muted);">Restricted view-only mode</div>
                     </div>
-                    <div class="perm-dot"></div>
-                </button>
-                <button class="perm-btn {% if admin.profile.expense_enabled %}perm-on-green{% else %}perm-off{% endif %}"
-                        onclick="toggleStatus(this, '{{ admin.pk }}', 'expense')">
+                    <label class="ios-switch">
+                        <input type="checkbox" {% if admin.profile.is_staff2 %}checked{% endif %}
+                               onchange="toggleStatusSwitch(this, '{{ admin.pk }}', 'staff')">
+                        <span class="ios-switch-slider"></span>
+                    </label>
+                </div>
+                <div class="ios-list-row">
                     <div>
-                        <div class="perm-label">Expenses</div>
-                        <div class="perm-state">{{ admin.profile.expense_enabled|yesno:"ON,OFF" }}</div>
+                        <div style="font-weight: 700; color: var(--ink);">Expenses Access</div>
+                        <div style="font-size: 0.72rem; color: var(--ink-muted);">Allow managing cash expenses</div>
                     </div>
-                    <div class="perm-dot"></div>
-                </button>
-                <button class="perm-btn {% if admin.profile.export_enabled %}perm-on-blue{% else %}perm-off{% endif %}"
-                        onclick="toggleStatus(this, '{{ admin.pk }}', 'export')">
+                    <label class="ios-switch">
+                        <input type="checkbox" {% if admin.profile.expense_enabled %}checked{% endif %}
+                               onchange="toggleStatusSwitch(this, '{{ admin.pk }}', 'expense')">
+                        <span class="ios-switch-slider"></span>
+                    </label>
+                </div>
+                <div class="ios-list-row">
                     <div>
-                        <div class="perm-label">Export</div>
-                        <div class="perm-state">{{ admin.profile.export_enabled|yesno:"ON,OFF" }}</div>
+                        <div style="font-weight: 700; color: var(--ink);">Export Data</div>
+                        <div style="font-size: 0.72rem; color: var(--ink-muted);">Allow PDF / Excel export</div>
                     </div>
-                    <div class="perm-dot"></div>
-                </button>
+                    <label class="ios-switch">
+                        <input type="checkbox" {% if admin.profile.export_enabled %}checked{% endif %}
+                               onchange="toggleStatusSwitch(this, '{{ admin.pk }}', 'export')">
+                        <span class="ios-switch-slider"></span>
+                    </label>
+                </div>
             </div>
 
             {% endif %}
@@ -294,6 +300,7 @@
         <div class="modal-content modal-content-premium">
             <div class="modal-header-premium">
                 <h5 style="font-weight:900;font-size:1.15rem;margin:0;">Delete user?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body-premium" style="padding-top:4px;">
                 <p style="color:var(--ink-muted);font-size:0.9rem;margin:0;">
@@ -320,14 +327,17 @@
 <div class="modal fade" id="resetPasswordModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-content-premium">
-            <div class="modal-header-premium d-flex align-items-center gap-2">
-                <div style="width:36px;height:36px;border-radius:12px;background:#FFF7ED;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="bi bi-key-fill" style="color:var(--primary);font-size:1rem;"></i>
+            <div class="modal-header-premium">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:36px;height:36px;border-radius:12px;background:#FFF7ED;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="bi bi-key-fill" style="color:var(--primary);font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <h5 style="font-weight:900;font-size:1.05rem;margin:0;">Reset Password</h5>
+                        <div style="font-size:0.75rem;color:var(--ink-muted);font-weight:600;" id="resetModalSubtitle"></div>
+                    </div>
                 </div>
-                <div>
-                    <h5 style="font-weight:900;font-size:1.05rem;margin:0;">Reset Password</h5>
-                    <div style="font-size:0.75rem;color:var(--ink-muted);font-weight:600;" id="resetModalSubtitle"></div>
-                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body-premium" style="padding-top:4px;">
                 <form id="resetPasswordForm" method="POST">
@@ -383,6 +393,30 @@
             else { btn.classList.remove('loading'); alert(data.message || 'Action failed'); }
         })
         .catch(() => { btn.classList.remove('loading'); alert('Network error'); });
+    }
+
+    function toggleStatusSwitch(checkbox, pk, type) {
+        if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(15);
+        const urlMap = {
+            staff:   `/api/toggle-staff/${pk}/`,
+            expense: `/api/toggle-expense/${pk}/`,
+            export:  `/api/toggle-export/${pk}/`,
+        };
+        fetch(urlMap[type], {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                checkbox.checked = !checkbox.checked;
+                alert(data.message || 'Action failed');
+            }
+        })
+        .catch(() => {
+            checkbox.checked = !checkbox.checked;
+            alert('Network error');
+        });
     }
 
     function confirmDeleteAdmin(pk, name) {

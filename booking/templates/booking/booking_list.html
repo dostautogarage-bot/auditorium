@@ -4,27 +4,27 @@
 {% block extra_css %}
 <style>
     .search-bar {
-        display: flex; gap: 10px; margin-bottom: 20px; align-items: center;
+        display: flex; gap: 8px; margin-bottom: 16px; align-items: center;
     }
     .search-input {
-        flex: 1; background: rgba(255,255,255,0.8); backdrop-filter: blur(12px);
-        border: 1.5px solid rgba(255,255,255,0.5); border-radius: 16px;
-        padding: 12px 16px 12px 42px; font-family: inherit; font-size: 0.85rem;
-        font-weight: 600; color: var(--ink); outline: none; transition: 0.3s;
+        flex: 1; background: #E5E5EA;
+        border: 1px solid transparent; border-radius: 12px;
+        padding: 10px 14px 10px 38px; font-family: inherit; font-size: 0.85rem;
+        font-weight: 600; color: var(--ink); outline: none; transition: 0.2s;
     }
-    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(20,184,166,0.1); }
-    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: 0.85rem; }
+    .search-input:focus { background: #FFFFFF; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,122,0,0.15); }
+    .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-3); font-size: 0.85rem; }
     .per-page-select {
-        background: rgba(255,255,255,0.8); border: 1.5px solid rgba(255,255,255,0.5);
-        border-radius: 14px; padding: 12px 14px; font-family: inherit;
-        font-size: 0.82rem; font-weight: 700; color: var(--ink); outline: none; cursor: pointer;
+        background: #E5E5EA; border: 1px solid transparent;
+        border-radius: 12px; padding: 10px 12px; font-family: inherit;
+        font-size: 0.8rem; font-weight: 700; color: var(--ink); outline: none; cursor: pointer;
     }
     .booking-mobile-card {
-        background: rgba(255,255,255,0.72); backdrop-filter: blur(18px);
-        border: 1.5px solid rgba(255,255,255,0.45); border-radius: 16px;
-        padding: 12px; margin-bottom: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-        transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+        background: #FFFFFF;
+        border: 1px solid rgba(0,0,0,0.04); border-radius: 16px;
+        padding: 14px; margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        transition: transform 0.15s cubic-bezier(0.2,0.8,0.2,1);
         position: relative;
         z-index: 1;
     }
@@ -144,22 +144,25 @@
     </div>
 
     <!-- Search + Filter -->
-    <form method="GET" class="search-bar" style="flex-wrap: wrap;">
-        <div class="position-relative flex-grow-1" style="min-width: 200px;">
+    <form method="GET" id="bookingFilterForm">
+        <div class="search-bar mb-2">
             <i class="bi bi-search search-icon"></i>
             <input type="text" name="q" value="{{ query }}" placeholder="Search events, contact, phone..." class="search-input">
+            <select name="per_page" onchange="this.form.submit()" class="per-page-select">
+                <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
+                <option value="300" {% if per_page == 300 or not per_page %}selected{% endif %}>300</option>
+                <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
+            </select>
         </div>
-        <select name="payment_status" onchange="this.form.submit()" class="per-page-select" style="min-width: 140px;">
-            <option value="">All Payments</option>
-            <option value="paid" {% if payment_status == 'paid' %}selected{% endif %}>✓ Fully Paid</option>
-            <option value="pending" {% if payment_status == 'pending' %}selected{% endif %}>⏳ Pending</option>
-        </select>
-        <select name="per_page" onchange="this.form.submit()" class="per-page-select">
-            <option value="50" {% if per_page == 50 %}selected{% endif %}>50</option>
-            <option value="100" {% if per_page == 100 %}selected{% endif %}>100</option>
-            <option value="300" {% if per_page == 300 or not per_page %}selected{% endif %}>300</option>
-            <option value="500" {% if per_page == 500 %}selected{% endif %}>500</option>
-        </select>
+
+        <!-- iOS Native Segmented Filter -->
+        <input type="hidden" name="payment_status" id="id_payment_status" value="{{ payment_status }}">
+        <div class="ios-segmented-control mb-3">
+            <button type="button" class="ios-segment-item {% if not payment_status %}active{% endif %}" onclick="setPaymentSegment('')">All</button>
+            <button type="button" class="ios-segment-item {% if payment_status == 'paid' %}active{% endif %}" onclick="setPaymentSegment('paid')">✓ Paid</button>
+            <button type="button" class="ios-segment-item {% if payment_status == 'pending' %}active{% endif %}" onclick="setPaymentSegment('pending')">⏳ Pending</button>
+        </div>
     </form>
 
     <!-- Desktop Table -->
@@ -364,6 +367,12 @@
 
 {% block extra_js %}
 <script>
+function setPaymentSegment(val) {
+    if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(10);
+    document.getElementById('id_payment_status').value = val;
+    document.getElementById('bookingFilterForm').submit();
+}
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

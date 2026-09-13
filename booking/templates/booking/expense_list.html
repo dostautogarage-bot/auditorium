@@ -45,17 +45,6 @@
     @media (min-width: 400px) { .expense-card-title { max-width: 200px; } }
     @media (min-width: 576px) { .expense-card-title { max-width: 100%; } }
 
-    /* Make modal bottom-sheet on mobile */
-    @media (max-width: 575px) {
-        #addExpenseModal .modal-dialog {
-            margin: 0 !important;
-            align-items: flex-end !important;
-        }
-        #addExpenseModal .modal-content {
-            border-radius: 24px 24px 0 0 !important;
-            max-height: 92vh;
-        }
-    }
 
     .filter-scroll {
         display: flex;
@@ -80,24 +69,24 @@
         </div>
         <button class="btn-app btn-app-primary"
                 data-bs-toggle="modal" data-bs-target="#addExpenseModal"
-                style="border-radius: 100px; padding: 12px 22px; font-size: 0.85rem;">
+                style="border-radius: 12px; padding: 8px 16px; font-size: 0.82rem;">
             <i class="bi bi-plus-lg"></i> Add Expense
         </button>
     </div>
 
     <!-- Total spent card -->
-    <div class="app-card mb-4" style="background: var(--primary-gradient); color: white; border: none;">
-        <div style="font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.08em; opacity:.85; margin-bottom:6px;">
+    <div class="app-card mb-3" style="background: var(--primary-gradient); color: white; border: none; padding: 18px 20px;">
+        <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; opacity:.85; margin-bottom:4px;">
             Total Spent (All Time)
         </div>
-        <div style="font-size:2rem; font-weight:900; letter-spacing:-0.04em;">₹{{ total_spent|floatformat:0 }}</div>
+        <div style="font-size:1.75rem; font-weight:800; letter-spacing:-0.03em;">₹{{ total_spent|floatformat:0 }}</div>
     </div>
 
-    <!-- Category filters — horizontally scrollable on mobile -->
-    <div class="filter-scroll mb-3">
-        <a href="{% url 'expense_list' %}" class="filter-chip {% if not category_filter %}active{% endif %}">All</a>
+    <!-- Category filters — iOS Segmented Scroll -->
+    <div class="ios-segmented-control mb-3" style="overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;">
+        <a href="{% url 'expense_list' %}" class="ios-segment-item {% if not category_filter %}active{% endif %}">All</a>
         {% for val, label in category_choices %}
-        <a href="?category={{ val }}" class="filter-chip {% if category_filter == val %}active{% endif %}">{{ label }}</a>
+        <a href="?category={{ val }}" class="ios-segment-item {% if category_filter == val %}active{% endif %}">{{ label }}</a>
         {% endfor %}
     </div>
 
