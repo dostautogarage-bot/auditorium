@@ -408,7 +408,7 @@ def generate_single_booking_pdf(booking):
     
     # ===== ACKNOWLEDGMENT BODY =====
     ack_text = (
-        f"This is to acknowledge that we have received an amount of <b>₹{advance_amount:,.2f}</b> "
+        f"This is to acknowledge that we have received an amount of <b>RS.{advance_amount:,.2f}</b> "
         f"(<b>Rupees {rupees_in_words} only</b>) from <b>{booking.contact_person}</b> towards the booking and "
         f"use of <b>{aud_name}</b> for the event held on <b>{event_date_str}</b>."
     )
@@ -424,7 +424,7 @@ def generate_single_booking_pdf(booking):
         [Paragraph("Event Date:", grid_label_style), Paragraph(event_date_str, grid_value_style)],
         [Paragraph("Auditorium / Venue:", grid_label_style), Paragraph(aud_name, grid_value_style)],
         [Paragraph("Booking Period:", grid_label_style), Paragraph(booking_period, grid_value_style)],
-        [Paragraph("Amount Received:", grid_label_style), Paragraph(f"<b>₹{advance_amount:,.2f}</b>", grid_value_style)],
+        [Paragraph("Amount Received:", grid_label_style), Paragraph(f"<b>RS.{advance_amount:,.2f}</b>", grid_value_style)],
     ]
     
     grid_table = Table(grid_data, colWidths=[2.2*inch, 4.8*inch])
