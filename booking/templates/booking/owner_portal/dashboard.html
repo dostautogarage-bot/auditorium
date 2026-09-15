@@ -163,7 +163,8 @@
 <!-- Create Customer Auditorium Modal -->
 <div class="modal fade" id="createAuditoriumModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content modal-content-premium">
+        <form method="POST" action="{% url 'owner_portal_auditorium_create' %}" enctype="multipart/form-data" class="modal-content modal-content-premium">
+            {% csrf_token %}
             <div class="modal-header-premium">
                 <div class="d-flex align-items-center gap-2">
                     <div style="width:36px;height:36px;border-radius:12px;background:rgba(124, 58, 237, 0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -176,34 +177,65 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="{% url 'owner_portal_auditorium_create' %}">
-                {% csrf_token %}
-                <div class="modal-body-premium" style="padding-top:4px;">
-                    <div class="mb-3">
-                        <label class="form-label">Auditorium Name</label>
-                        {{ create_form.auditorium_name }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Superuser Mobile Number</label>
-                        {{ create_form.mobile_number }}
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        {{ create_form.admin_username }}
-                    </div>
-                    <div>
-                        <label class="form-label">Password</label>
-                        {{ create_form.admin_password }}
+            <div class="modal-body modal-body-premium" style="padding-top:4px;">
+                <div class="mb-3">
+                    <label class="form-label">Auditorium Name</label>
+                    {{ create_form.auditorium_name }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Superuser Mobile Number</label>
+                    {{ create_form.mobile_number }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Auditorium Logo</label>
+                    {{ create_form.logo }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Digital Signature (Optional)</label>
+                    {{ create_form.digital_signature }}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Theme Color</label>
+                    <div style="margin-bottom: 12px;">
+                        {{ create_form.theme_color }}
                     </div>
                 </div>
-                <div class="modal-footer-premium d-flex gap-2">
-                    <button type="button" class="btn-app btn-app-ghost flex-grow-1" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn-app flex-grow-1" style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);color:white;font-weight:900;">
-                        Create Auditorium
-                    </button>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Day Shift Start</label>
+                        {{ create_form.day_shift_start }}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Day Shift End</label>
+                        {{ create_form.day_shift_end }}
+                    </div>
                 </div>
-            </form>
-        </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label">Night Shift Start</label>
+                        {{ create_form.night_shift_start }}
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Night Shift End</label>
+                        {{ create_form.night_shift_end }}
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    {{ create_form.admin_username }}
+                </div>
+                <div>
+                    <label class="form-label">Password</label>
+                    {{ create_form.admin_password }}
+                </div>
+            </div>
+            <div class="modal-footer-premium d-flex gap-2">
+                <button type="button" class="btn-app btn-app-ghost flex-grow-1" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn-app flex-grow-1" style="background:linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);color:white;font-weight:900;">
+                    Create Auditorium
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

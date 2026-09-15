@@ -133,6 +133,51 @@
             padding: 10px 12px;
         }
     }
+
+    /* Expense accordion */
+    .expense-toggle-btn {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 9px; border-radius: 20px;
+        font-size: 0.65rem; font-weight: 800;
+        border: 1.5px solid #E2E8F0;
+        background: #F8FAFC; color: #64748B;
+        cursor: pointer; transition: 0.18s;
+        white-space: nowrap;
+    }
+    .expense-toggle-btn:hover,
+    .expense-toggle-btn.open {
+        background: #EFF6FF; border-color: #93C5FD; color: #3B82F6;
+    }
+    .expense-toggle-btn .arrow {
+        display: inline-block; transition: transform 0.2s;
+    }
+    .expense-toggle-btn.open .arrow { transform: rotate(90deg); }
+
+    .expense-panel {
+        display: none;
+        background: #F8FAFC;
+        border-top: 1px solid #F1F5F9;
+        padding: 10px 14px 12px;
+        border-radius: 0 0 12px 12px;
+    }
+    .expense-panel.open { display: block; }
+
+    .expense-row-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 7px 0;
+        border-bottom: 1px dashed #F1F5F9;
+        font-size: 0.75rem;
+    }
+    .expense-row-item:last-child { border-bottom: none; }
+
+    /* Desktop table expense expand row */
+    .expense-expand-row td {
+        padding: 0 !important;
+        border: none !important;
+    }
+    .expense-expand-row .expense-panel {
+        border-radius: 0; padding: 10px 20px 14px;
+    }
 </style>
 {% endblock %}
 
@@ -156,18 +201,45 @@
             </select>
         </div>
 
+        <!-- Date range filter -->
+        <div class="d-flex gap-2 mb-2 flex-wrap align-items-center">
+            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+                <label style="font-size:0.68rem; font-weight:800; color:#94A3B8; text-transform:uppercase; white-space:nowrap;">From</label>
+                <input type="date" name="date_from" value="{{ date_from }}"
+                    class="form-control"
+                    style="border-radius:10px; border:1.5px solid {% if date_from %}var(--primary){% else %}#F1F5F9{% endif %}; font-size:0.8rem; font-weight:600; height:38px; background:{% if date_from %}#F0FDF9{% else %}#F8FAFC{% endif %};">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+                <label style="font-size:0.68rem; font-weight:800; color:#94A3B8; text-transform:uppercase; white-space:nowrap;">To</label>
+                <input type="date" name="date_to" value="{{ date_to }}"
+                    class="form-control"
+                    style="border-radius:10px; border:1.5px solid {% if date_to %}var(--primary){% else %}#F1F5F9{% endif %}; font-size:0.8rem; font-weight:600; height:38px; background:{% if date_to %}#F0FDF9{% else %}#F8FAFC{% endif %};">
+            </div>
+            <button type="submit" class="btn-app btn-app-primary" style="height:38px; padding:0 16px; border-radius:10px; font-size:0.8rem; white-space:nowrap; flex-shrink:0;">
+                <i class="bi bi-funnel-fill me-1"></i> Apply
+            </button>
+            {% if date_from or date_to %}
+            <a href="?q={{ query }}&payment_status={{ payment_status }}&per_page={{ per_page }}"
+               class="btn btn-light d-flex align-items-center justify-content-center"
+               style="width:38px; height:38px; border-radius:10px; background:#FEF2F2; border:none; color:#E11D48; flex-shrink:0;" title="Clear dates">
+                <i class="bi bi-x-lg" style="font-size:0.8rem;"></i>
+            </a>
+            {% endif %}
+        </div>
+
         <!-- iOS Native Segmented Filter -->
         <input type="hidden" name="payment_status" id="id_payment_status" value="{{ payment_status }}">
         <div class="ios-segmented-control mb-3">
             <button type="button" class="ios-segment-item {% if not payment_status %}active{% endif %}" onclick="setPaymentSegment('')">All</button>
             <button type="button" class="ios-segment-item {% if payment_status == 'paid' %}active{% endif %}" onclick="setPaymentSegment('paid')">✓ Paid</button>
             <button type="button" class="ios-segment-item {% if payment_status == 'pending' %}active{% endif %}" onclick="setPaymentSegment('pending')">⏳ Pending</button>
+            <button type="button" class="ios-segment-item {% if payment_status == 'tentative' %}active{% endif %}" onclick="setPaymentSegment('tentative')">📋 Tentative</button>
         </div>
     </form>
 
     <!-- Desktop Table -->
     <div class="d-none d-lg-block w-100">
-        <div class="glass-card table-responsive" style="overflow:visible; border:1px solid rgba(255,255,255,0.4);">
+        <div class="glass-card table-responsive" style="position:relative; z-index:5; overflow:visible; border:1px solid rgba(255,255,255,0.4);">
             <table class="table mb-0">
                 <thead>
                     <tr style="background:rgba(241, 245, 249, 0.5); border-bottom:1px solid rgba(0,0,0,0.05);">
@@ -185,6 +257,15 @@
                     <tr style="border-bottom:1px solid #F2F2F5;" class="align-middle">
                         <td style="padding:16px 12px; border:none;">
                             <div style="font-size:0.85rem; font-weight:800; color:var(--primary);">#{{ booking.serial_number }}</div>
+                            {% with exp_count=booking.expenses.count %}
+                            {% if exp_count > 0 %}
+                            <button class="expense-toggle-btn mt-2" onclick="toggleExpenses('desk-{{ booking.pk }}')" id="btn-desk-{{ booking.pk }}">
+                                <i class="bi bi-receipt" style="font-size:0.7rem;"></i>
+                                {{ exp_count }} exp
+                                <span class="arrow">›</span>
+                            </button>
+                            {% endif %}
+                            {% endwith %}
                         </td>
                         <td style="padding:16px 20px; border:none;">
                             <div style="font-size:0.9rem; font-weight:700; color:var(--ink);">{{ booking.title }}</div>
@@ -231,14 +312,25 @@
                                     <i class="bi bi-three-dots-vertical"></i>
                                 </button>
                                 <div class="dropdown-menu" id="dropdown-{{ booking.pk }}">
-                                    <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20{{ current_auditorium.name|default:'Auditorium'|urlencode }}%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
+                                    <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20{{ current_auditorium.name|default:'Auditorium'|urlencode }}%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0ARef:%20%23{{ booking.serial_number }}%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
                                        target="_blank" class="dropdown-item whatsapp">
-                                        <i class="bi bi-whatsapp"></i>
-                                        <span>Share WhatsApp</span>
+                                         <i class="bi bi-whatsapp"></i>
+                                         <span>Share WhatsApp</span>
+                                    </a>
+                                    <a href="{% url 'export_single_booking_pdf' booking.pk %}"
+                                       target="_blank" class="dropdown-item pdf">
+                                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                                        <span>Download Receipt</span>
                                     </a>
                                     {% if request.user.is_superuser or booking.created_by == request.user %}
                                     <div class="dropdown-divider"></div>
-                                    <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
+                                    {% if booking.is_tentative %}
+                                    <button onclick="triggerConfirmTentativeModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}', '{{ booking.address|escapejs }}')" class="dropdown-item edit" style="color: #10B981;">
+                                        <i class="bi bi-check-circle-fill" style="color: #10B981;"></i>
+                                        <span style="color: #10B981; font-weight: bold;">Confirm Booking</span>
+                                    </button>
+                                    {% endif %}
+                                    <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}', '{{ booking.address|escapejs }}', {{ booking.is_tentative|yesno:'true,false' }})"
                                             class="dropdown-item edit">
                                         <i class="bi bi-pencil"></i>
                                         <span>Edit Booking</span>
@@ -253,8 +345,36 @@
                             </div>
                         </td>
                     </tr>
+                    {% if booking.expenses.all %}
+                    <tr class="expense-expand-row">
+                        <td colspan="7">
+                            <div class="expense-panel" id="expenses-desk-{{ booking.pk }}">
+                                <div style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                                    <i class="bi bi-receipt me-1"></i>Booking Expenses
+                                </div>
+                                {% for exp in booking.expenses.all %}
+                                <div class="expense-row-item">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div style="width:26px; height:26px; border-radius:8px; background:#EFF6FF; color:#3B82F6; display:flex; align-items:center; justify-content:center; font-size:0.7rem; flex-shrink:0;">
+                                            <i class="bi bi-{% if exp.category == 'maintenance' %}tools{% elif exp.category == 'salary' %}person-badge-fill{% elif exp.category == 'cleaning' %}brush{% else %}receipt{% endif %}"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight:700; color:#1E293B;">{{ exp.title }}</div>
+                                            <div style="font-size:0.65rem; color:#94A3B8; font-weight:600;">{{ exp.get_category_display }} · {{ exp.date|date:"d M Y" }}</div>
+                                        </div>
+                                    </div>
+                                    <div style="font-weight:800; color:#3B82F6; font-size:0.8rem; flex-shrink:0;">₹{{ exp.amount|floatformat:0 }}</div>
+                                </div>
+                                {% endfor %}
+                                <div class="exp-total-line-desk" style="display:flex; justify-content:flex-end; margin-top:8px; padding-top:8px; border-top:1px solid #E2E8F0;">
+                                    <span style="font-size:0.7rem; font-weight:800; color:#3B82F6;" data-booking-total-desk="{{ booking.pk }}"></span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
                     {% empty %}
-                    <tr><td colspan="6" style="padding:48px; text-align:center; color:var(--ink-3); font-size:0.85rem; border:none;">No bookings yet</td></tr>
+                    <tr><td colspan="7" style="padding:48px; text-align:center; color:var(--ink-3); font-size:0.85rem; border:none;">No bookings yet</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
@@ -302,14 +422,25 @@
                         <i class="bi bi-three-dots-vertical"></i>
                     </button>
                     <div class="dropdown-menu" id="dropdown-mobile-{{ booking.pk }}">
-                        <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20{{ current_auditorium.name|default:'Auditorium'|urlencode }}%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
+                        <a href="https://wa.me/91{{ booking.mobile_number }}?text=Hello%20{{ booking.contact_person|urlencode }}%2C%0A%0AYour%20booking%20at%20{{ current_auditorium.name|default:'Auditorium'|urlencode }}%20has%20been%20confirmed!%0A%0A*Booking%20Details:*%0ARef:%20%23{{ booking.serial_number }}%0AEvent:%20{{ booking.title|urlencode }}%0ADate:%20{{ booking.start_time|date:'D, M j, Y'|urlencode }}%0ATime:%20{{ booking.start_time|date:'g:i A'|urlencode }}%20-%20{{ booking.end_time|date:'g:i A'|urlencode }}%0A%0A*Payment:*%0ATotal:%20Rs%20{{ booking.total_amount|floatformat:0 }}%0APaid:%20Rs%20{{ booking.advance_received|floatformat:0 }}%0ABalance:%20Rs%20{{ booking.pending_amount|floatformat:0 }}%0A%0AThank%20you!"
                            target="_blank" class="dropdown-item whatsapp">
                             <i class="bi bi-whatsapp"></i>
                             <span>Share WhatsApp</span>
                         </a>
+                        <a href="{% url 'export_single_booking_pdf' booking.pk %}"
+                           target="_blank" class="dropdown-item pdf">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                            <span>Download Receipt</span>
+                        </a>
                         {% if request.user.is_superuser or booking.created_by == request.user %}
                         <div class="dropdown-divider"></div>
-                        <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}')"
+                        {% if booking.is_tentative %}
+                        <button onclick="triggerConfirmTentativeModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}', '{{ booking.address|escapejs }}')" class="dropdown-item edit" style="color: #10B981;">
+                            <i class="bi bi-check-circle-fill" style="color: #10B981;"></i>
+                            <span style="color: #10B981; font-weight: bold;">Confirm Booking</span>
+                        </button>
+                        {% endif %}
+                        <button onclick="triggerEditModal('{{ booking.pk }}', '{{ booking.title|escapejs }}', '{{ booking.contact_person|escapejs }}', '{{ booking.mobile_number|escapejs }}', '{{ booking.total_amount }}', '{{ booking.advance_received }}', '{{ booking.start_time|date:'Y-m-d' }}', '{{ booking.start_time|date:'H:i' }}', '{{ booking.end_time|date:'H:i' }}', '{% url 'booking_edit' booking.pk %}', '{{ booking.address|escapejs }}', {{ booking.is_tentative|yesno:'true,false' }})"
                                 class="dropdown-item edit">
                             <i class="bi bi-pencil"></i>
                             <span>Edit Booking</span>
@@ -323,6 +454,34 @@
                     </div>
                 </div>
             </div>
+            {% if booking.expenses.all %}
+            <div style="margin-top:8px;">
+                <button class="expense-toggle-btn w-100 justify-content-center" onclick="toggleExpenses('mob-{{ booking.pk }}')" id="btn-mob-{{ booking.pk }}">
+                    <i class="bi bi-receipt" style="font-size:0.7rem;"></i>
+                    {{ booking.expenses.count }} Expense{{ booking.expenses.count|pluralize }}
+                    <span class="arrow">›</span>
+                </button>
+                <div class="expense-panel" id="expenses-mob-{{ booking.pk }}" style="border-radius:10px; margin-top:4px;">
+                    {% for exp in booking.expenses.all %}
+                    <div class="expense-row-item">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <div style="width:24px; height:24px; border-radius:7px; background:#EFF6FF; color:#3B82F6; display:flex; align-items:center; justify-content:center; font-size:0.65rem; flex-shrink:0;">
+                                <i class="bi bi-{% if exp.category == 'maintenance' %}tools{% elif exp.category == 'salary' %}person-badge-fill{% elif exp.category == 'cleaning' %}brush{% else %}receipt{% endif %}"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:0.75rem; font-weight:700; color:#1E293B;">{{ exp.title }}</div>
+                                <div style="font-size:0.62rem; color:#94A3B8; font-weight:600;">{{ exp.get_category_display }} · {{ exp.date|date:"d M Y" }}</div>
+                            </div>
+                        </div>
+                        <div style="font-weight:800; color:#3B82F6; font-size:0.78rem; flex-shrink:0;">₹{{ exp.amount|floatformat:0 }}</div>
+                    </div>
+                    {% endfor %}
+                    <div style="display:flex; justify-content:flex-end; margin-top:6px; padding-top:6px; border-top:1px solid #E2E8F0;">
+                        <span style="font-size:0.68rem; font-weight:800; color:#3B82F6;" data-booking-total-mob="{{ booking.pk }}"></span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% empty %}
         <div style="text-align:center; padding:64px 20px;">
@@ -389,7 +548,7 @@ function getCookie(name) {
 }
 
 function togglePaymentStatus(pk) {
-    const csrftoken = getCookie('csrftoken');
+    const csrftoken = '{{ csrf_token }}';
     
     fetch(`/api/toggle-payment/${pk}/`, {
         method: 'POST',
@@ -421,6 +580,7 @@ function togglePaymentStatus(pk) {
     });
 }
 
+
 // Toggle dropdown menu
 function toggleDropdown(id) {
     const dropdown = document.getElementById('dropdown-' + id);
@@ -432,6 +592,10 @@ function toggleDropdown(id) {
             d.classList.remove('show');
             const card = d.closest('.booking-mobile-card');
             if (card) card.classList.remove('dropdown-open');
+            const parentContainer = d.closest('.dropdown-menu-container');
+            if (parentContainer) parentContainer.style.zIndex = '';
+            const gCard = d.closest('.glass-card');
+            if (gCard) gCard.style.paddingBottom = '';
         }
     });
 
@@ -440,6 +604,14 @@ function toggleDropdown(id) {
     const currentCard = dropdown.closest('.booking-mobile-card');
     if (currentCard) {
         currentCard.classList.toggle('dropdown-open', dropdown.classList.contains('show'));
+    }
+    const container = dropdown.closest('.dropdown-menu-container');
+    if (container) {
+        container.style.zIndex = dropdown.classList.contains('show') ? '9999' : '';
+    }
+    const glassCard = dropdown.closest('.glass-card');
+    if (glassCard) {
+        glassCard.style.paddingBottom = dropdown.classList.contains('show') ? '180px' : '';
     }
 }
 
@@ -450,8 +622,40 @@ document.addEventListener('click', function(event) {
             d.classList.remove('show');
             const card = d.closest('.booking-mobile-card');
             if (card) card.classList.remove('dropdown-open');
+            const parentContainer = d.closest('.dropdown-menu-container');
+            if (parentContainer) parentContainer.style.zIndex = '';
+            const gCard = d.closest('.glass-card');
+            if (gCard) gCard.style.paddingBottom = '';
         });
     }
+});
+
+// Expense accordion toggle
+function toggleExpenses(id) {
+    const panel = document.getElementById('expenses-' + id);
+    const btn   = document.getElementById('btn-' + id);
+    if (!panel || !btn) return;
+    const opening = !panel.classList.contains('open');
+    panel.classList.toggle('open', opening);
+    btn.classList.toggle('open', opening);
+}
+
+// Compute per-booking expense totals from rendered row amounts
+document.addEventListener('DOMContentLoaded', function() {
+    ['desk', 'mob'].forEach(function(prefix) {
+        document.querySelectorAll('[data-booking-total-' + prefix + ']').forEach(function(span) {
+            const pk = span.dataset['bookingTotal' + (prefix === 'desk' ? 'Desk' : 'Mob')];
+            const panel = document.getElementById('expenses-' + prefix + '-' + pk);
+            if (!panel) return;
+            let total = 0;
+            panel.querySelectorAll('.expense-row-item').forEach(function(row) {
+                // amount is the last child element with blue colour
+                const amtEl = row.querySelector('[style*="font-weight:800"]');
+                if (amtEl) total += parseFloat(amtEl.textContent.replace('₹', '').replace(/,/g, '')) || 0;
+            });
+            span.textContent = 'Total: ₹' + total.toLocaleString('en-IN');
+        });
+    });
 });
 </script>
 {% endblock %}

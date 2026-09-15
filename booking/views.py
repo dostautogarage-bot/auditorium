@@ -87,7 +87,7 @@ def register(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
     if request.method == 'POST':
-        form = AuditoriumRegistrationForm(request.POST)
+        form = AuditoriumRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user, auditorium = form.save()
             from django.contrib.auth import login as auth_login
@@ -156,16 +156,50 @@ def dashboard(request):
     admin_total = User.objects.filter(is_staff=True).count()
     total_life = Booking.objects.filter(auditorium=auditorium).count()
     
+    # Expense filter for user annotations
+    expense_filter_q = Q(expenses__auditorium=auditorium)
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            expense_filter_q &= Q(expenses__date__year=year, expenses__date__month=month)
+        except (ValueError, AttributeError):
+            pass
+    else:
+        if start_date:
+            expense_filter_q &= Q(expenses__date__gte=start_date)
+        if end_date:
+            expense_filter_q &= Q(expenses__date__lte=end_date)
+
     # Admin Breakdown — scoped to this auditorium
     admin_breakdown = User.objects.filter(profile__auditorium=auditorium).annotate(
         collected=Sum('bookings__advance_received', filter=Q(bookings__in=filtered_qs)),
         booking_count=Count('bookings', filter=Q(bookings__in=filtered_qs)),
-        total_booking_amount=Sum('bookings__total_amount', filter=Q(bookings__in=filtered_qs))
+        total_booking_amount=Sum('bookings__total_amount', filter=Q(bookings__in=filtered_qs)),
+        expense_total=Sum('expenses__amount', filter=expense_filter_q),
+        general_expense_total=Sum('expenses__amount', filter=expense_filter_q & Q(expenses__expense_type='general')),
+        booking_expense_total=Sum('expenses__amount', filter=expense_filter_q & Q(expenses__expense_type='booking')),
+        expense_count=Count('expenses', filter=expense_filter_q),
     ).order_by('-collected')
-    
-    # Calculate pending amount for each admin
+
+    # Calculate pending amount and attach expense list for each admin
     for admin in admin_breakdown:
         admin.pending_amount = (admin.total_booking_amount or 0) - (admin.collected or 0)
+        
+        # Filter expense list by date range/month/auditorium
+        admin_expenses = Expense.objects.filter(auditorium=auditorium, submitted_by=admin)
+        if selected_month:
+            try:
+                year, month = map(int, selected_month.split('-'))
+                admin_expenses = admin_expenses.filter(date__year=year, date__month=month)
+            except (ValueError, AttributeError):
+                pass
+        else:
+            if start_date:
+                admin_expenses = admin_expenses.filter(date__gte=start_date)
+            if end_date:
+                admin_expenses = admin_expenses.filter(date__lte=end_date)
+                
+        admin.expense_list = admin_expenses.select_related('booking').order_by('-date')[:10]
     
     # Month list for dropdown (last 12 months)
     month_options = []
@@ -182,10 +216,36 @@ def dashboard(request):
     all_admins = User.objects.filter(profile__auditorium=auditorium).order_by('username')
     recent_bookings = filtered_qs.order_by('-start_time')[:10]
 
+    # Filter Logic for main expenses display
+    filtered_expense_qs = Expense.objects.filter(auditorium=auditorium)
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            filtered_expense_qs = filtered_expense_qs.filter(date__year=year, date__month=month)
+        except (ValueError, AttributeError):
+            pass
+    else:
+        if start_date:
+            filtered_expense_qs = filtered_expense_qs.filter(date__gte=start_date)
+        if end_date:
+            filtered_expense_qs = filtered_expense_qs.filter(date__lte=end_date)
+            
+    if admin_id:
+        filtered_expense_qs = filtered_expense_qs.filter(submitted_by_id=admin_id)
+
     # Expense summary
-    expense_qs = Expense.objects.filter(auditorium=auditorium)
-    expense_total_spent = expense_qs.aggregate(s=Sum('amount'))['s'] or 0
-    recent_expenses = expense_qs.order_by('-created_at')[:5]
+    expense_search = request.GET.get('expense_search', '').strip()
+    expense_qs = filtered_expense_qs.select_related('booking')
+    if expense_search:
+        expense_qs = expense_qs.filter(
+            Q(title__icontains=expense_search) |
+            Q(booking__title__icontains=expense_search)
+        )
+    expense_total_spent = filtered_expense_qs.aggregate(s=Sum('amount'))['s'] or 0
+    general_expense_total = filtered_expense_qs.filter(expense_type='general').aggregate(s=Sum('amount'))['s'] or 0
+    booking_expense_total = filtered_expense_qs.filter(expense_type='booking').aggregate(s=Sum('amount'))['s'] or 0
+    recent_general_expenses = expense_qs.filter(expense_type='general').order_by('-created_at')[:10]
+    recent_booking_expenses = expense_qs.filter(expense_type='booking').order_by('-created_at')[:10]
 
     return render(request, 'booking/dashboard.html', {
         'auditorium': auditorium,
@@ -200,7 +260,11 @@ def dashboard(request):
             'filtered_count': filtered_count
         },
         'expense_total_spent': expense_total_spent,
-        'recent_expenses': recent_expenses,
+        'general_expense_total': general_expense_total,
+        'booking_expense_total': booking_expense_total,
+        'recent_general_expenses': recent_general_expenses,
+        'recent_booking_expenses': recent_booking_expenses,
+        'expense_search': expense_search,
         'admin_breakdown': admin_breakdown,
         'all_admins': all_admins,
         'month_options': month_options,
@@ -368,9 +432,11 @@ def booking_list(request):
 
     query = request.GET.get('q', '').strip()
     payment_status = request.GET.get('payment_status', '').strip()
-    
-    bookings = Booking.objects.filter(auditorium=auditorium).order_by('-created_at')
-    
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+
+    bookings = Booking.objects.filter(auditorium=auditorium).order_by('-start_time').prefetch_related('expenses')
+
     # Stats scoped to this auditorium
     total_this_month = Booking.objects.filter(auditorium=auditorium, start_time__month=now.month, start_time__year=now.year).count()
     my_bookings_count = Booking.objects.filter(auditorium=auditorium, created_by=request.user).count()
@@ -383,14 +449,21 @@ def booking_list(request):
             Q(contact_person__icontains=query) |
             Q(mobile_number__icontains=query)
         )
-    
+
+    # Date range filter
+    if date_from:
+        bookings = bookings.filter(start_time__date__gte=date_from)
+    if date_to:
+        bookings = bookings.filter(start_time__date__lte=date_to)
+
     # Payment status filter
     if payment_status == 'paid':
         bookings = bookings.filter(payment_pending=False)
     elif payment_status == 'pending':
-        bookings = bookings.filter(payment_pending=True)
-    # 'all' or empty shows everything
-        
+        bookings = bookings.filter(payment_pending=True, is_tentative=False)
+    elif payment_status == 'tentative':
+        bookings = bookings.filter(is_tentative=True)
+
     per_page = int(request.GET.get('per_page', 300))
     if per_page not in [50, 100, 300, 500]:
         per_page = 300
@@ -398,11 +471,13 @@ def booking_list(request):
     paginator = Paginator(bookings, per_page)
     page_number = request.GET.get('page')
     booking_page = paginator.get_page(page_number)
-    
+
     return render(request, 'booking/booking_list.html', {
         'bookings': booking_page,
         'query': query,
         'payment_status': payment_status,
+        'date_from': date_from,
+        'date_to': date_to,
         'per_page': per_page,
         'stats': {
             'month_total': total_this_month,
@@ -433,12 +508,15 @@ def booking_create(request):
     auditorium = get_auditorium_for_user(request.user)
 
     if request.method == 'POST':
-        form = BookingForm(request.POST)
+        form = BookingForm(request.POST, auditorium=auditorium)
         if form.is_valid():
             booking = form.save(commit=False)
             
             # Prevent Past Bookings
-            if booking.start_time < timezone.now():
+            comp_start = booking.start_time
+            if timezone.is_naive(comp_start):
+                comp_start = timezone.make_aware(comp_start)
+            if comp_start < timezone.now():
                 error_msg = 'Cannot create a booking in the past!'
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({'status': 'error', 'message': error_msg})
@@ -495,7 +573,7 @@ def booking_create(request):
             initial_data['start_time'] = start_time
         if end_time:
             initial_data['end_time'] = end_time
-        form = BookingForm(initial=initial_data)
+        form = BookingForm(initial=initial_data, auditorium=auditorium)
         
     return render(request, 'booking/booking_form.html', {
         'form': form,
@@ -532,10 +610,13 @@ def booking_edit(request, pk):
         return redirect('calendar')
     
     if request.method == 'POST':
-        form = BookingForm(request.POST, instance=booking)
+        form = BookingForm(request.POST, instance=booking, auditorium=booking.auditorium)
         if form.is_valid():
             new_booking = form.save(commit=False)
-            if new_booking.start_time < timezone.now():
+            comp_start = new_booking.start_time
+            if timezone.is_naive(comp_start):
+                comp_start = timezone.make_aware(comp_start)
+            if comp_start < timezone.now():
                 error_msg = 'Cannot set a booking to a past time!'
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return JsonResponse({'status': 'error', 'message': error_msg})
@@ -568,7 +649,7 @@ def booking_edit(request, pk):
                 'submit_text': 'Update Booking'
             })
     else:
-        form = BookingForm(instance=booking)
+        form = BookingForm(instance=booking, auditorium=booking.auditorium)
         
     return render(request, 'booking/booking_form.html', {
         'form': form,
@@ -810,18 +891,18 @@ def booking_api(request):
         start_time = timezone.localtime(booking.start_time)
         end_time = timezone.localtime(booking.end_time)
         
-        # Determine shift (Day: 9 AM - 4 PM, Night: 5 PM - 9 PM)
-        start_hour = start_time.hour
-        end_hour = end_time.hour
+        # Determine shift based on auditorium dynamic shift times
+        aud_day_start = auditorium.day_shift_start
+        aud_day_end = auditorium.day_shift_end
+        aud_night_start = auditorium.night_shift_start
+        aud_night_end = auditorium.night_shift_end
         
-        is_start_day = 9 <= start_hour < 16
-        is_start_night = 17 <= start_hour < 21
+        booking_start_time_of_day = start_time.time()
+        booking_end_time_of_day = end_time.time()
         
-        # Check if it's a day shift (9 AM - 4 PM)
-        if 9 <= start_hour < 16 and 9 <= end_hour <= 16:
+        if aud_day_start <= booking_start_time_of_day <= aud_day_end and aud_day_start <= booking_end_time_of_day <= aud_day_end:
             shift = 'day'
-        # Check if it's a night shift (5 PM - 9 PM)
-        elif 17 <= start_hour < 21 and 17 <= end_hour <= 21:
+        elif aud_night_start <= booking_start_time_of_day <= aud_night_end and aud_night_start <= booking_end_time_of_day <= aud_night_end:
             shift = 'night'
         else:
             shift = 'overlap'
@@ -845,7 +926,8 @@ def booking_api(request):
                 'end': display_end.isoformat(),
                 'extendedProps': {
                     'shift': shift,
-                    'timing': time_str
+                    'timing': time_str,
+                    'is_tentative': booking.is_tentative,
                 }
             })
         else:
@@ -856,6 +938,7 @@ def booking_api(request):
                 'end': display_end.isoformat(),
                 'contact_person': booking.contact_person,
                 'mobile_number': booking.mobile_number,
+                'address': booking.address,
                 'total_amount': str(booking.total_amount),
                 'advance_received': str(booking.advance_received),
                 'pending_amount': str(booking.pending_amount),
@@ -868,12 +951,14 @@ def booking_api(request):
                     'shift': shift,
                     'contact': booking.contact_person,
                     'mobile': booking.mobile_number,
+                    'address': booking.address,
                     'timing': time_str,
                     'total_amount': str(booking.total_amount),
                     'advance_received': str(booking.advance_received),
                     'pending_amount': str(booking.pending_amount),
                     'payment_pending': booking.payment_pending,
                     'created_by_id': booking.created_by.pk,
+                    'is_tentative': booking.is_tentative,
                 }
             })
     return JsonResponse(events, safe=False)
@@ -881,8 +966,8 @@ def booking_api(request):
 
 @login_required
 def check_conflict(request):
-    start = request.GET.get('start')
-    end = request.GET.get('end')
+    start = request.GET.get('start_time') or request.GET.get('start')
+    end = request.GET.get('end_time') or request.GET.get('end')
     if not start or not end:
         return JsonResponse({'conflict': False})
 
@@ -894,20 +979,37 @@ def check_conflict(request):
     
     if requested_start and requested_start < timezone.now():
         return JsonResponse({
-            'conflict': True, 
+            'conflict': True,
             'is_past': True,
             'message': 'Cannot book time in the past.'
         })
 
-    exclude_id = request.GET.get('exclude_id')
+    exclude_id = request.GET.get('exclude_id') or request.GET.get('booking_id')
     
     auditorium = get_auditorium_for_user(request.user)
-    conflicts = Booking.objects.filter(auditorium=auditorium).filter(
-        Q(start_time__lt=end, end_time__gt=start)
-    )
+    
+    start_dt = parse_datetime(start)
+    end_dt = parse_datetime(end)
+    if start_dt and timezone.is_naive(start_dt):
+        start_dt = timezone.make_aware(start_dt)
+    if end_dt and timezone.is_naive(end_dt):
+        end_dt = timezone.make_aware(end_dt)
+
+    conflicts = Booking.objects.filter(auditorium=auditorium)
+    if start_dt and end_dt:
+        conflicts = conflicts.filter(
+            Q(start_time__lt=end_dt, end_time__gt=start_dt)
+        )
+    else:
+        conflicts = conflicts.filter(
+            Q(start_time__lt=end, end_time__gt=start)
+        )
     
     if exclude_id:
-        conflicts = conflicts.exclude(pk=exclude_id)
+        try:
+            conflicts = conflicts.exclude(pk=int(exclude_id))
+        except ValueError:
+            pass
         
     conflicts = conflicts.values('title', 'start_time', 'end_time')
     
@@ -1209,24 +1311,45 @@ def expense_list(request):
     if deny:
         return deny
     auditorium = get_auditorium_for_user(request.user)
-    qs = Expense.objects.filter(auditorium=auditorium).select_related('submitted_by')
+    qs = Expense.objects.filter(auditorium=auditorium).select_related('submitted_by', 'booking')
+
+    # Expense Type filter
+    expense_type_filter = request.GET.get('expense_type', '')
+    if expense_type_filter:
+        qs = qs.filter(expense_type=expense_type_filter)
 
     # Category filter
     category_filter = request.GET.get('category', '')
     if category_filter:
         qs = qs.filter(category=category_filter)
 
-    # Total spent across all entries in this auditorium
-    total_spent = Expense.objects.filter(auditorium=auditorium).aggregate(s=Sum('amount'))['s'] or 0
+    # Date range filter
+    date_from = request.GET.get('date_from', '').strip()
+    date_to = request.GET.get('date_to', '').strip()
+    if date_from:
+        qs = qs.filter(date__gte=date_from)
+    if date_to:
+        qs = qs.filter(date__lte=date_to)
 
-    form = ExpenseForm()
+    # Total spent across all entries in this auditorium (unfiltered)
+    total_spent = Expense.objects.filter(auditorium=auditorium).aggregate(s=Sum('amount'))['s'] or 0
+    # Filtered total
+    filtered_total = qs.aggregate(s=Sum('amount'))['s'] or 0
+
+    form = ExpenseForm(auditorium=auditorium)
+    bookings = Booking.objects.filter(auditorium=auditorium).order_by('-start_time')
 
     return render(request, 'booking/expense_list.html', {
         'expenses': qs,
         'form': form,
+        'expense_type_filter': expense_type_filter,
         'category_filter': category_filter,
         'category_choices': Expense.CATEGORY_CHOICES,
         'total_spent': total_spent,
+        'filtered_total': filtered_total,
+        'date_from': date_from,
+        'date_to': date_to,
+        'bookings': bookings,
     })
 
 
@@ -1252,7 +1375,7 @@ def expense_create(request):
             pass
 
     auditorium = get_auditorium_for_user(request.user)
-    form = ExpenseForm(request.POST)
+    form = ExpenseForm(request.POST, auditorium=auditorium)
     if form.is_valid():
         expense = form.save(commit=False)
         expense.auditorium = auditorium
@@ -1337,7 +1460,7 @@ def owner_portal_auditorium_create(request):
         return deny
 
     if request.method == 'POST':
-        form = PlatformAuditoriumCreateForm(request.POST)
+        form = PlatformAuditoriumCreateForm(request.POST, request.FILES)
         if form.is_valid():
             auditorium, admin_user = form.save()
             messages.success(request, f'Auditorium "{auditorium.name}" and Super Admin "{admin_user.username}" created successfully!')
@@ -1398,7 +1521,7 @@ def owner_portal_auditorium_edit(request, pk):
 
     auditorium = get_object_or_404(Auditorium, pk=pk)
     if request.method == 'POST':
-        form = PlatformAuditoriumEditForm(request.POST, instance=auditorium)
+        form = PlatformAuditoriumEditForm(request.POST, request.FILES, instance=auditorium)
         if form.is_valid():
             form.save()
             messages.success(request, f'Auditorium "{auditorium.name}" details updated successfully.')

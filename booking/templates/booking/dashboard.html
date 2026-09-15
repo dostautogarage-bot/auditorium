@@ -48,7 +48,7 @@
 
     @media (min-width: 992px) {
         .dg-stat-grid {
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(6, 1fr);
             gap: 16px;
         }
     }
@@ -253,8 +253,12 @@
             <div class="dg-stat-value">₹{{ stats.pending_amount|default:"0"|floatformat:0 }}</div>
         </div>
         <div class="dg-stat-box dg-box-orange">
-            <div class="dg-stat-label">Total Expenses</div>
-            <div class="dg-stat-value">₹{{ expense_total_spent|default:"0"|floatformat:0 }}</div>
+            <div class="dg-stat-label">General Expenses</div>
+            <div class="dg-stat-value">₹{{ general_expense_total|default:"0"|floatformat:0 }}</div>
+        </div>
+        <div class="dg-stat-box dg-box-purple">
+            <div class="dg-stat-label">Booking Expenses</div>
+            <div class="dg-stat-value">₹{{ booking_expense_total|default:"0"|floatformat:0 }}</div>
         </div>
 
     </div>
@@ -282,7 +286,7 @@
             <h2 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #1E293B; margin: 0;">Payment Details by Admin</h2>
         </div>
         <div class="table-responsive">
-            <table class="table table-borderless align-middle mb-0" style="min-width: 600px;">
+            <table class="table table-borderless align-middle mb-0" style="min-width: 680px;">
                 <thead>
                     <tr style="border-bottom: 1.5px solid #F1F5F9;">
                         <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0;">Staff Name</th>
@@ -290,6 +294,8 @@
                         <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Total Amount</th>
                         <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Received</th>
                         <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Pending</th>
+                        <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Gen. Expenses</th>
+                        <th style="font-size:0.65rem; font-weight:800; color:#94A3B8; text-transform:uppercase; padding:12px 0; text-align:right;">Book. Expenses</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -301,6 +307,14 @@
                                     {{ admin.username|slice:":1"|upper }}
                                 </div>
                                 <div style="font-weight: 800; color: #1E293B; font-size: 0.85rem;">{{ admin.username }}</div>
+                                {% if admin.expense_count %}
+                                <button onclick="toggleAdminExpenses('{{ admin.pk }}')"
+                                    id="exp-btn-{{ admin.pk }}"
+                                    style="display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; border:1.5px solid #BFDBFE; background:#EFF6FF; color:#3B82F6; cursor:pointer; transition:0.18s; padding:0; margin-left:4px;"
+                                    title="View Expense Details">
+                                    <span id="exp-arrow-{{ admin.pk }}" style="display:inline-block; transition:transform 0.2s; font-size:0.75rem; font-weight:bold; line-height:1; color:#3B82F6;">›</span>
+                                </button>
+                                {% endif %}
                             </div>
                         </td>
                         <td style="padding:14px 0; text-align:center; font-weight: 700; color: #64748B; font-size: 0.8rem;">
@@ -315,63 +329,199 @@
                         <td style="padding:14px 0; text-align:right; font-weight:800; color: #FF7A00; font-size: 0.85rem;">
                             ₹{{ admin.pending_amount|default:0|floatformat:0 }}
                         </td>
+                        <td style="padding:14px 0; text-align:right; font-weight:800; color: #D97706; font-size: 0.85rem;">
+                            ₹{{ admin.general_expense_total|default:0|floatformat:0 }}
+                        </td>
+                        <td style="padding:14px 0; text-align:right; font-weight:800; color: #3B82F6; font-size: 0.85rem;">
+                            ₹{{ admin.booking_expense_total|default:0|floatformat:0 }}
+                        </td>
                     </tr>
+                    {% if admin.expense_list %}
+                    <tr id="exp-row-{{ admin.pk }}" style="display:none;">
+                        <td colspan="7" style="padding:0; border:none;">
+                            <div style="background:#F0F9FF; border-left:3px solid #3B82F6; border-radius:0 0 12px 12px; padding:12px 16px 14px; margin-bottom:4px;">
+                                <div style="font-size:0.62rem; font-weight:800; color:#3B82F6; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:10px;">
+                                    <i class="bi bi-receipt me-1"></i>Expenses by {{ admin.username }}
+                                </div>
+                                {% for exp in admin.expense_list %}
+                                <div style="display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px dashed #DBEAFE;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <div style="width:26px; height:26px; border-radius:7px; background:#DBEAFE; color:#3B82F6; display:flex; align-items:center; justify-content:center; font-size:0.65rem; flex-shrink:0;">
+                                            <i class="bi bi-{% if exp.category == 'maintenance' %}tools{% elif exp.category == 'salary' %}person-badge-fill{% elif exp.category == 'cleaning' %}brush{% else %}receipt{% endif %}"></i>
+                                        </div>
+                                        <div>
+                                            <div style="font-size:0.78rem; font-weight:700; color:#1E293B;">{{ exp.title }}</div>
+                                            <div style="font-size:0.62rem; color:#94A3B8; font-weight:600;">
+                                                {{ exp.get_category_display }} · {{ exp.date|date:"d M Y" }}
+                                                {% if exp.expense_type == 'booking' and exp.booking %}
+                                                · <span style="color:#3B82F6;"><i class="bi bi-link-45deg"></i> #{{ exp.booking.serial_number }} {{ exp.booking.title }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="font-weight:800; color:#3B82F6; font-size:0.82rem; flex-shrink:0; padding-left:12px;">₹{{ exp.amount|floatformat:0 }}</div>
+                                </div>
+                                {% endfor %}
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:8px; margin-top:2px;">
+                                    <span style="font-size:0.65rem; font-weight:800; color:#64748B;">
+                                        General: ₹{{ admin.general_expense_total|default:0|floatformat:0 }} &bull; Booking: ₹{{ admin.booking_expense_total|default:0|floatformat:0 }}
+                                    </span>
+                                    <span style="font-size:0.7rem; font-weight:800; color:#3B82F6;">Total: ₹{{ admin.expense_total|default:0|floatformat:0 }}</span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
                     {% empty %}
-                    <tr><td colspan="5" class="text-center py-4 text-muted small fw-bold">No staff users found</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-muted small fw-bold">No staff users found</td></tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- ===== EXPENSE OVERVIEW ===== -->
-    <div class="dg-section-card mb-4">
+    <!-- ===== EXPENSE OVERVIEW HEADER & SEARCH ===== -->
+    <div class="dg-section-card mb-4" style="padding: 16px 20px;">
         <div class="d-flex align-items-center justify-content-between mb-3">
             <h2 style="font-size:1rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#1E293B; margin:0;">
-                <i class="bi bi-wallet2 me-2" style="color:var(--primary);"></i>Expenses
+                <i class="bi bi-wallet2 me-2" style="color:var(--primary);"></i>Expenses Overview
             </h2>
-            <a href="{% url 'expense_list' %}" style="font-size:0.75rem; font-weight:800; color:var(--primary); text-decoration:none;">
-                View All <i class="bi bi-arrow-right"></i>
+            <div style="font-size:0.85rem; font-weight:800; color:var(--primary);">
+                Total Spent: ₹{{ expense_total_spent|floatformat:0 }}
+            </div>
+        </div>
+
+        <!-- Expense search bar -->
+        <form method="GET" id="expenseSearchForm" style="margin:0; display:flex; gap:8px; align-items:center;">
+            {# Preserve existing dashboard filters #}
+            {% if filters.month %}<input type="hidden" name="month" value="{{ filters.month }}">{% endif %}
+            {% if filters.start_date %}<input type="hidden" name="start_date" value="{{ filters.start_date }}">{% endif %}
+            {% if filters.end_date %}<input type="hidden" name="end_date" value="{{ filters.end_date }}">{% endif %}
+            {% if filters.admin_id %}<input type="hidden" name="admin_id" value="{{ filters.admin_id }}">{% endif %}
+            <div style="flex:1; position:relative;">
+                <i class="bi bi-search" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#94A3B8; font-size:0.8rem; pointer-events:none;"></i>
+                <input type="text" name="expense_search" value="{{ expense_search }}"
+                    placeholder="Filter by expense title or booking name…"
+                    style="width:100%; padding:8px 10px 8px 30px; border-radius:10px; border:1.5px solid {% if expense_search %}var(--primary){% else %}#F1F5F9{% endif %}; font-size:0.8rem; font-weight:600; color:#1E293B; background:{% if expense_search %}#F0FDF9{% else %}#F8FAFC{% endif %}; outline:none;">
+            </div>
+            {% if expense_search %}
+            <a href="?{% if filters.month %}month={{ filters.month }}&{% endif %}{% if filters.start_date %}start_date={{ filters.start_date }}&{% endif %}{% if filters.end_date %}end_date={{ filters.end_date }}&{% endif %}{% if filters.admin_id %}admin_id={{ filters.admin_id }}{% endif %}"
+               style="display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:10px; background:#FEF2F2; color:#E11D48; text-decoration:none; flex-shrink:0;" title="Clear filter">
+                <i class="bi bi-x-lg" style="font-size:0.8rem;"></i>
             </a>
-        </div>
+            {% endif %}
+        </form>
+    </div>
 
-        <!-- Total spent -->
-        <div style="background:#FFF7ED; border-radius:14px; padding:14px 18px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between;">
-            <div style="font-size:0.7rem; font-weight:800; color:#D97706; text-transform:uppercase; letter-spacing:.06em;">Total Spent</div>
-            <div style="font-size:1.4rem; font-weight:900; color:var(--primary); letter-spacing:-0.03em;">₹{{ expense_total_spent|floatformat:0 }}</div>
-        </div>
-
-        <!-- Recent expenses -->
-        {% if recent_expenses %}
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            {% for expense in recent_expenses %}
-            <div style="display:flex; align-items:center; gap:12px; padding:10px 14px; background:#F8FAFC; border-radius:13px; border:1px solid #F1F5F9;">
-                <div style="width:36px; height:36px; border-radius:11px; background:#FFF7ED; color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                    <i class="bi
-                        {% if expense.category == 'maintenance' %}bi-tools
-                        {% elif expense.category == 'utilities' %}bi-lightning-charge-fill
-                        {% elif expense.category == 'supplies' %}bi-box-seam-fill
-                        {% elif expense.category == 'salary' %}bi-person-badge-fill
-                        {% elif expense.category == 'marketing' %}bi-megaphone-fill
-                        {% else %}bi-receipt{% endif %}
-                    " style="font-size:0.95rem;"></i>
+    <!-- ===== EXPENSE SECTIONS (SEPARATED) ===== -->
+    <div class="row">
+        <!-- General Expenses Column -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="dg-section-card h-100" style="margin-bottom:0; padding:20px;">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h2 style="font-size:0.9rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#1E293B; margin:0;">
+                        <i class="bi bi-wallet2 me-2" style="color:#D97706;"></i>General Expenses
+                    </h2>
+                    <a href="{% url 'expense_list' %}?expense_type=general" style="font-size:0.75rem; font-weight:800; color:#D97706; text-decoration:none;">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
-                <div style="flex:1; min-width:0;">
-                    <div style="font-weight:800; font-size:0.85rem; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ expense.title }}</div>
-                    <div style="font-size:0.7rem; color:#94A3B8; font-weight:600; margin-top:1px;">
-                        {{ expense.get_category_display }} &bull; {{ expense.submitted_by.username }} &bull; {{ expense.date|date:"d M" }}
+
+                <!-- Total Spent General -->
+                <div style="background:#FFF7ED; border-radius:14px; padding:12px 16px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div style="font-size:0.68rem; font-weight:800; color:#D97706; text-transform:uppercase; letter-spacing:.06em;">Total Spent (General)</div>
+                        <div style="font-size:1.25rem; font-weight:900; color:#D97706; letter-spacing:-0.02em;">₹{{ general_expense_total|floatformat:0 }}</div>
                     </div>
                 </div>
-                <div style="font-weight:900; font-size:0.9rem; color:var(--primary); flex-shrink:0;">₹{{ expense.amount|floatformat:0 }}</div>
+
+                <!-- General Expense list -->
+                {% if recent_general_expenses %}
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    {% for expense in recent_general_expenses %}
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 14px; background:#F8FAFC; border-radius:13px; border:1px solid #F1F5F9;">
+                        <div style="width:36px; height:36px; border-radius:11px; background:#FFF7ED; color:#D97706; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="bi
+                                {% if expense.category == 'maintenance' %}bi-tools
+                                {% elif expense.category == 'salary' %}bi-person-badge-fill
+                                {% elif expense.category == 'cleaning' %}bi-brush
+                                {% else %}bi-receipt{% endif %}
+                            " style="font-size:0.95rem;"></i>
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-weight:800; font-size:0.85rem; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ expense.title }}</div>
+                            <div style="font-size:0.7rem; color:#94A3B8; font-weight:600; margin-top:1px;">
+                                {{ expense.get_category_display }} &bull; {{ expense.submitted_by.username }} &bull; {{ expense.date|date:"d M" }}
+                            </div>
+                        </div>
+                        <div style="font-weight:900; font-size:0.9rem; color:#D97706; flex-shrink:0;">₹{{ expense.amount|floatformat:0 }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align:center; padding:20px 0; color:#CBD5E1;">
+                    <i class="bi bi-receipt" style="font-size:1.8rem;"></i>
+                    <div style="font-size:0.8rem; font-weight:700; margin-top:8px;">
+                        {% if expense_search %}No general expenses match "{{ expense_search }}"{% else %}No general expenses yet{% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div style="text-align:center; padding:20px 0; color:#CBD5E1;">
-            <i class="bi bi-receipt" style="font-size:1.8rem;"></i>
-            <div style="font-size:0.8rem; font-weight:700; margin-top:8px;">No expenses yet</div>
+
+        <!-- Booking Expenses Column -->
+        <div class="col-12 col-lg-6 mb-4">
+            <div class="dg-section-card h-100" style="margin-bottom:0; padding:20px;">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h2 style="font-size:0.9rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:#1E293B; margin:0;">
+                        <i class="bi bi-calendar-event-fill me-2" style="color:#3B82F6;"></i>Booking Expenses
+                    </h2>
+                    <a href="{% url 'expense_list' %}?expense_type=booking" style="font-size:0.75rem; font-weight:800; color:#3B82F6; text-decoration:none;">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Total Spent Booking -->
+                <div style="background:#EFF6FF; border-radius:14px; padding:12px 16px; margin-bottom:16px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div style="font-size:0.68rem; font-weight:800; color:#3B82F6; text-transform:uppercase; letter-spacing:.06em;">Total Spent (Booking)</div>
+                        <div style="font-size:1.25rem; font-weight:900; color:#3B82F6; letter-spacing:-0.02em;">₹{{ booking_expense_total|floatformat:0 }}</div>
+                    </div>
+                </div>
+
+                <!-- Booking Expense list -->
+                {% if recent_booking_expenses %}
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    {% for expense in recent_booking_expenses %}
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px 14px; background:#F8FAFC; border-radius:13px; border:1px solid #BFDBFE;">
+                        <div style="width:36px; height:36px; border-radius:11px; background:#EFF6FF; color:#3B82F6; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="bi bi-calendar-event-fill" style="font-size:0.95rem;"></i>
+                        </div>
+                        <div style="flex:1; min-width:0;">
+                            <div style="font-weight:800; font-size:0.85rem; color:#1E293B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ expense.title }}</div>
+                            {% if expense.booking %}
+                            <div style="font-size:0.68rem; color:#3B82F6; font-weight:700; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                <i class="bi bi-link-45deg"></i> #{{ expense.booking.serial_number }} {{ expense.booking.title }}
+                            </div>
+                            {% endif %}
+                            <div style="font-size:0.7rem; color:#94A3B8; font-weight:600; margin-top:1px;">
+                                {{ expense.get_category_display }} &bull; {{ expense.submitted_by.username }} &bull; {{ expense.date|date:"d M" }}
+                            </div>
+                        </div>
+                        <div style="font-weight:900; font-size:0.9rem; color:#3B82F6; flex-shrink:0;">₹{{ expense.amount|floatformat:0 }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="text-align:center; padding:20px 0; color:#CBD5E1;">
+                    <i class="bi bi-receipt" style="font-size:1.8rem;"></i>
+                    <div style="font-size:0.8rem; font-weight:700; margin-top:8px;">
+                        {% if expense_search %}No booking expenses match "{{ expense_search }}"{% else %}No booking expenses yet{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
     </div>
 
 </div>
@@ -517,5 +667,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// Debounced expense search — submits form 400ms after user stops typing
+(function() {
+    const inp = document.querySelector('#expenseSearchForm input[name="expense_search"]');
+    if (!inp) return;
+    let timer;
+    inp.addEventListener('input', function() {
+        clearTimeout(timer);
+        timer = setTimeout(() => document.getElementById('expenseSearchForm').submit(), 400);
+    });
+})();
+
+function toggleAdminExpenses(pk) {
+    const row   = document.getElementById('exp-row-' + pk);
+    const arrow = document.getElementById('exp-arrow-' + pk);
+    const btn   = document.getElementById('exp-btn-' + pk);
+    if (!row) return;
+    const opening = row.style.display === 'none';
+    row.style.display   = opening ? 'table-row' : 'none';
+    arrow.style.transform = opening ? 'rotate(90deg)' : '';
+    btn.style.background  = opening ? '#DBEAFE' : '#EFF6FF';
+    btn.style.borderColor = opening ? '#93C5FD' : '#BFDBFE';
+}
 </script>
 {% endblock %}

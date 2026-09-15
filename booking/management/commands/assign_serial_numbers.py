@@ -12,9 +12,10 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS('All bookings already have serial numbers!'))
             return
         
-        # Get the last serial number
+        # Get the last serial number — minimum 5 digits (10000)
         last_booking = Booking.objects.filter(serial_number__isnull=False).order_by('-serial_number').first()
-        next_serial = (last_booking.serial_number + 1) if last_booking and last_booking.serial_number else 1
+        next_serial = (last_booking.serial_number + 1) if last_booking and last_booking.serial_number else 10000
+        next_serial = max(next_serial, 10000)
         
         count = 0
         for booking in bookings:

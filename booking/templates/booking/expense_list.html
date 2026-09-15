@@ -77,16 +77,58 @@
     <!-- Total spent card -->
     <div class="app-card mb-3" style="background: var(--primary-gradient); color: white; border: none; padding: 18px 20px;">
         <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; opacity:.85; margin-bottom:4px;">
-            Total Spent (All Time)
+            {% if date_from or date_to %}Filtered Total{% else %}Total Spent (All Time){% endif %}
         </div>
-        <div style="font-size:1.75rem; font-weight:800; letter-spacing:-0.03em;">₹{{ total_spent|floatformat:0 }}</div>
+        <div style="font-size:1.75rem; font-weight:800; letter-spacing:-0.03em;">
+            ₹{% if date_from or date_to %}{{ filtered_total|floatformat:0 }}{% else %}{{ total_spent|floatformat:0 }}{% endif %}
+        </div>
+        {% if date_from or date_to %}
+        <div style="font-size:0.7rem; opacity:0.8; margin-top:4px;">All time: ₹{{ total_spent|floatformat:0 }}</div>
+        {% endif %}
+    </div>
+
+    <!-- Date range filter -->
+    <form method="GET" id="expenseDateForm" class="mb-3">
+        {% if category_filter %}<input type="hidden" name="category" value="{{ category_filter }}">{% endif %}
+        {% if expense_type_filter %}<input type="hidden" name="expense_type" value="{{ expense_type_filter }}">{% endif %}
+        <div class="d-flex gap-2 flex-wrap align-items-center">
+            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:130px;">
+                <label style="font-size:0.68rem; font-weight:800; color:#94A3B8; text-transform:uppercase; white-space:nowrap;">From</label>
+                <input type="date" name="date_from" value="{{ date_from }}"
+                    class="form-control"
+                    style="border-radius:10px; border:1.5px solid {% if date_from %}var(--primary){% else %}#F1F5F9{% endif %}; font-size:0.8rem; font-weight:600; height:38px; background:{% if date_from %}#F0FDF9{% else %}#F8FAFC{% endif %};">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:130px;">
+                <label style="font-size:0.68rem; font-weight:800; color:#94A3B8; text-transform:uppercase; white-space:nowrap;">To</label>
+                <input type="date" name="date_to" value="{{ date_to }}"
+                    class="form-control"
+                    style="border-radius:10px; border:1.5px solid {% if date_to %}var(--primary){% else %}#F1F5F9{% endif %}; font-size:0.8rem; font-weight:600; height:38px; background:{% if date_to %}#F0FDF9{% else %}#F8FAFC{% endif %};">
+            </div>
+            <button type="submit" class="btn-app btn-app-primary" style="height:38px; padding:0 14px; border-radius:10px; font-size:0.8rem; white-space:nowrap; flex-shrink:0;">
+                <i class="bi bi-funnel-fill me-1"></i> Apply
+            </button>
+            {% if date_from or date_to %}
+            <a href="?{% if category_filter %}category={{ category_filter }}&{% endif %}{% if expense_type_filter %}expense_type={{ expense_type_filter }}{% endif %}"
+               class="btn btn-light d-flex align-items-center justify-content-center"
+               style="width:38px; height:38px; border-radius:10px; background:#FEF2F2; border:none; color:#E11D48; flex-shrink:0;" title="Clear dates">
+                <i class="bi bi-x-lg" style="font-size:0.8rem;"></i>
+            </a>
+            {% endif %}
+        </div>
+    </form>
+
+    <!-- Expense Type filters — Segmented Scroll -->
+    <div class="ios-segmented-control mb-2" style="overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;">
+        <a href="?{% if category_filter %}category={{ category_filter }}&{% endif %}{% if date_from %}date_from={{ date_from }}&{% endif %}{% if date_to %}date_to={{ date_to }}{% endif %}" class="ios-segment-item {% if not expense_type_filter %}active{% endif %}">All Types</a>
+        <a href="?expense_type=general{% if category_filter %}&category={{ category_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" class="ios-segment-item {% if expense_type_filter == 'general' %}active{% endif %}">General Expenses</a>
+        <a href="?expense_type=booking{% if category_filter %}&category={{ category_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" class="ios-segment-item {% if expense_type_filter == 'booking' %}active{% endif %}">Booking Expenses</a>
     </div>
 
     <!-- Category filters — iOS Segmented Scroll -->
     <div class="ios-segmented-control mb-3" style="overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;">
-        <a href="{% url 'expense_list' %}" class="ios-segment-item {% if not category_filter %}active{% endif %}">All</a>
+        <a href="?{% if expense_type_filter %}expense_type={{ expense_type_filter }}&{% endif %}{% if date_from %}date_from={{ date_from }}&{% endif %}{% if date_to %}date_to={{ date_to }}{% endif %}" class="ios-segment-item {% if not category_filter %}active{% endif %}">All Categories</a>
         {% for val, label in category_choices %}
-        <a href="?category={{ val }}" class="ios-segment-item {% if category_filter == val %}active{% endif %}">{{ label }}</a>
+        <a href="?category={{ val }}{% if expense_type_filter %}&expense_type={{ expense_type_filter }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" class="ios-segment-item {% if category_filter == val %}active{% endif %}">{{ label }}</a>
         {% endfor %}
     </div>
 
@@ -97,10 +139,12 @@
         <div class="app-card" style="padding:13px 14px;">
             <div class="d-flex align-items-center gap-3">
                 <!-- Icon -->
-                <div style="width:40px; height:40px; border-radius:12px; background:#FFF7ED; color:var(--primary); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem;">
+                <div style="width:40px; height:40px; border-radius:12px; background:{% if expense.expense_type == 'booking' %}#EFF6FF{% else %}#FFF7ED{% endif %}; color:{% if expense.expense_type == 'booking' %}#3B82F6{% else %}var(--primary){% endif %}; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem;">
                     <i class="bi
-                        {% if expense.category == 'maintenance' %}bi-tools
+                        {% if expense.expense_type == 'booking' %}bi-calendar-event-fill
+                        {% elif expense.category == 'maintenance' %}bi-tools
                         {% elif expense.category == 'salary' %}bi-person-badge-fill
+                        {% elif expense.category == 'cleaning' %}bi-brush
                         {% else %}bi-receipt{% endif %}
                     "></i>
                 </div>
@@ -113,6 +157,11 @@
                         <span style="color:#CBD5E1;">•</span>
                         <span>{{ expense.submitted_by.username }}</span>
                     </div>
+                    {% if expense.expense_type == 'booking' and expense.booking %}
+                    <div style="font-size:0.72rem; color:#3B82F6; margin-top:4px; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        <i class="bi bi-link-45deg"></i> #{{ expense.booking.serial_number }} {{ expense.booking.title }}
+                    </div>
+                    {% endif %}
                     {% if expense.description %}
                     <div style="font-size:0.72rem; color:#64748B; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ expense.description }}</div>
                     {% endif %}
@@ -155,6 +204,38 @@
             <div class="modal-body modal-body-premium">
                 <form id="expenseForm" method="POST" action="{% url 'expense_create' %}">
                     {% csrf_token %}
+                    {{ form.expense_type }}
+
+                    <!-- Expense Type Toggle -->
+                    <div class="mb-4">
+                        <label class="form-label">Expense Type</label>
+                        <div class="ios-segmented-control" id="expenseTypeToggle">
+                            <button type="button" class="ios-segment-item active" data-type="general" onclick="setExpenseType('general')">
+                                <i class="bi bi-grid me-1"></i> General
+                            </button>
+                            <button type="button" class="ios-segment-item" data-type="booking" onclick="setExpenseType('booking')">
+                                <i class="bi bi-calendar-event me-1"></i> Booking
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Date (moved up so booking list filters by it) -->
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        {{ form.date }}
+                    </div>
+
+                    <!-- Booking selector (shown only for booking type) -->
+                    <div class="mb-3" id="bookingSelectSection" style="display:none;">
+                        <label class="form-label">Select Booking <span style="color:#E11D48;">*</span></label>
+                        <select name="booking" id="id_expense_booking" class="form-select">
+                            <option value="">— Select Booking —</option>
+                        </select>
+                        <div id="noBookingsMsg" style="display:none; font-size:0.75rem; color:#94A3B8; margin-top:6px;">
+                            <i class="bi bi-info-circle me-1"></i>No bookings found on this date.
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Title</label>
                         {{ form.title }}
@@ -168,10 +249,6 @@
                             <label class="form-label">Category</label>
                             {{ form.category }}
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Date</label>
-                        {{ form.date }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Notes (optional)</label>
@@ -188,12 +265,70 @@
     </div>
 </div>
 
+<!-- All bookings as JSON for client-side date filtering -->
+<script id="allBookingsData" type="application/json">
+[{% for b in bookings %}{"pk":{{ b.pk }},"serial":{{ b.serial_number|default:0 }},"title":"{{ b.title|escapejs }}","date":"{{ b.start_time|date:'Y-m-d' }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+</script>
+
 <script>
+const ALL_BOOKINGS = JSON.parse(document.getElementById('allBookingsData').textContent);
+
 document.addEventListener('DOMContentLoaded', () => {
     const dateField = document.querySelector('#addExpenseModal input[type="date"]');
     if (dateField && !dateField.value) {
         dateField.value = new Date().toISOString().split('T')[0];
     }
+    // Refresh booking list whenever date changes
+    if (dateField) {
+        dateField.addEventListener('change', () => {
+            if (document.getElementById('id_expense_type').value === 'booking') {
+                populateBookingsForDate(dateField.value);
+            }
+        });
+    }
+    // Reset modal to general type on open
+    document.getElementById('addExpenseModal').addEventListener('show.bs.modal', () => {
+        setExpenseType('general');
+        if (dateField) dateField.value = new Date().toISOString().split('T')[0];
+    });
 });
+
+function populateBookingsForDate(dateStr) {
+    const select = document.getElementById('id_expense_booking');
+    const noMsg  = document.getElementById('noBookingsMsg');
+    const filtered = ALL_BOOKINGS.filter(b => b.date === dateStr);
+
+    // Rebuild options
+    select.innerHTML = '<option value="">— Select Booking —</option>';
+    filtered.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.pk;
+        opt.textContent = `#${b.serial} · ${b.title}`;
+        select.appendChild(opt);
+    });
+
+    noMsg.style.display  = filtered.length === 0 ? 'block' : 'none';
+    select.style.display = filtered.length === 0 ? 'none'  : 'block';
+}
+
+function setExpenseType(type) {
+    document.getElementById('id_expense_type').value = type;
+    document.querySelectorAll('#expenseTypeToggle .ios-segment-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+    });
+    const bookingSection = document.getElementById('bookingSelectSection');
+    const bookingSelect  = document.getElementById('id_expense_booking');
+    if (type === 'booking') {
+        bookingSection.style.display = 'block';
+        bookingSelect.required = true;
+        // Populate immediately for the currently selected date
+        const dateVal = document.querySelector('#addExpenseModal input[type="date"]').value;
+        populateBookingsForDate(dateVal);
+    } else {
+        bookingSection.style.display = 'none';
+        bookingSelect.required = false;
+        bookingSelect.value = '';
+    }
+}
 </script>
 {% endblock %}

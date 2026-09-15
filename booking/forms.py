@@ -242,6 +242,56 @@ class AuditoriumRegistrationForm(forms.Form):
         }),
         label='Confirm Password'
     )
+    logo = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*',
+        }),
+        label='Auditorium Logo'
+    )
+    digital_signature = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control',
+            'accept': 'image/*',
+        }),
+        label='Digital Signature (Optional)'
+    )
+    theme_color = forms.CharField(
+        required=False,
+        initial='#FF7A00',
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'class': 'form-control form-control-color w-100',
+            'style': 'height: 42px; padding: 4px; border-radius: 10px;',
+        }),
+        label='Theme Color'
+    )
+    day_shift_start = forms.TimeField(
+        required=False,
+        initial='09:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Day Shift Start'
+    )
+    day_shift_end = forms.TimeField(
+        required=False,
+        initial='16:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Day Shift End'
+    )
+    night_shift_start = forms.TimeField(
+        required=False,
+        initial='17:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Night Shift Start'
+    )
+    night_shift_end = forms.TimeField(
+        required=False,
+        initial='21:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Night Shift End'
+    )
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -269,6 +319,13 @@ class AuditoriumRegistrationForm(forms.Form):
         auditorium = Auditorium.objects.create(
             name=data['auditorium_name'],
             owner=user,
+            logo=data.get('logo'),
+            theme_color=data.get('theme_color') or '#FF7A00',
+            digital_signature=data.get('digital_signature'),
+            day_shift_start=data.get('day_shift_start') or '09:00:00',
+            day_shift_end=data.get('day_shift_end') or '16:00:00',
+            night_shift_start=data.get('night_shift_start') or '17:00:00',
+            night_shift_end=data.get('night_shift_end') or '21:00:00',
         )
         # Link the profile to the auditorium so get_auditorium_for_user works
         profile, _ = UserProfile.objects.get_or_create(user=user, defaults={'is_bookable': True, 'raw_password': data.get('password', '')})
@@ -296,6 +353,58 @@ class PlatformAuditoriumCreateForm(forms.Form):
             'placeholder': 'Mobile Number',
             'style': 'width:100%;'
         })
+    )
+    logo = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control-premium',
+            'accept': 'image/*',
+            'style': 'width:100%;'
+        }),
+        label='Auditorium Logo'
+    )
+    digital_signature = forms.ImageField(
+        required=False,
+        widget=forms.FileInput(attrs={
+            'class': 'form-control-premium',
+            'accept': 'image/*',
+            'style': 'width:100%;'
+        }),
+        label='Digital Signature (Optional)'
+    )
+    theme_color = forms.CharField(
+        required=False,
+        initial='#FF7A00',
+        widget=forms.TextInput(attrs={
+            'type': 'color',
+            'class': 'form-control form-control-color w-100',
+            'style': 'height: 42px; padding: 4px; border-radius: 10px;',
+        }),
+        label='Theme Color'
+    )
+    day_shift_start = forms.TimeField(
+        required=False,
+        initial='09:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control-premium', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Day Shift Start'
+    )
+    day_shift_end = forms.TimeField(
+        required=False,
+        initial='16:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control-premium', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Day Shift End'
+    )
+    night_shift_start = forms.TimeField(
+        required=False,
+        initial='17:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control-premium', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Night Shift Start'
+    )
+    night_shift_end = forms.TimeField(
+        required=False,
+        initial='21:00',
+        widget=forms.TimeInput(attrs={'type': 'time', 'class': 'form-control-premium', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+        label='Night Shift End'
     )
     admin_username = forms.CharField(
         max_length=150,
@@ -331,6 +440,13 @@ class PlatformAuditoriumCreateForm(forms.Form):
             name=data['auditorium_name'],
             owner=admin_user,
             contact_phone=data.get('mobile_number', ''),
+            logo=data.get('logo'),
+            theme_color=data.get('theme_color') or '#FF7A00',
+            digital_signature=data.get('digital_signature'),
+            day_shift_start=data.get('day_shift_start') or '09:00:00',
+            day_shift_end=data.get('day_shift_end') or '16:00:00',
+            night_shift_start=data.get('night_shift_start') or '17:00:00',
+            night_shift_end=data.get('night_shift_end') or '21:00:00',
             is_active=True
         )
         profile, _ = UserProfile.objects.get_or_create(user=admin_user, defaults={'is_bookable': True, 'raw_password': data.get('admin_password', '')})
@@ -347,12 +463,19 @@ class PlatformAuditoriumEditForm(forms.ModelForm):
     """Form used by Master Owner to edit auditorium details and subscription settings."""
     class Meta:
         model = Auditorium
-        fields = ['name', 'monthly_fee', 'contact_phone', 'contact_email', 'is_active', 'suspension_reason', 'notes']
+        fields = ['name', 'monthly_fee', 'contact_phone', 'contact_email', 'logo', 'theme_color', 'digital_signature', 'day_shift_start', 'day_shift_end', 'night_shift_start', 'night_shift_end', 'is_active', 'suspension_reason', 'notes']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'monthly_fee': forms.NumberInput(attrs={'class': 'form-control'}),
             'contact_phone': forms.TextInput(attrs={'class': 'form-control'}),
             'contact_email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'logo': forms.FileInput(attrs={'class': 'form-control'}),
+            'theme_color': forms.TextInput(attrs={'type': 'color', 'class': 'form-control form-control-color w-100', 'style': 'height: 42px; padding: 4px; border-radius: 10px;'}),
+            'digital_signature': forms.FileInput(attrs={'class': 'form-control'}),
+            'day_shift_start': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+            'day_shift_end': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+            'night_shift_start': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
+            'night_shift_end': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'style': 'height: 42px; border-radius: 10px; padding: 8px;'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'suspension_reason': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Non-payment of monthly fees for March'}),
             'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
@@ -418,7 +541,7 @@ class BookingForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = ['title', 'contact_person', 'mobile_number', 'start_time', 'end_time', 'total_amount', 'advance_received']
+        fields = ['title', 'contact_person', 'mobile_number', 'address', 'start_time', 'end_time', 'total_amount', 'advance_received', 'is_tentative']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -432,10 +555,31 @@ class BookingForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': '+91 9876543210'
             }),
+            'address': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Enter address (optional)'
+            }),
+            'is_tentative': forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
+        auditorium = kwargs.pop('auditorium', None)
         super().__init__(*args, **kwargs)
+        
+        # Override shift choices dynamically if auditorium is provided
+        if auditorium:
+            day_start = auditorium.day_shift_start.strftime("%I:%M %p").lstrip('0').replace(' 0', ' ')
+            day_end = auditorium.day_shift_end.strftime("%I:%M %p").lstrip('0').replace(' 0', ' ')
+            night_start = auditorium.night_shift_start.strftime("%I:%M %p").lstrip('0').replace(' 0', ' ')
+            night_end = auditorium.night_shift_end.strftime("%I:%M %p").lstrip('0').replace(' 0', ' ')
+            
+            self.fields['shift'].choices = [
+                ('custom', 'Custom Time'),
+                ('day', f'Day ({day_start} - {day_end})'),
+                ('night', f'Night ({night_start} - {night_end})'),
+            ]
+
         # Preserve existing values when editing
         if self.instance and self.instance.pk:
             # Set initial values from instance for decimal fields
@@ -453,8 +597,12 @@ class BookingForm(forms.ModelForm):
         start_time = cleaned_data.get('start_time')
         end_time = cleaned_data.get('end_time')
 
-        if start_time and start_time < timezone.now():
-            raise forms.ValidationError("Booking cannot be made in the past.")
+        if start_time:
+            comp_start = start_time
+            if timezone.is_naive(comp_start):
+                comp_start = timezone.make_aware(comp_start)
+            if comp_start < timezone.now():
+                raise forms.ValidationError("Booking cannot be made in the past.")
 
         if start_time and end_time and end_time <= start_time:
             raise forms.ValidationError("End time must be after start time.")
@@ -487,11 +635,19 @@ class ExpenseForm(forms.ModelForm):
         }),
         label='Expense Date'
     )
+    booking = forms.ModelChoiceField(
+        queryset=Booking.objects.none(),
+        required=False,
+        empty_label='— Select Booking —',
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_expense_booking'}),
+        label='Linked Booking',
+    )
 
     class Meta:
         model = Expense
-        fields = ['title', 'amount', 'category', 'date', 'description']
+        fields = ['expense_type', 'booking', 'title', 'amount', 'category', 'date', 'description']
         widgets = {
+            'expense_type': forms.HiddenInput(),
             'title': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'e.g. Generator fuel'
@@ -509,3 +665,20 @@ class ExpenseForm(forms.ModelForm):
                 'placeholder': 'Optional details…'
             }),
         }
+
+    def __init__(self, *args, auditorium=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if auditorium:
+            self.fields['booking'].queryset = Booking.objects.filter(
+                auditorium=auditorium
+            ).order_by('-start_time')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        expense_type = cleaned_data.get('expense_type', 'general')
+        booking = cleaned_data.get('booking')
+        if expense_type == 'booking' and not booking:
+            self.add_error('booking', 'Please select a booking for this expense.')
+        if expense_type == 'general':
+            cleaned_data['booking'] = None
+        return cleaned_data

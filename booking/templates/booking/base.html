@@ -67,10 +67,17 @@
 
     <style>
         :root {
+            {% if current_auditorium and current_auditorium.theme_color %}
+            --primary: {{ current_auditorium.theme_color }};
+            --primary-dark: {{ current_auditorium.theme_color }};
+            --primary-soft: {{ current_auditorium.theme_color }}18;
+            --primary-gradient: linear-gradient(135deg, {{ current_auditorium.theme_color }}cc 0%, {{ current_auditorium.theme_color }} 100%);
+            {% else %}
             --primary: #FF7A00;
             --primary-dark: #E66E00;
             --primary-soft: rgba(255, 122, 0, 0.09);
             --primary-gradient: linear-gradient(135deg, #FF9533 0%, #FF7A00 100%);
+            {% endif %}
             --accent: #FF4D4D;
             --accent-gradient: linear-gradient(135deg, #FF6B6B 0%, #FF4D4D 100%);
             --blue-gradient: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
@@ -1267,8 +1274,13 @@
     <!-- MOBILE APP HEADER -->
     <header class="app-header">
         <div class="d-flex align-items-center gap-2">
-            <img src="{% static 'favicon.png' %}" alt="Auditorium Logo"
-                style="width:32px; height:32px; border-radius:8px; object-fit:cover;">
+            {% if current_auditorium and current_auditorium.logo %}
+                <img src="{{ current_auditorium.logo.url }}" alt="Auditorium Logo"
+                    style="width:32px; height:32px; border-radius:8px; object-fit:cover;">
+            {% else %}
+                <img src="{% static 'favicon.png' %}" alt="Auditorium Logo"
+                    style="width:32px; height:32px; border-radius:8px; object-fit:cover;">
+            {% endif %}
             <span
                 style="font-family:'Outfit',sans-serif; font-size:1.1rem; font-weight:800; color:var(--ink); letter-spacing:-0.03em;">
                 {% if is_master_owner %}Owner Portal{% elif current_auditorium %}{{ current_auditorium.name }}{% else %}Auditorium{% endif %}
@@ -1290,8 +1302,13 @@
     <!-- DESKTOP SIDEBAR -->
     <aside class="app-sidebar">
         <div class="sidebar-brand">
-            <img src="{% static 'favicon.png' %}" alt="Auditorium Logo"
-                style="width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 10px rgba(255, 122, 0, 0.3);">
+            {% if current_auditorium and current_auditorium.logo %}
+                <img src="{{ current_auditorium.logo.url }}" alt="Auditorium Logo"
+                    style="width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 10px rgba(255, 122, 0, 0.3);">
+            {% else %}
+                <img src="{% static 'favicon.png' %}" alt="Auditorium Logo"
+                    style="width:40px; height:40px; border-radius:10px; object-fit:cover; box-shadow: 0 4px 10px rgba(255, 122, 0, 0.3);">
+            {% endif %}
             <span
                 style="font-family:'Outfit',sans-serif; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:-0.04em;">
                 {% if is_master_owner %}Owner Portal{% elif current_auditorium %}{{ current_auditorium.name }}{% else %}Auditorium{% endif %}
@@ -1459,17 +1476,33 @@
                                 placeholder="+91 9876543210" required>
                             <div id="err_mobile" class="error-msg-app">Valid mobile number is required</div>
                         </div>
+                        <div class="mb-3"><label class="form-label">Address <span class="text-muted" style="font-size:0.8rem;">(Optional)</span></label><textarea
+                                id="id_address" name="address" class="form-control-premium"
+                                placeholder="Enter address (optional)" rows="3" style="resize:vertical;"></textarea>
+                        </div>
                         <div id="startTimeSection" class="mb-3"><label class="form-label">Start Time</label>
                             <div class="d-flex gap-2 mb-3">
                                 <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('day')"
                                     style="border-color: #F59E0B; color: #92400E; background: #FEF3C7;">
                                     <i class="bi bi-sun-fill me-1"></i> Day
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">9 AM - 4 PM</span>
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">
+                                        {% if current_auditorium %}
+                                            {{ current_auditorium.day_shift_start|time:"g A" }} - {{ current_auditorium.day_shift_end|time:"g A" }}
+                                        {% else %}
+                                            9 AM - 4 PM
+                                        {% endif %}
+                                    </span>
                                 </div>
                                 <div class="time-chip flex-grow-1 text-center py-2" onclick="applyPresetShift('night')"
                                     style="border-color: #6366F1; color: #3730A3; background: #E0E7FF;">
                                     <i class="bi bi-moon-stars-fill me-1"></i> Night
-                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">5 PM - 9 PM</span>
+                                    <span style="display:block; font-size:0.6rem; opacity:0.8;">
+                                        {% if current_auditorium %}
+                                            {{ current_auditorium.night_shift_start|time:"g A" }} - {{ current_auditorium.night_shift_end|time:"g A" }}
+                                        {% else %}
+                                            5 PM - 9 PM
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                             <div id="startTimeSuggestions" class="time-suggestion-list"></div>
@@ -1497,6 +1530,18 @@
                             <label class="form-label">Advance Payment (Optional)</label>
                             <input type="number" id="id_advance" name="advance_received" class="form-control-premium"
                                 placeholder="0.00" step="0.01" min="0">
+                        </div>
+                        <!-- Tentative toggle -->
+                        <div class="d-flex align-items-center justify-content-between mb-2"
+                             style="background:#F8FAFC; border-radius:14px; padding:12px 14px; border:1.5px solid #F1F5F9;">
+                            <div>
+                                <div style="font-weight:800; font-size:0.82rem; color:#1E293B;">Tentative Booking</div>
+                                <div style="font-size:0.68rem; color:#94A3B8; font-weight:600; margin-top:1px;">Not yet confirmed</div>
+                            </div>
+                            <div class="form-check form-switch mb-0 ms-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="id_modal_tentative"
+                                       style="width:44px; height:24px; cursor:pointer;">
+                            </div>
                         </div>
                         <input type="hidden" id="modal_date_base">
                         <input type="hidden" id="modal_booking_id" value="">
@@ -1574,10 +1619,12 @@
                         <input type="hidden" name="shift" id="finalShift" value="custom">
                         <input type="hidden" name="contact_person" id="finalContact">
                         <input type="hidden" name="mobile_number" id="finalMobile">
+                        <input type="hidden" name="address" id="finalAddress">
                         <input type="hidden" name="start_time" id="finalStart">
                         <input type="hidden" name="end_time" id="finalEnd">
                         <input type="hidden" name="total_amount" id="finalTotalAmount">
                         <input type="hidden" name="advance_received" id="finalAdvance">
+                        <input type="hidden" name="is_tentative" id="finalIsTentative" value="false">
                     </form>
                 </div>
                 <div class="modal-footer modal-footer-premium flex-column gap-2">
@@ -1782,6 +1829,13 @@
                             <span style="font-weight: 600; color: var(--ink-muted);">Email</span>
                             <span style="font-weight: 600; color: var(--ink);">{{ user.email|default:"Not set" }}</span>
                         </div>
+                    </div>
+
+                    <!-- PWA Profile Install Option -->
+                    <div id="pwa-profile-install-row" class="w-100 mb-3 d-none">
+                        <button type="button" id="pwa-profile-install-btn" class="btn-app w-100 py-3" style="background: var(--primary-gradient); border-radius: 16px; color: white; border: none; font-weight: 800;">
+                            <i class="bi bi-phone-fill me-2"></i>Install Mobile App
+                        </button>
                     </div>
 
                     <div class="d-flex flex-column gap-2 w-100">
@@ -2069,11 +2123,17 @@
             if (shiftInput) shiftInput.value = shift;
 
             if (shift === 'day') {
-                selectedEndTime = '16:00';
-                selectStartTime('09:00', '9:00 AM');
+                selectedEndTime = '{% if current_auditorium %}{{ current_auditorium.day_shift_end|time:"H:i" }}{% else %}16:00{% endif %}';
+                selectStartTime(
+                    '{% if current_auditorium %}{{ current_auditorium.day_shift_start|time:"H:i" }}{% else %}09:00{% endif %}',
+                    '{% if current_auditorium %}{{ current_auditorium.day_shift_start|time:"g:i A" }}{% else %}9:00 AM{% endif %}'
+                );
             } else if (shift === 'night') {
-                selectedEndTime = '21:00';
-                selectStartTime('17:00', '5:00 PM');
+                selectedEndTime = '{% if current_auditorium %}{{ current_auditorium.night_shift_end|time:"H:i" }}{% else %}21:00{% endif %}';
+                selectStartTime(
+                    '{% if current_auditorium %}{{ current_auditorium.night_shift_start|time:"H:i" }}{% else %}17:00{% endif %}',
+                    '{% if current_auditorium %}{{ current_auditorium.night_shift_start|time:"g:i A" }}{% else %}5:00 PM{% endif %}'
+                );
             } else {
                 resetStartTime();
             }
@@ -2090,6 +2150,8 @@
             const title = eventObj.title;
             const contact = eventObj.extendedProps.contact || '';
             const mobile = eventObj.extendedProps.mobile || '';
+            const address = eventObj.extendedProps.address || '';
+            const isTentative = !!eventObj.extendedProps.is_tentative;
             const totalAmount = eventObj.extendedProps.total_amount || '0';
             const advance = eventObj.extendedProps.advance_received || '0';
             const created_by = eventObj.extendedProps.created_by || 'Admin';
@@ -2129,7 +2191,7 @@
 
                 editBtn.onclick = () => {
                     bootstrap.Modal.getInstance(document.getElementById('eventDetailModal')).hide();
-                    triggerEditModal(pk, title, contact, mobile, totalAmount, advance, date, startTime24, endTime24, `/bookings/${pk}/edit/`);
+                    triggerEditModal(pk, title, contact, mobile, totalAmount, advance, date, startTime24, endTime24, `/bookings/${pk}/edit/`, address, isTentative);
                 };
 
                 if (deleteBtn) {
@@ -2143,7 +2205,7 @@
             new bootstrap.Modal(document.getElementById('eventDetailModal')).show();
         }
 
-        function triggerEditModal(pk, title, contact, mobile, totalAmount, advance, date, start, end, editUrl) {
+        function triggerEditModal(pk, title, contact, mobile, totalAmount, advance, date, start, end, editUrl, address, isTentative) {
             if (!USER_CAN_BOOK) {
                 new bootstrap.Modal(document.getElementById('permissionModal')).show();
                 return;
@@ -2157,9 +2219,11 @@
             document.getElementById('id_title').value = title;
             document.getElementById('id_contact').value = contact;
             document.getElementById('id_mobile').value = mobile;
+            document.getElementById('id_address').value = address || '';
             document.getElementById('id_total_amount').value = totalAmount || '0';
             document.getElementById('id_advance').value = advance;
             document.getElementById('modal_date_base').value = date;
+            document.getElementById('id_modal_tentative').checked = !!isTentative;
 
             // Handle Start/End selections
             selectedEndTime = end.substring(0, 5); // Ensure HH:MM format
@@ -2179,6 +2243,46 @@
 
             new bootstrap.Modal(document.getElementById('createBookingModal')).show();
         }
+
+        function triggerConfirmTentativeModal(pk, title, contact, mobile, totalAmount, advance, date, start, end, editUrl, address) {
+            if (!USER_CAN_BOOK) {
+                new bootstrap.Modal(document.getElementById('permissionModal')).show();
+                return;
+            }
+            // Reset modal first
+            document.getElementById('mainBookingForm').reset();
+            resetStartTime();
+
+            // Populate - AFTER reset
+            document.getElementById('modal_booking_id').value = pk;
+            document.getElementById('id_title').value = title;
+            document.getElementById('id_contact').value = contact;
+            document.getElementById('id_mobile').value = mobile;
+            document.getElementById('id_address').value = address || '';
+            document.getElementById('id_total_amount').value = totalAmount || '0';
+            document.getElementById('id_advance').value = advance;
+            document.getElementById('modal_date_base').value = date;
+            document.getElementById('id_modal_tentative').checked = false;
+
+            // Handle Start/End selections
+            selectedEndTime = end.substring(0, 5); // Ensure HH:MM format
+            if (start === '09:00' && (end === '16:00' || end === '16:00:00')) {
+                applyPresetShift('day');
+            } else if (start === '17:00' && (end === '21:00' || end === '21:00:00')) {
+                applyPresetShift('night');
+            } else {
+                const shiftInput = document.getElementById('id_modal_shift');
+                if (shiftInput) shiftInput.value = 'custom';
+                selectStartTime(start, formatTime12(start), null);
+            }
+
+            // Change Action to edit URL
+            document.getElementById('finalSubmitForm').action = editUrl;
+
+            // Open the confirmation modal directly
+            showConfirmation();
+        }
+
         function formatTime12(h24) {
             let [h, m] = h24.split(':').map(Number);
             const ampm = h >= 12 ? 'PM' : 'AM';
@@ -2238,6 +2342,8 @@
             const dateBase = document.getElementById('modal_date_base').value;
             const contact = document.getElementById('id_contact').value.trim();
             const mobile = document.getElementById('id_mobile').value.trim();
+            const address = document.getElementById('id_address').value.trim();
+            const isTentative = document.getElementById('id_modal_tentative').checked;
             const totalAmount = document.getElementById('id_total_amount').value || '0';
             const advance = document.getElementById('id_advance').value || '0';
 
@@ -2280,8 +2386,8 @@
                 const response = await fetch(conflictCheckUrl);
                 const data = await response.json();
 
-                // Show loading state if conflict found
-                document.getElementById('confLoading').style.display = data.conflict ? 'flex' : 'none';
+                // Ensure loading overlay is hidden when viewing details
+                document.getElementById('confLoading').style.display = 'none';
                 document.getElementById('conflictBanner').classList.toggle('d-none', !data.conflict);
 
                 // Format time to 12h
@@ -2305,10 +2411,12 @@
                 document.getElementById('finalShift').value = document.getElementById('id_modal_shift').value || 'custom';
                 document.getElementById('finalContact').value = contact;
                 document.getElementById('finalMobile').value = mobile;
+                document.getElementById('finalAddress').value = address;
                 document.getElementById('finalStart').value = startDateTime;
                 document.getElementById('finalEnd').value = endDateTime;
                 document.getElementById('finalTotalAmount').value = totalAmount;
                 document.getElementById('finalAdvance').value = advance;
+                document.getElementById('finalIsTentative').value = isTentative ? 'true' : 'false';
 
                 // Show confirmation modal
                 new bootstrap.Modal(document.getElementById('confirmationModal')).show();
@@ -2323,6 +2431,73 @@
         });
     </script>
     <script>
+        // ---- GLOBAL PDF & EXCEL PWA FETCH & DOWNLOAD ENGINE ----
+        const _isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
+                       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        const _isStandalone = window.navigator.standalone === true ||
+                              window.matchMedia('(display-mode: standalone)').matches;
+
+        async function fetchAndDownload(url, fallbackName, mimeType, btn) {
+            const label = btn.querySelector('.export-btn-label') || btn.querySelector('span') || btn;
+            const originalText = label ? label.textContent : '';
+            btn.disabled = true;
+            btn.style.opacity = '0.65';
+            if (label) label.textContent = '...';
+
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error('Export failed: ' + res.status);
+                const cd = res.headers.get('Content-Disposition') || '';
+                const match = cd.match(/filename="?([^";\n]+)"?/i);
+                const filename = match ? match[1] : fallbackName;
+                const blobData = await res.blob();
+                const fileBlob = new Blob([blobData], { type: mimeType });
+
+                // Check if Web Share API with files is supported (best experience on iOS / Android mobile)
+                if (navigator.canShare && window.File) {
+                    try {
+                        const file = new File([fileBlob], filename, { type: mimeType });
+                        if (navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                files: [file],
+                                title: filename,
+                            });
+                            return;
+                        }
+                    } catch (shareErr) {
+                        if (shareErr.name === 'AbortError') return;
+                        console.warn('Navigator share error, falling back:', shareErr);
+                    }
+                }
+
+                const blobUrl = URL.createObjectURL(fileBlob);
+
+                if (_isIOS) {
+                    const win = window.open(blobUrl, '_blank');
+                    if (!win) window.location.href = blobUrl;
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
+                } else {
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = filename;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(blobUrl);
+                    }, 1000);
+                }
+            } catch (err) {
+                alert('Export failed. Please try again.');
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                if (label) label.textContent = originalText;
+            }
+        }
+
         // ---- PWA INSTALL LOGIC ----
         (function () {
             const DISMISS_KEY = 'audy_pwa_dismissed';
@@ -2351,6 +2526,11 @@
             window.addEventListener('beforeinstallprompt', function (e) {
                 e.preventDefault();
                 deferredPrompt = e;
+                
+                // Unhide the install option in the Account/Profile Modal
+                const profileInstallRow = document.getElementById('pwa-profile-install-row');
+                if (profileInstallRow) profileInstallRow.classList.remove('d-none');
+
                 if (dismissed || isInStandaloneMode) return;
                 const banner = document.getElementById('pwa-android-banner');
                 if (banner) banner.style.display = 'flex';
@@ -2362,8 +2542,24 @@
                 const { outcome } = await deferredPrompt.userChoice;
                 deferredPrompt = null;
                 document.getElementById('pwa-android-banner').style.display = 'none';
+                const profileInstallRow = document.getElementById('pwa-profile-install-row');
+                if (profileInstallRow) profileInstallRow.classList.add('d-none');
                 if (outcome === 'accepted') localStorage.setItem(DISMISS_KEY, '1');
             });
+
+            const profileInstallBtn = document.getElementById('pwa-profile-install-btn');
+            if (profileInstallBtn) {
+                profileInstallBtn.addEventListener('click', async function () {
+                    if (!deferredPrompt) return;
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    document.getElementById('pwa-android-banner').style.display = 'none';
+                    const profileInstallRow = document.getElementById('pwa-profile-install-row');
+                    if (profileInstallRow) profileInstallRow.classList.add('d-none');
+                    if (outcome === 'accepted') localStorage.setItem(DISMISS_KEY, '1');
+                });
+            }
 
             document.getElementById('pwa-android-dismiss').addEventListener('click', function () {
                 document.getElementById('pwa-android-banner').style.display = 'none';
@@ -2374,6 +2570,8 @@
             window.addEventListener('appinstalled', function () {
                 document.getElementById('pwa-android-banner').style.display = 'none';
                 document.getElementById('pwa-ios-banner').style.display = 'none';
+                const profileInstallRow = document.getElementById('pwa-profile-install-row');
+                if (profileInstallRow) profileInstallRow.classList.add('d-none');
                 localStorage.setItem(DISMISS_KEY, '1');
             });
         })();

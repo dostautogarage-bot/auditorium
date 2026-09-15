@@ -209,13 +209,53 @@
     </div>
     {% endif %}
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
 
         <div class="reg-section-label"><i class="bi bi-building me-1"></i> Auditorium Details</div>
         <label class="reg-label">Auditorium Name</label>
         {{ form.auditorium_name }}
         {{ form.auditorium_name.errors }}
+
+        <label class="reg-label">Auditorium Logo</label>
+        {{ form.logo }}
+        {{ form.logo.errors }}
+
+        <label class="reg-label">Digital Signature (Optional)</label>
+        {{ form.digital_signature }}
+        {{ form.digital_signature.errors }}
+
+        <label class="reg-label">Theme Color</label>
+        <div style="margin-bottom: 12px;">
+            {{ form.theme_color }}
+        </div>
+        {{ form.theme_color.errors }}
+
+        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+            <div style="flex: 1;">
+                <label class="reg-label">Day Shift Start</label>
+                {{ form.day_shift_start }}
+                {{ form.day_shift_start.errors }}
+            </div>
+            <div style="flex: 1;">
+                <label class="reg-label">Day Shift End</label>
+                {{ form.day_shift_end }}
+                {{ form.day_shift_end.errors }}
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+            <div style="flex: 1;">
+                <label class="reg-label">Night Shift Start</label>
+                {{ form.night_shift_start }}
+                {{ form.night_shift_start.errors }}
+            </div>
+            <div style="flex: 1;">
+                <label class="reg-label">Night Shift End</label>
+                {{ form.night_shift_end }}
+                {{ form.night_shift_end.errors }}
+            </div>
+        </div>
 
         <div class="reg-section-label"><i class="bi bi-person me-1"></i> Your Account</div>
         <label class="reg-label">Username</label>
@@ -246,6 +286,6 @@
 
 <script>
     /* Apply reg-input class to all form inputs */
-    document.querySelectorAll('input').forEach(el => el.classList.add('reg-input'));
+    document.querySelectorAll('input:not([type="color"]):not([type="file"])').forEach(el => el.classList.add('reg-input'));
 </script>
 {% endblock %}

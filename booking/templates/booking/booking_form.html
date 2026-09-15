@@ -42,11 +42,27 @@
     <div style="background: var(--card); border-radius: 24px; padding: 24px; border: 1px solid rgba(0,0,0,0.03); box-shadow: var(--shadow-subtle);">
         <form method="POST" id="bookingForm">
             {% csrf_token %}
-            
+            {{ form.is_tentative }}
+
             <div class="mb-4">
                 <label class="form-label">Event Title</label>
                 {{ form.title }}
                 {% if form.title.errors %}<div class="text-danger small fw-bold mt-2">{{ form.title.errors.0 }}</div>{% endif %}
+            </div>
+
+            <!-- Tentative toggle -->
+            <div class="mb-4 d-flex align-items-center justify-content-between"
+                 style="background:#F8FAFC; border-radius:16px; padding:14px 16px; border:1.5px solid #F1F5F9;" id="tentativeRow">
+                <div>
+                    <div style="font-weight:800; font-size:0.88rem; color:#1E293B;">Tentative Booking</div>
+                    <div style="font-size:0.72rem; color:#94A3B8; font-weight:600; margin-top:2px;">Not yet confirmed — shown with a different colour on calendar</div>
+                </div>
+                <div class="form-check form-switch mb-0 ms-3">
+                    <input class="form-check-input" type="checkbox" role="switch" id="tentativeSwitch"
+                           style="width:48px; height:26px; cursor:pointer;"
+                           {% if form.instance.is_tentative %}checked{% endif %}
+                           onchange="document.getElementById('id_is_tentative').value = this.checked ? 'true' : 'false';">
+                </div>
             </div>
 
             <div class="mb-4">
@@ -65,6 +81,12 @@
                 <label class="form-label">Mobile Number</label>
                 {{ form.mobile_number }}
                 {% if form.mobile_number.errors %}<div class="text-danger small fw-bold mt-2">{{ form.mobile_number.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Address <span class="text-muted" style="font-size:0.8rem;">(Optional)</span></label>
+                {{ form.address }}
+                {% if form.address.errors %}<div class="text-danger small fw-bold mt-2">{{ form.address.errors.0 }}</div>{% endif %}
             </div>
 
             <div class="row g-2 mb-5">

@@ -405,6 +405,28 @@
         color: white !important;
         box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
     }
+    .event-tentative-day-shift {
+        background: repeating-linear-gradient(
+            135deg,
+            #FF9800 0px, #FF9800 6px,
+            #1E293B 6px, #1E293B 12px
+        ) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.25) !important;
+        opacity: 0.92 !important;
+        border: 2px dashed rgba(255,255,255,0.5) !important;
+    }
+    .event-tentative-night-shift {
+        background: repeating-linear-gradient(
+            135deg,
+            #6366F1 0px, #6366F1 6px,
+            #1E293B 6px, #1E293B 12px
+        ) !important;
+        color: white !important;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25) !important;
+        opacity: 0.92 !important;
+        border: 2px dashed rgba(255,255,255,0.5) !important;
+    }
 
     /* Legend - Universal */
     .calendar-legend {
@@ -433,6 +455,14 @@
     }
     .legend-day { background: #FF9800; }
     .legend-night { background: #4F46E5; }
+    .legend-tentative-day {
+        background: repeating-linear-gradient(135deg, #FF9800 0px, #FF9800 3px, #1E293B 3px, #1E293B 6px);
+        border: 1px dashed rgba(0,0,0,0.3);
+    }
+    .legend-tentative-night {
+        background: repeating-linear-gradient(135deg, #6366F1 0px, #6366F1 3px, #1E293B 3px, #1E293B 6px);
+        border: 1px dashed rgba(0,0,0,0.3);
+    }
 
     .fc-col-header-cell-cushion {
         font-size: 0.5rem !important;
@@ -518,11 +548,19 @@
         <div class="calendar-legend justify-content-start flex-wrap">
             <div class="legend-item">
                 <div class="legend-color legend-day"></div>
-                <span>Day (9 AM - 4 PM)</span>
+                <span>Day ({% if current_auditorium %}{{ current_auditorium.day_shift_start|time:"g A" }} - {{ current_auditorium.day_shift_end|time:"g A" }}{% else %}9 AM - 4 PM{% endif %})</span>
             </div>
             <div class="legend-item">
                 <div class="legend-color legend-night"></div>
-                <span>Night (5 PM - 9 PM)</span>
+                <span>Night ({% if current_auditorium %}{{ current_auditorium.night_shift_start|time:"g A" }} - {{ current_auditorium.night_shift_end|time:"g A" }}{% else %}5 PM - 9 PM{% endif %})</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-tentative-day"></div>
+                <span>Tentative Day</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-tentative-night"></div>
+                <span>Tentative Night</span>
             </div>
         </div>
         <div id="calendar" class="pop-in {% if is_staff2 %}staff-mode{% endif %}"></div>
@@ -602,6 +640,10 @@
             },
             dayMaxEvents: false, // Show all events (we only expect 2)
             eventClassNames: function (arg) {
+                if (arg.event.extendedProps.is_tentative) {
+                    let shift = arg.event.extendedProps.shift || 'day';
+                    return shift === 'night' ? ['event-tentative-night-shift'] : ['event-tentative-day-shift'];
+                }
                 let shift = arg.event.extendedProps.shift || 'day';
                 if (shift === 'day') return ['event-day-shift'];
                 if (shift === 'night') return ['event-night-shift'];
@@ -644,78 +686,4 @@
     });
 </script>
 
-<script>
-const _isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) ||
-               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const _isStandalone = window.navigator.standalone === true ||
-                      window.matchMedia('(display-mode: standalone)').matches;
-
-async function fetchAndDownload(url, fallbackName, mimeType, btn) {
-    const label = btn.querySelector('.export-btn-label');
-    const originalText = label ? label.textContent : '';
-    btn.disabled = true;
-    btn.style.opacity = '0.65';
-    if (label) label.textContent = '...';
-
-    try {
-        const res = await fetch(url, { credentials: 'same-origin' });
-        if (!res.ok) throw new Error('Export failed: ' + res.status);
-        const cd = res.headers.get('Content-Disposition') || '';
-        const match = cd.match(/filename="?([^";\n]+)"?/i);
-        const filename = match ? match[1] : fallbackName;
-        const blobData = await res.blob();
-        const fileBlob = new Blob([blobData], { type: mimeType });
-
-        // Check if Web Share API with files is supported (best experience on iOS / Android mobile)
-        if (navigator.canShare && window.File) {
-            try {
-                const file = new File([fileBlob], filename, { type: mimeType });
-                if (navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        files: [file],
-                        title: filename,
-                    });
-                    return;
-                }
-            } catch (shareErr) {
-                // If user cancels share sheet or it fails, fallback to blob URL download
-                if (shareErr.name === 'AbortError') {
-                    return;
-                }
-                console.warn('Navigator share error, falling back:', shareErr);
-            }
-        }
-
-        const blobUrl = URL.createObjectURL(fileBlob);
-
-        if (_isIOS) {
-            // In iOS Safari / PWA, navigate or open directly
-            const win = window.open(blobUrl, '_blank');
-            if (!win) {
-                window.location.href = blobUrl;
-            }
-            setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
-        } else {
-            // Android / desktop: standard download trigger
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = filename;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(blobUrl);
-            }, 1000);
-        }
-    } catch (err) {
-        alert('Export failed. Please try again.');
-        console.error(err);
-    } finally {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        if (label) label.textContent = originalText;
-    }
-}
-</script>
 {% endblock %}

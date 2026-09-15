@@ -24,6 +24,13 @@ class Auditorium(models.Model):
     contact_phone = models.CharField(max_length=30, blank=True, default="")
     contact_email = models.EmailField(blank=True, default="")
     notes = models.TextField(blank=True, default="", help_text="Owner/Platform notes for this auditorium")
+    logo = models.ImageField(upload_to='logos/', blank=True, null=True, help_text="Logo of the auditorium")
+    theme_color = models.CharField(max_length=7, default='#FF7A00', help_text="Theme color for this auditorium (HEX format)")
+    digital_signature = models.ImageField(upload_to='signatures/', blank=True, null=True, help_text="Digital Signature of the auditorium (optional)")
+    day_shift_start = models.TimeField(default='09:00:00', help_text="Day shift start time")
+    day_shift_end = models.TimeField(default='16:00:00', help_text="Day shift end time")
+    night_shift_start = models.TimeField(default='17:00:00', help_text="Night shift start time")
+    night_shift_end = models.TimeField(default='21:00:00', help_text="Night shift end time")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -43,6 +50,9 @@ class Auditorium(models.Model):
 
 
 class Booking(models.Model):
+    class Meta:
+        unique_together = ('auditorium', 'serial_number')
+
     auditorium = models.ForeignKey(
         Auditorium,
         on_delete=models.CASCADE,
@@ -50,16 +60,18 @@ class Booking(models.Model):
         null=True,
         blank=True,
     )
-    serial_number = models.PositiveIntegerField(unique=True, null=True, blank=True, help_text="Auto-generated serial number")
+    serial_number = models.PositiveIntegerField(null=True, blank=True, help_text="Auto-generated serial number")
     title = models.CharField(max_length=200)
     contact_person = models.CharField(max_length=150, default='')
     mobile_number = models.CharField(max_length=20, default='')
+    address = models.TextField(blank=True, default='', help_text="Optional address of the contact person or event")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookings')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total booking amount")
     advance_received = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Advance payment received")
     payment_pending = models.BooleanField(default=True, help_text="Whether payment is still pending")
+    is_tentative = models.BooleanField(default=False, help_text="Tentative/unconfirmed booking — shown differently on the calendar")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -91,14 +103,16 @@ class Booking(models.Model):
         self.clean()
         
         # Auto-generate serial number for new bookings (scoped per auditorium)
+        # Minimum 5 digits: starts at 10000
         if not self.serial_number:
             last_booking = Booking.objects.filter(auditorium=self.auditorium).order_by('-serial_number').first()
-            self.serial_number = (last_booking.serial_number + 1) if last_booking and last_booking.serial_number else 1
+            next_serial = (last_booking.serial_number + 1) if last_booking and last_booking.serial_number else 10000
+            self.serial_number = max(next_serial, 10000)
         
         # Auto-mark as fully paid if advance equals or exceeds total amount
-        if self.advance_received >= self.total_amount and self.total_amount > 0:
+        if self.advance_received >= self.total_amount:
             self.payment_pending = False
-        elif self.advance_received < self.total_amount:
+        else:
             self.payment_pending = True
             
         super().save(*args, **kwargs)
@@ -152,13 +166,33 @@ class Expense(models.Model):
     CATEGORY_CHOICES = [
         ('maintenance', 'Maintenance'),
         ('salary', 'Salary'),
+        ('cleaning', 'Cleaning'),
         ('other', 'Other'),
+    ]
+
+    EXPENSE_TYPE_CHOICES = [
+        ('general', 'General'),
+        ('booking', 'Booking'),
     ]
 
     auditorium = models.ForeignKey(
         Auditorium,
         on_delete=models.CASCADE,
         related_name='expenses',
+    )
+    expense_type = models.CharField(
+        max_length=10,
+        choices=EXPENSE_TYPE_CHOICES,
+        default='general',
+        help_text="Whether this expense is linked to a booking or is a general expense",
+    )
+    booking = models.ForeignKey(
+        'Booking',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='expenses',
+        help_text="Linked booking (only for booking-type expenses)",
     )
     title = models.CharField(max_length=200)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
