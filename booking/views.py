@@ -12,6 +12,7 @@ from django.db.models import Q, Sum, Count
 from django.contrib import messages
 from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
+from io import BytesIO
 import json
 from .models import Auditorium, Booking, Expense, UserProfile, get_auditorium_for_user
 from .forms import (
@@ -1190,7 +1191,8 @@ def export_bookings_pdf(request):
     response = HttpResponse(pdf, content_type='application/pdf')
     filename = f'bookings_report_{now.strftime("%Y%m%d_%H%M%S")}.pdf'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    
+    response['Content-Length'] = len(pdf)
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     return response
 
 
@@ -1267,16 +1269,24 @@ def export_bookings_excel(request):
 
     # Auto-size columns
     for col in ws.columns:
-        max_len = max((len(str(cell.value)) if cell.value else 0) for cell in col)
-        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+        col_letter = col[0].column_letter
+        max_len = max((len(str(cell.value)) if cell.value is not None else 0) for cell in col)
+        ws.column_dimensions[col_letter].width = min(max_len + 4, 40)
 
-    # Stream response
+    # Save to memory buffer
+    buffer = BytesIO()
+    wb.save(buffer)
+    excel_data = buffer.getvalue()
+    buffer.close()
+
+    filename = f'bookings_{now.strftime("%Y%m%d_%H%M%S")}.xlsx'
     response = HttpResponse(
+        excel_data,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    filename = f'bookings_{now.strftime("%Y%m%d_%H%M%S")}.xlsx'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    wb.save(response)
+    response['Content-Length'] = len(excel_data)
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     return response
 
 
@@ -1298,7 +1308,8 @@ def export_single_booking_pdf(request, pk):
     response = HttpResponse(pdf, content_type='application/pdf')
     filename = f'booking_{booking.pk}_{booking.title[:20].replace(" ", "_")}.pdf'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    
+    response['Content-Length'] = len(pdf)
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     return response
 
 
@@ -1455,6 +1466,8 @@ def export_dashboard_pdf(request):
     response = HttpResponse(pdf, content_type='application/pdf')
     filename = f'dashboard_report_{now.strftime("%Y%m%d_%H%M%S")}.pdf'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['Content-Length'] = len(pdf)
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     return response
 
 
@@ -1621,16 +1634,25 @@ def export_dashboard_excel(request):
         ])
 
     for col in ws2.columns:
+        col_letter = col[0].column_letter
         max_len = max((len(str(cell.value)) if cell.value is not None else 0) for cell in col)
-        ws2.column_dimensions[col[0].column_letter].width = max(max_len + 4, 15)
+        ws2.column_dimensions[col_letter].width = max(max_len + 4, 15)
+
+    # Save to memory buffer
+    buffer = BytesIO()
+    wb.save(buffer)
+    excel_data = buffer.getvalue()
+    buffer.close()
 
     now = timezone.now()
+    filename = f'dashboard_report_{now.strftime("%Y%m%d_%H%M%S")}.xlsx'
     response = HttpResponse(
+        excel_data,
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    filename = f'dashboard_report_{now.strftime("%Y%m%d_%H%M%S")}.xlsx'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    wb.save(response)
+    response['Content-Length'] = len(excel_data)
+    response['Access-Control-Expose-Headers'] = 'Content-Disposition'
     return response
 
 
