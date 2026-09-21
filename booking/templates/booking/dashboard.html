@@ -172,9 +172,27 @@
 {% block content %}
 <div class="fade-in">
     <!-- Large Header Banner -->
-    <div class="dg-header-banner mb-4">
-        <h1>Dashboard</h1>
-        <p>Real-time auditorium metrics, team activity, and financial oversight.</p>
+    <div class="dg-header-banner mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Real-time auditorium metrics, team activity, and financial oversight.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button onclick="exportDashboard('pdf', this)"
+               class="btn-app"
+               style="padding:8px 14px; background:rgba(255,255,255,0.92); color:#DC2626; font-size:0.8rem; font-weight:800; border:none; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.12);"
+               title="Export Dashboard Report as PDF">
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i>
+                <span class="export-btn-label">Export PDF</span>
+            </button>
+            <button onclick="exportDashboard('excel', this)"
+               class="btn-app"
+               style="padding:8px 14px; background:rgba(255,255,255,0.92); color:#16A34A; font-size:0.8rem; font-weight:800; border:none; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.12);"
+               title="Export Dashboard Report as Excel">
+                <i class="bi bi-file-earmark-excel-fill me-1"></i>
+                <span class="export-btn-label">Export Excel</span>
+            </button>
+        </div>
     </div>
 
     <!-- Audit Filters (Superuser Only) -->
@@ -227,6 +245,17 @@
                 dateInputs.forEach(input => input.disabled = false);
                 dateGroups.forEach(group => group.classList.remove('opacity-50'));
             }
+        }
+
+        function exportDashboard(type, btn) {
+            // Collect current query parameters from URL or form
+            const currentParams = new URLSearchParams(window.location.search);
+            const baseUrl = type === 'pdf' ? "{% url 'export_dashboard_pdf' %}" : "{% url 'export_dashboard_excel' %}";
+            const fullUrl = currentParams.toString() ? `${baseUrl}?${currentParams.toString()}` : baseUrl;
+            const fallbackName = type === 'pdf' ? 'dashboard_report.pdf' : 'dashboard_report.xlsx';
+            const mimeType = type === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            
+            fetchAndDownload(fullUrl, fallbackName, mimeType, btn);
         }
     </script>
 

@@ -317,11 +317,11 @@
                                          <i class="bi bi-whatsapp"></i>
                                          <span>Share WhatsApp</span>
                                     </a>
-                                    <a href="{% url 'export_single_booking_pdf' booking.pk %}"
-                                       target="_blank" class="dropdown-item pdf">
+                                    <button onclick="fetchAndDownload('{% url 'export_single_booking_pdf' booking.pk %}', 'booking_{{ booking.pk }}_receipt.pdf', 'application/pdf', this)"
+                                       class="dropdown-item pdf" style="width:100%; text-align:left; background:none; border:none; cursor:pointer;">
                                         <i class="bi bi-file-earmark-pdf-fill"></i>
-                                        <span>Download Receipt</span>
-                                    </a>
+                                        <span class="export-btn-label">Download Receipt</span>
+                                    </button>
                                     {% if request.user.is_superuser or booking.created_by == request.user %}
                                     <div class="dropdown-divider"></div>
                                     {% if booking.is_tentative %}
@@ -427,11 +427,11 @@
                             <i class="bi bi-whatsapp"></i>
                             <span>Share WhatsApp</span>
                         </a>
-                        <a href="{% url 'export_single_booking_pdf' booking.pk %}"
-                           target="_blank" class="dropdown-item pdf">
+                        <button onclick="fetchAndDownload('{% url 'export_single_booking_pdf' booking.pk %}', 'booking_{{ booking.pk }}_receipt.pdf', 'application/pdf', this)"
+                           class="dropdown-item pdf" style="width:100%; text-align:left; background:none; border:none; cursor:pointer;">
                             <i class="bi bi-file-earmark-pdf-fill"></i>
-                            <span>Download Receipt</span>
-                        </a>
+                            <span class="export-btn-label">Download Receipt</span>
+                        </button>
                         {% if request.user.is_superuser or booking.created_by == request.user %}
                         <div class="dropdown-divider"></div>
                         {% if booking.is_tentative %}

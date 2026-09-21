@@ -487,4 +487,212 @@ def generate_single_booking_pdf(booking):
     buffer.close()
     return pdf
 
+
+def generate_dashboard_pdf(auditorium, stats, admin_breakdown, recent_general_expenses, recent_booking_expenses, filters_applied=None):
+    """
+    Generate an executive Dashboard Summary PDF Report including stats,
+    admin payment breakdown, and expenses overview with current filters.
+    """
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer, pagesize=A4, rightMargin=30, leftMargin=30,
+        topMargin=28, bottomMargin=24
+    )
+    elements = []
+
+    aud_name = auditorium.name if auditorium and auditorium.name else "Auditorium"
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        'DashTitle',
+        parent=styles['Heading1'],
+        fontSize=20,
+        textColor=colors.HexColor('#FF7A00'),
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold',
+        spaceAfter=4
+    )
+    subtitle_style = ParagraphStyle(
+        'DashSubtitle',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#64748B'),
+        alignment=TA_CENTER,
+        fontName='Helvetica',
+        spaceAfter=14
+    )
+    section_heading = ParagraphStyle(
+        'DashSection',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor('#1E293B'),
+        fontName='Helvetica-Bold',
+        spaceBefore=12,
+        spaceAfter=6
+    )
+    normal_style = ParagraphStyle('DashNormal', parent=styles['Normal'], fontSize=8.5, textColor=colors.HexColor('#334155'), leading=12)
+    small_muted = ParagraphStyle('DashSmall', parent=styles['Normal'], fontSize=7.5, textColor=colors.HexColor('#64748B'), leading=10)
+
+    # Header
+    elements.append(Paragraph(f"{aud_name} — Dashboard Report", title_style))
+    now_str = timezone.now().strftime('%B %d, %Y at %I:%M %p')
+    elements.append(Paragraph(f"Generated on {now_str}", subtitle_style))
+
+    # Active filters note if any
+    filter_items = []
+    if filters_applied:
+        if filters_applied.get('month'):
+            filter_items.append(f"<b>Month:</b> {filters_applied['month']}")
+        if filters_applied.get('start_date'):
+            filter_items.append(f"<b>From:</b> {filters_applied['start_date']}")
+        if filters_applied.get('end_date'):
+            filter_items.append(f"<b>To:</b> {filters_applied['end_date']}")
+        if filters_applied.get('admin_name'):
+            filter_items.append(f"<b>Staff:</b> {filters_applied['admin_name']}")
+    if filter_items:
+        filter_text = f"<b>Active Filters:</b> " + " | ".join(filter_items)
+        elements.append(Paragraph(filter_text, normal_style))
+        elements.append(Spacer(1, 8))
+
+    # Section 1: Key Metrics (Stat Cards in table)
+    elements.append(Paragraph("Key Metrics Summary", section_heading))
+    metrics_data = [
+        ['Filtered Bookings', 'Total Booking Amount', 'Advance Received', 'Pending Amount', 'General Expenses', 'Booking Expenses'],
+        [
+            str(stats.get('filtered_count', 0)),
+            f"Rs {stats.get('total_amount', 0):,.0f}",
+            f"Rs {stats.get('total_advance', 0):,.0f}",
+            f"Rs {stats.get('pending_amount', 0):,.0f}",
+            f"Rs {stats.get('general_expense_total', 0):,.0f}",
+            f"Rs {stats.get('booking_expense_total', 0):,.0f}",
+        ]
+    ]
+    metrics_table = Table(metrics_data, colWidths=[1.4*inch, 1.4*inch, 1.3*inch, 1.3*inch, 1.3*inch, 1.3*inch])
+    metrics_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F8FAFC')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.HexColor('#475569')),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 7.5),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('BACKGROUND', (0, 1), (-1, 1), colors.HexColor('#FFFFFF')),
+        ('FONTNAME', (0, 1), (-1, 1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 1), (-1, 1), 9.5),
+        ('TEXTCOLOR', (0, 1), (0, 1), colors.HexColor('#4F7BFF')),
+        ('TEXTCOLOR', (1, 1), (1, 1), colors.HexColor('#6B79FF')),
+        ('TEXTCOLOR', (2, 1), (2, 1), colors.HexColor('#00BA88')),
+        ('TEXTCOLOR', (3, 1), (3, 1), colors.HexColor('#F65D6D')),
+        ('TEXTCOLOR', (4, 1), (4, 1), colors.HexColor('#F98D29')),
+        ('TEXTCOLOR', (5, 1), (5, 1), colors.HexColor('#8E6BF5')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+    elements.append(metrics_table)
+    elements.append(Spacer(1, 10))
+
+    # Section 2: Staff / Admin Breakdown
+    elements.append(Paragraph("Payment & Expense Details by Staff", section_heading))
+    admin_rows = [['Staff Name', 'Bookings', 'Total (Rs)', 'Received (Rs)', 'Pending (Rs)', 'Gen. Exp (Rs)', 'Book. Exp (Rs)']]
+    for admin in admin_breakdown:
+        admin_rows.append([
+            admin.username,
+            str(admin.booking_count or 0),
+            f"{admin.total_booking_amount or 0:,.0f}",
+            f"{admin.collected or 0:,.0f}",
+            f"{admin.pending_amount or 0:,.0f}",
+            f"{admin.general_expense_total or 0:,.0f}",
+            f"{admin.booking_expense_total or 0:,.0f}",
+        ])
+    if len(admin_rows) == 1:
+        admin_rows.append(['No staff data found', '-', '-', '-', '-', '-', '-'])
+
+    admin_table = Table(admin_rows, colWidths=[1.6*inch, 0.8*inch, 1.2*inch, 1.2*inch, 1.2*inch, 1.2*inch, 1.2*inch])
+    admin_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#FF7A00')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'CENTER'),
+        ('ALIGN', (2, 0), (-1, -1), 'RIGHT'),
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#FFF7ED')]),
+        ('TOPPADDING', (0, 0), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    elements.append(admin_table)
+    elements.append(Spacer(1, 10))
+
+    # Section 3: General Expenses Table (Top/Recent)
+    if recent_general_expenses:
+        elements.append(Paragraph("General Expenses", section_heading))
+        g_rows = [['Title', 'Category', 'Submitted By', 'Date', 'Amount (Rs)']]
+        for exp in recent_general_expenses:
+            g_rows.append([
+                exp.title[:30],
+                exp.get_category_display(),
+                exp.submitted_by.username if exp.submitted_by else '-',
+                exp.date.strftime('%d-%b-%Y') if exp.date else '-',
+                f"{exp.amount:,.0f}"
+            ])
+        g_table = Table(g_rows, colWidths=[2.8*inch, 1.4*inch, 1.4*inch, 1.4*inch, 1.4*inch])
+        g_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#D97706')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('ALIGN', (0, 0), (3, -1), 'LEFT'),
+            ('ALIGN', (4, 0), (4, -1), 'RIGHT'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 7.5),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#FFFBEB')]),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(g_table)
+        elements.append(Spacer(1, 10))
+
+    # Section 4: Booking Expenses Table (Top/Recent)
+    if recent_booking_expenses:
+        elements.append(Paragraph("Booking Expenses", section_heading))
+        b_rows = [['Title', 'Linked Booking', 'Category', 'Submitted By', 'Date', 'Amount (Rs)']]
+        for exp in recent_booking_expenses:
+            b_title = f"#{exp.booking.serial_number} {exp.booking.title[:20]}" if exp.booking else '-'
+            b_rows.append([
+                exp.title[:25],
+                b_title,
+                exp.get_category_display(),
+                exp.submitted_by.username if exp.submitted_by else '-',
+                exp.date.strftime('%d-%b-%Y') if exp.date else '-',
+                f"{exp.amount:,.0f}"
+            ])
+        b_table = Table(b_rows, colWidths=[2.2*inch, 2.0*inch, 1.1*inch, 1.1*inch, 1.0*inch, 1.0*inch])
+        b_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3B82F6')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('ALIGN', (0, 0), (4, -1), 'LEFT'),
+            ('ALIGN', (5, 0), (5, -1), 'RIGHT'),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 7.5),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#EFF6FF')]),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+        elements.append(b_table)
+        elements.append(Spacer(1, 12))
+
+    # Footer
+    elements.append(Paragraph(f"{aud_name} Management System &bull; Generated automatically", small_muted))
+
+    doc.build(elements)
+    pdf = buffer.getvalue()
+    buffer.close()
+    return pdf
+
 # Made with Bob

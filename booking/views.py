@@ -1118,7 +1118,7 @@ def toggle_payment_status(request, pk):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 from django.http import HttpResponse
-from .utils import generate_bookings_pdf, generate_single_booking_pdf
+from .utils import generate_bookings_pdf, generate_single_booking_pdf, generate_dashboard_pdf
 
 
 def _deny_export(request):
@@ -1299,6 +1299,338 @@ def export_single_booking_pdf(request, pk):
     filename = f'booking_{booking.pk}_{booking.title[:20].replace(" ", "_")}.pdf'
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     
+    return response
+
+
+def _get_dashboard_data(request):
+    """Helper function to compute all filtered dashboard statistics and datasets."""
+    auditorium = get_auditorium_for_user(request.user)
+    now = timezone.now()
+    today_str = now.strftime('%Y-%m-%d')
+    
+    selected_month = request.GET.get('month')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    if not any([selected_month, start_date, end_date]):
+        selected_month = now.strftime('%Y-%m')
+    
+    if not selected_month and not end_date:
+        end_date = today_str
+    
+    admin_id = request.GET.get('admin_id')
+    
+    filtered_qs = Booking.objects.filter(auditorium=auditorium)
+    
+    filters_applied = {}
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            filtered_qs = filtered_qs.filter(start_time__year=year, start_time__month=month)
+            filters_applied['month'] = selected_month
+        except (ValueError, AttributeError):
+            pass
+    else:
+        if start_date:
+            filtered_qs = filtered_qs.filter(start_time__date__gte=start_date)
+            filters_applied['start_date'] = start_date
+        if end_date:
+            filtered_qs = filtered_qs.filter(start_time__date__lte=end_date)
+            filters_applied['end_date'] = end_date
+            
+    if admin_id:
+        filtered_qs = filtered_qs.filter(created_by_id=admin_id)
+        try:
+            admin_obj = User.objects.get(pk=admin_id)
+            filters_applied['admin_name'] = admin_obj.username
+        except User.DoesNotExist:
+            pass
+
+    total_advance = filtered_qs.aggregate(Sum('advance_received'))['advance_received__sum'] or 0
+    total_amount = filtered_qs.aggregate(Sum('total_amount'))['total_amount__sum'] or 0
+    pending_amount = total_amount - total_advance
+    filtered_count = filtered_qs.count()
+
+    expense_filter_q = Q(expenses__auditorium=auditorium)
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            expense_filter_q &= Q(expenses__date__year=year, expenses__date__month=month)
+        except (ValueError, AttributeError):
+            pass
+    else:
+        if start_date:
+            expense_filter_q &= Q(expenses__date__gte=start_date)
+        if end_date:
+            expense_filter_q &= Q(expenses__date__lte=end_date)
+
+    admin_breakdown = User.objects.filter(profile__auditorium=auditorium).annotate(
+        collected=Sum('bookings__advance_received', filter=Q(bookings__in=filtered_qs)),
+        booking_count=Count('bookings', filter=Q(bookings__in=filtered_qs)),
+        total_booking_amount=Sum('bookings__total_amount', filter=Q(bookings__in=filtered_qs)),
+        expense_total=Sum('expenses__amount', filter=expense_filter_q),
+        general_expense_total=Sum('expenses__amount', filter=expense_filter_q & Q(expenses__expense_type='general')),
+        booking_expense_total=Sum('expenses__amount', filter=expense_filter_q & Q(expenses__expense_type='booking')),
+        expense_count=Count('expenses', filter=expense_filter_q),
+    ).order_by('-collected')
+
+    for admin in admin_breakdown:
+        admin.pending_amount = (admin.total_booking_amount or 0) - (admin.collected or 0)
+
+    filtered_expense_qs = Expense.objects.filter(auditorium=auditorium)
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+            filtered_expense_qs = filtered_expense_qs.filter(date__year=year, date__month=month)
+        except (ValueError, AttributeError):
+            pass
+    else:
+        if start_date:
+            filtered_expense_qs = filtered_expense_qs.filter(date__gte=start_date)
+        if end_date:
+            filtered_expense_qs = filtered_expense_qs.filter(date__lte=end_date)
+            
+    if admin_id:
+        filtered_expense_qs = filtered_expense_qs.filter(submitted_by_id=admin_id)
+
+    expense_search = request.GET.get('expense_search', '').strip()
+    expense_qs = filtered_expense_qs.select_related('booking', 'submitted_by')
+    if expense_search:
+        expense_qs = expense_qs.filter(
+            Q(title__icontains=expense_search) |
+            Q(booking__title__icontains=expense_search)
+        )
+    expense_total_spent = filtered_expense_qs.aggregate(s=Sum('amount'))['s'] or 0
+    general_expense_total = filtered_expense_qs.filter(expense_type='general').aggregate(s=Sum('amount'))['s'] or 0
+    booking_expense_total = filtered_expense_qs.filter(expense_type='booking').aggregate(s=Sum('amount'))['s'] or 0
+    recent_general_expenses = list(expense_qs.filter(expense_type='general').order_by('-created_at')[:25])
+    recent_booking_expenses = list(expense_qs.filter(expense_type='booking').order_by('-created_at')[:25])
+
+    stats = {
+        'filtered_count': filtered_count,
+        'total_amount': total_amount,
+        'total_advance': total_advance,
+        'pending_amount': pending_amount,
+        'expense_total_spent': expense_total_spent,
+        'general_expense_total': general_expense_total,
+        'booking_expense_total': booking_expense_total,
+    }
+
+    return {
+        'auditorium': auditorium,
+        'stats': stats,
+        'admin_breakdown': admin_breakdown,
+        'recent_general_expenses': recent_general_expenses,
+        'recent_booking_expenses': recent_booking_expenses,
+        'filters_applied': filters_applied,
+        'filtered_qs': filtered_qs,
+        'filtered_expense_qs': filtered_expense_qs,
+    }
+
+
+@login_required
+def export_dashboard_pdf(request):
+    """Export the current dashboard report with all active filters to PDF."""
+    if not request.user.is_superuser:
+        return redirect('calendar')
+
+    deny = _deny_staff2(request)
+    if deny:
+        return deny
+    deny = _deny_export(request)
+    if deny:
+        return deny
+
+    data = _get_dashboard_data(request)
+    pdf = generate_dashboard_pdf(
+        auditorium=data['auditorium'],
+        stats=data['stats'],
+        admin_breakdown=data['admin_breakdown'],
+        recent_general_expenses=data['recent_general_expenses'],
+        recent_booking_expenses=data['recent_booking_expenses'],
+        filters_applied=data['filters_applied']
+    )
+
+    now = timezone.now()
+    response = HttpResponse(pdf, content_type='application/pdf')
+    filename = f'dashboard_report_{now.strftime("%Y%m%d_%H%M%S")}.pdf'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+def export_dashboard_excel(request):
+    """Export the current dashboard report with all active filters to Excel."""
+    if not request.user.is_superuser:
+        return redirect('calendar')
+
+    deny = _deny_staff2(request)
+    if deny:
+        return deny
+    deny = _deny_export(request)
+    if deny:
+        return deny
+
+    try:
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    except ImportError:
+        return HttpResponse('openpyxl is not installed. Run: pip install openpyxl', status=500)
+
+    data = _get_dashboard_data(request)
+    auditorium = data['auditorium']
+    stats = data['stats']
+    admin_breakdown = data['admin_breakdown']
+    recent_general_expenses = data['recent_general_expenses']
+    recent_booking_expenses = data['recent_booking_expenses']
+    filters_applied = data['filters_applied']
+
+    wb = openpyxl.Workbook()
+
+    # Style definitions
+    title_font = Font(size=14, bold=True, color='1E293B')
+    section_font = Font(size=11, bold=True, color='FFFFFF')
+    header_font = Font(bold=True, color='FFFFFF')
+    bold_font = Font(bold=True)
+    center = Alignment(horizontal='center', vertical='center')
+    align_left = Alignment(horizontal='left', vertical='center')
+    align_right = Alignment(horizontal='right', vertical='center')
+
+    orange_fill = PatternFill(start_color='FF7A00', end_color='FF7A00', fill_type='solid')
+    teal_fill = PatternFill(start_color='14B8A6', end_color='14B8A6', fill_type='solid')
+    amber_fill = PatternFill(start_color='D97706', end_color='D97706', fill_type='solid')
+    blue_fill = PatternFill(start_color='3B82F6', end_color='3B82F6', fill_type='solid')
+    gray_fill = PatternFill(start_color='F1F5F9', end_color='F1F5F9', fill_type='solid')
+
+    # Sheet 1: Executive Summary & Staff Breakdown
+    ws1 = wb.active
+    ws1.title = 'Dashboard Overview'
+
+    aud_name = auditorium.name if auditorium and auditorium.name else "Auditorium"
+    ws1.append([f'{aud_name} — Dashboard Summary Report'])
+    ws1.cell(row=1, column=1).font = title_font
+
+    now_str = timezone.now().strftime('%d-%m-%Y %H:%M:%S')
+    ws1.append([f'Generated on: {now_str}'])
+
+    # Filter info
+    filter_desc = []
+    if filters_applied.get('month'):
+        filter_desc.append(f"Month: {filters_applied['month']}")
+    if filters_applied.get('start_date'):
+        filter_desc.append(f"Start: {filters_applied['start_date']}")
+    if filters_applied.get('end_date'):
+        filter_desc.append(f"End: {filters_applied['end_date']}")
+    if filters_applied.get('admin_name'):
+        filter_desc.append(f"Staff: {filters_applied['admin_name']}")
+    ws1.append([f"Filters Applied: {', '.join(filter_desc) if filter_desc else 'None (All Data)'}"])
+    ws1.append([])
+
+    # Metrics Summary Block
+    ws1.append(['Metric', 'Value'])
+    for c in [1, 2]:
+        cell = ws1.cell(row=5, column=c)
+        cell.font = header_font
+        cell.fill = orange_fill
+        cell.alignment = center
+
+    metric_rows = [
+        ('Filtered Bookings', stats['filtered_count']),
+        ('Total Booking Amount (₹)', float(stats['total_amount'])),
+        ('Advance Received (₹)', float(stats['total_advance'])),
+        ('Pending Amount (₹)', float(stats['pending_amount'])),
+        ('Total Spent on Expenses (₹)', float(stats['expense_total_spent'])),
+        ('General Expenses (₹)', float(stats['general_expense_total'])),
+        ('Booking Expenses (₹)', float(stats['booking_expense_total'])),
+    ]
+    for m_label, m_val in metric_rows:
+        ws1.append([m_label, m_val])
+    ws1.append([])
+
+    # Staff Breakdown Table
+    start_row_staff = ws1.max_row + 1
+    ws1.append(['Staff Name', 'Bookings', 'Total Booking Amount (₹)', 'Received (₹)', 'Pending (₹)', 'Gen. Expenses (₹)', 'Book. Expenses (₹)'])
+    for col_idx in range(1, 8):
+        cell = ws1.cell(row=start_row_staff, column=col_idx)
+        cell.font = header_font
+        cell.fill = teal_fill
+        cell.alignment = center
+
+    for admin in admin_breakdown:
+        ws1.append([
+            admin.username,
+            admin.booking_count or 0,
+            float(admin.total_booking_amount or 0),
+            float(admin.collected or 0),
+            float(admin.pending_amount or 0),
+            float(admin.general_expense_total or 0),
+            float(admin.booking_expense_total or 0),
+        ])
+
+    for col in ws1.columns:
+        max_len = max((len(str(cell.value)) if cell.value is not None else 0) for cell in col)
+        ws1.column_dimensions[col[0].column_letter].width = max(max_len + 4, 15)
+
+    # Sheet 2: Expenses
+    ws2 = wb.create_sheet(title='Expenses')
+    ws2.append(['General Expenses'])
+    ws2.cell(row=1, column=1).font = section_font
+    ws2.cell(row=1, column=1).fill = amber_fill
+
+    ws2.append(['#', 'Title', 'Category', 'Submitted By', 'Date', 'Amount (₹)'])
+    for c in range(1, 7):
+        cell = ws2.cell(row=2, column=c)
+        cell.font = header_font
+        cell.fill = amber_fill
+        cell.alignment = center
+
+    for idx, exp in enumerate(recent_general_expenses, 1):
+        ws2.append([
+            idx,
+            exp.title,
+            exp.get_category_display(),
+            exp.submitted_by.username if exp.submitted_by else '',
+            exp.date.strftime('%d-%m-%Y') if exp.date else '',
+            float(exp.amount or 0)
+        ])
+
+    ws2.append([])
+    ws2.append(['Booking-Linked Expenses'])
+    cur_row = ws2.max_row
+    ws2.cell(row=cur_row, column=1).font = section_font
+    ws2.cell(row=cur_row, column=1).fill = blue_fill
+
+    ws2.append(['#', 'Title', 'Linked Booking', 'Category', 'Submitted By', 'Date', 'Amount (₹)'])
+    header_row_2 = ws2.max_row
+    for c in range(1, 8):
+        cell = ws2.cell(row=header_row_2, column=c)
+        cell.font = header_font
+        cell.fill = blue_fill
+        cell.alignment = center
+
+    for idx, exp in enumerate(recent_booking_expenses, 1):
+        b_info = f"#{exp.booking.serial_number} {exp.booking.title}" if exp.booking else ''
+        ws2.append([
+            idx,
+            exp.title,
+            b_info,
+            exp.get_category_display(),
+            exp.submitted_by.username if exp.submitted_by else '',
+            exp.date.strftime('%d-%m-%Y') if exp.date else '',
+            float(exp.amount or 0)
+        ])
+
+    for col in ws2.columns:
+        max_len = max((len(str(cell.value)) if cell.value is not None else 0) for cell in col)
+        ws2.column_dimensions[col[0].column_letter].width = max(max_len + 4, 15)
+
+    now = timezone.now()
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    filename = f'dashboard_report_{now.strftime("%Y%m%d_%H%M%S")}.xlsx'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    wb.save(response)
     return response
 
 

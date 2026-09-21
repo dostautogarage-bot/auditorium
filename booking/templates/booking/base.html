@@ -2453,7 +2453,7 @@
                 const blobData = await res.blob();
                 const fileBlob = new Blob([blobData], { type: mimeType });
 
-                // Check if Web Share API with files is supported (best experience on iOS / Android mobile)
+                // 1. In Mobile Browsers & PWA Standalone, prefer Web Share API to allow Saving, Printing, WhatsApp sharing or downloading without getting trapped in non-navigable webviews
                 if (navigator.canShare && window.File) {
                     try {
                         const file = new File([fileBlob], filename, { type: mimeType });
@@ -2465,29 +2465,29 @@
                             return;
                         }
                     } catch (shareErr) {
-                        if (shareErr.name === 'AbortError') return;
+                        if (shareErr.name === 'AbortError') return; // User closed the native share sheet
                         console.warn('Navigator share error, falling back:', shareErr);
                     }
                 }
 
                 const blobUrl = URL.createObjectURL(fileBlob);
 
-                if (_isIOS) {
-                    const win = window.open(blobUrl, '_blank');
-                    if (!win) window.location.href = blobUrl;
-                    setTimeout(() => URL.revokeObjectURL(blobUrl), 120000);
-                } else {
-                    const a = document.createElement('a');
-                    a.href = blobUrl;
-                    a.download = filename;
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    setTimeout(() => {
+                // 2. Fallback Anchor download
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = filename;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+
+                setTimeout(() => {
+                    if (document.body.contains(a)) {
                         document.body.removeChild(a);
-                        URL.revokeObjectURL(blobUrl);
-                    }, 1000);
-                }
+                    }
+                    URL.revokeObjectURL(blobUrl);
+                }, 3000);
             } catch (err) {
                 alert('Export failed. Please try again.');
                 console.error(err);

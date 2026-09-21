@@ -17,6 +17,8 @@ urlpatterns = [
 
     # Dashboard (Home)
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/export/pdf/', views.export_dashboard_pdf, name='export_dashboard_pdf'),
+    path('dashboard/export/excel/', views.export_dashboard_excel, name='export_dashboard_excel'),
     
     # Admin Management (Super Admin only typically, or as per views logic)
     path('admins/', views.admin_list, name='admin_list'),
